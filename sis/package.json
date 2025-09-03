@@ -1,0 +1,52 @@
+{
+  "name": "sis",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build --turbopack",
+    "start": "next start",
+    "lint": "eslint",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "db:seed": "tsx prisma/seed.ts",
+    "openapi:gen": "tsx src/server/openapi/generate.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.879.0",
+    "@aws-sdk/s3-request-presigner": "^3.879.0",
+    "@prisma/client": "^6.15.0",
+    "@react-pdf/renderer": "^4.3.0",
+    "@tanstack/react-query": "^5.85.9",
+    "bcrypt": "^6.0.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "jose": "^6.1.0",
+    "next": "15.5.2",
+    "next-auth": "^4.24.11",
+    "pino": "^9.9.1",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "tailwind-merge": "^3.3.1",
+    "zod": "^4.1.5",
+    "zustand": "^5.0.8"
+  },
+  "devDependencies": {
+    "@asteasolutions/zod-to-openapi": "^8.1.0",
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/bcrypt": "^6.0.0",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "15.5.2",
+    "pino-pretty": "^13.1.1",
+    "prisma": "^6.15.0",
+    "tailwindcss": "^4",
+    "tsx": "^4.20.5",
+    "typescript": "^5"
+  }
+}

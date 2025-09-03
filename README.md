@@ -1,6 +1,6 @@
 # DRSIS — Next.js + Prisma SIS
 
-Sistem Informasi Sekolah — foundation scaffold per blueprint (Next.js App Router, Prisma/PostgreSQL, NextAuth JWT RBAC, Tailwind, React Query, S3/MinIO, OpenAPI).
+Sistem Informasi Sekolah — foundation scaffold per blueprint (Next.js App Router, Prisma/MariaDB/MySQL, NextAuth JWT RBAC, Tailwind, React Query, S3/MinIO, OpenAPI).
 
 Quick start
 - Prereqs: Node 18+, Docker Desktop
@@ -19,7 +19,7 @@ Default admin (change after first login)
 What’s inside (P0 foundation)
 - Auth: NextAuth (Credentials, JWT) with RBAC payload
 - RBAC: Role/Permission models + middleware guard
-- DB: PostgreSQL via Prisma (rich schema)
+- DB: MariaDB/MySQL via Prisma (rich schema)
 - UI: Tailwind (App Router), basic sign-in, providers (Session + React Query)
 - API: Health, Master/Grades (list/create) with Zod validation
 - Storage: MinIO/S3 client + presign API
@@ -57,3 +57,4 @@ Notes
 - Financial and savings operations must use `prisma.$transaction()` (enforce in service layer when implementing).
 - Add shadcn/ui components and design system when starting the front-end screens.
 - Expand RBAC rules in `sis/src/middleware/rbac.ts` per module routes.
+

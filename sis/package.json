@@ -11,7 +11,17 @@
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
-    "openapi:gen": "tsx src/server/openapi/generate.ts"
+    "openapi:gen": "tsx src/server/openapi/generate.ts",
+    "db:up": "docker compose -f ../docker-compose.yml up -d mariadb",
+    "db:down": "docker compose -f ../docker-compose.yml down",
+    "db:studio": "prisma studio",
+    "db:setup": "npm run db:up && npm run db:generate && npm run db:push && npm run db:seed",
+    "db:setup:push": "npm run db:up && npm run db:generate && npm run db:push && npm run db:seed",
+    "db:reset": "prisma migrate reset --force --skip-seed && npm run db:seed",
+    "db:setup:local": "npm run db:generate && npm run db:push && npm run db:seed",
+    "db:setup:push:local": "npm run db:generate && npm run db:push && npm run db:seed",
+    "db:reset:local": "prisma db push --force-reset && npm run db:seed",
+    "db": "npm run db:setup:push:local"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.879.0",

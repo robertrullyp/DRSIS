@@ -137,3 +137,13 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Project-specific (SIS)
+# Ignore generated Prisma client and OpenAPI outputs inside sis/
+sis/src/generated/
+sis/openapi/
+sis/.vercel/
+sis/prisma/migrations/
+
+# OS junk files
+**/.DS_Store

@@ -32,7 +32,7 @@ Docker services
 Useful scripts (in `sis/package.json`)
 - `db:generate` — Prisma client
 - `db:push` — Create DB schema (dev)
-- `db:migrate` — Migrations (when adding changes)
+- `db:push` — Migrations (when adding changes)
 - `db:seed` — Seed roles + admin
 - `openapi:gen` — Generate `openapi/openapi.json`
 
@@ -57,4 +57,5 @@ Notes
 - Financial and savings operations must use `prisma.$transaction()` (enforce in service layer when implementing).
 - Add shadcn/ui components and design system when starting the front-end screens.
 - Expand RBAC rules in `sis/src/middleware/rbac.ts` per module routes.
+
 

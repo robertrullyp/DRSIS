@@ -57,7 +57,7 @@ async function main() {
       create: {
         name: "admin",
         displayName: "Administrator",
-        permissions: { connect: allPerms },
+        
       },
     }),
     prisma.role.upsert({
@@ -66,19 +66,7 @@ async function main() {
       create: {
         name: "teacher",
         displayName: "Teacher",
-        permissions: {
-          connect: permRecords
-            .filter((p) =>
-              [
-                "master.read",
-                "attendance.student.manage",
-                "assessment.manage",
-                "report.review",
-                "analytics.read",
-              ].includes(p.name)
-            )
-            .map((p) => ({ id: p.id })),
-        },
+        
       },
     }),
     prisma.role.upsert({
@@ -87,7 +75,7 @@ async function main() {
       create: {
         name: "student",
         displayName: "Student",
-        permissions: { connect: [] },
+        
       },
     }),
     prisma.role.upsert({
@@ -96,11 +84,7 @@ async function main() {
       create: {
         name: "staff",
         displayName: "Staff",
-        permissions: {
-          connect: permRecords
-            .filter((p) => ["attendance.staff.manage", "analytics.read"].includes(p.name))
-            .map((p) => ({ id: p.id })),
-        },
+        
       },
     }),
     prisma.role.upsert({
@@ -109,11 +93,7 @@ async function main() {
       create: {
         name: "finance",
         displayName: "Finance",
-        permissions: {
-          connect: permRecords
-            .filter((p) => ["finance.manage", "analytics.read"].includes(p.name))
-            .map((p) => ({ id: p.id })),
-        },
+        
       },
     }),
     prisma.role.upsert({
@@ -122,11 +102,7 @@ async function main() {
       create: {
         name: "librarian",
         displayName: "Librarian",
-        permissions: {
-          connect: permRecords
-            .filter((p) => ["library.manage", "analytics.read"].includes(p.name))
-            .map((p) => ({ id: p.id })),
-        },
+        
       },
     }),
   ]);
@@ -182,7 +158,6 @@ async function main() {
       email: adminEmail,
       name: "System Admin",
       passwordHash: passwordHash,
-      roles: { connect: [{ id: adminRole.id }] },
       roleId: adminRole.id,
     },
   });
@@ -199,3 +174,5 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
+
+

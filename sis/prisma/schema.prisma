@@ -19,76 +19,76 @@ datasource db {
 // =====================
 
 enum UserStatus {
-  ACTIVE
-  INACTIVE
-  SUSPENDED
+  ACTIVE     @map("aktif")
+  INACTIVE   @map("nonaktif")
+  SUSPENDED  @map("ditangguhkan")
 }
 
 enum Gender {
-  MALE
-  FEMALE
-  OTHER
+  MALE    @map("laki_laki")
+  FEMALE  @map("perempuan")
+  OTHER   @map("lainnya")
 }
 
 enum StudentAttendanceStatus {
-  PRESENT
-  EXCUSED
-  SICK
-  ABSENT
-  LATE
+  PRESENT @map("hadir")
+  EXCUSED @map("izin")
+  SICK    @map("sakit")
+  ABSENT  @map("alfa")
+  LATE    @map("terlambat")
 }
 
 enum StaffAttendanceStatus {
-  PRESENT
-  LEAVE
-  SICK
-  ABSENT
-  LATE
+  PRESENT @map("hadir")
+  LEAVE   @map("izin")
+  SICK    @map("sakit")
+  ABSENT  @map("alfa")
+  LATE    @map("terlambat")
 }
 
 enum AdmissionStatus {
-  PENDING
-  VERIFIED
-  REJECTED
-  ACCEPTED
-  ENROLLED
+  PENDING   @map("menunggu")
+  VERIFIED  @map("terverifikasi")
+  REJECTED  @map("ditolak")
+  ACCEPTED  @map("diterima")
+  ENROLLED  @map("terdaftar")
 }
 
 enum InvoiceStatus {
-  DRAFT
-  OPEN
-  PARTIAL
-  PAID
-  VOID
+  DRAFT    @map("draf")
+  OPEN     @map("terbuka")
+  PARTIAL  @map("parsial")
+  PAID     @map("lunas")
+  VOID     @map("batal")
 }
 
 enum PaymentMethod {
-  CASH
-  TRANSFER
-  GATEWAY
-  SCHOLARSHIP
-  ADJUSTMENT
+  CASH      @map("tunai")
+  TRANSFER  @map("transfer")
+  GATEWAY   @map("gateway")
+  SCHOLARSHIP @map("beasiswa")
+  ADJUSTMENT @map("penyesuaian")
 }
 
 enum SavingsTxnType {
-  DEPOSIT
-  WITHDRAWAL
-  ADJUSTMENT
+  DEPOSIT     @map("setoran")
+  WITHDRAWAL  @map("penarikan")
+  ADJUSTMENT  @map("penyesuaian")
 }
 
 enum ApprovalStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  CANCELLED
+  PENDING   @map("menunggu")
+  APPROVED  @map("disetujui")
+  REJECTED  @map("ditolak")
+  CANCELLED @map("dibatalkan")
 }
 
 enum WaStatus {
-  PENDING
-  SENT
-  DELIVERED
-  FAILED
-  CANCELLED
+  PENDING   @map("menunggu")
+  SENT      @map("terkirim")
+  DELIVERED @map("tersampaikan")
+  FAILED    @map("gagal")
+  CANCELLED @map("dibatalkan")
 }
 
 // =====================
@@ -108,8 +108,6 @@ model User {
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 
-  roles         Role[]      @relation("UserRoles")
-  permissions   Permission[]@relation("UserPermissions")
 
   teacher       Teacher?
   student       Student?
@@ -122,6 +120,7 @@ model User {
   createdTickets CounselingTicket[] @relation("TicketCreator")
   counselSessions CounselingSession[] @relation("TicketCounselor")
   libMembership LibMember?
+  @@map("pengguna")
 }
 
 model Role {
@@ -130,12 +129,11 @@ model Role {
   displayName   String
   description   String?
 
-  users         User[]        @relation("UserRoles")
-  permissions   Permission[]  @relation("RolePermissions")
   // v1.2 alignment: explicit role-permission join
   perms         RolePermission[]
   // backref for single user role
   usersDirect   User[]        @relation("SingleUserRole")
+  @@map("peran")
 }
 
 model Permission {
@@ -143,10 +141,9 @@ model Permission {
   name          String   @unique // e.g., "master.read", "finance.invoice.create"
   description   String?
 
-  users         User[]   @relation("UserPermissions")
-  roles         Role[]   @relation("RolePermissions")
   // v1.2 alignment
   roleLinks     RolePermission[]
+  @@map("hak_akses")
 }
 
 // v1.2: explicit role-permission mapping
@@ -156,6 +153,7 @@ model RolePermission {
   role         Role       @relation(fields: [roleId], references: [id])
   permission   Permission @relation(fields: [permissionId], references: [id])
   @@id([roleId, permissionId])
+  @@map("peran_hak_akses")
 }
 
 // =====================
@@ -175,6 +173,7 @@ model Teacher {
   schedules  Schedule[]
   recordedAttendances StudentAttendance[] @relation("RecordedByTeacher")
   coachedExtras Extracurricular[]
+  @@map("guru")
 }
 
 model Student {
@@ -202,6 +201,7 @@ model Student {
   scholarships Scholarship[]
   examAttempts ExamAttempt[]
   extraAttendances ExtraAttendance[]
+  @@map("siswa")
 }
 
 model Employee {
@@ -215,6 +215,7 @@ model Employee {
   updatedAt  DateTime  @updatedAt
 
   attendances StaffAttendance[]
+  @@map("pegawai")
 }
 
 // =====================
@@ -234,6 +235,7 @@ model AcademicYear {
   assessments Assessment[]
   reportCards ReportCard[]
   invoices   Invoice[]
+  @@map("tahun_ajaran")
 }
 
 model Semester {
@@ -244,6 +246,7 @@ model Semester {
   academicYear   AcademicYear @relation(fields: [academicYearId], references: [id])
 
   reportCards    ReportCard[]
+  @@map("semester")
 }
 
 model Grade {
@@ -253,6 +256,7 @@ model Grade {
   subjects Subject[]
   applications AdmissionApplication[]
   feeRules  FeeRule[]
+  @@map("tingkat")
 }
 
 model Classroom {
@@ -273,6 +277,7 @@ model Classroom {
   reportCards  ReportCard[]
   exams        Exam[]
   lmsLinks     LmsLink[]
+  @@map("kelas")
 }
 
 model Subject {
@@ -288,6 +293,7 @@ model Subject {
   assessments Assessment[]
   exams       Exam[]
   lmsLinks    LmsLink[]
+  @@map("mata_pelajaran")
 }
 
 model Curriculum {
@@ -296,6 +302,7 @@ model Curriculum {
   year      Int?
   notes     String?
   subjects  Subject[]
+  @@map("kurikulum")
 }
 
 model Enrollment {
@@ -310,6 +317,7 @@ model Enrollment {
   enrolledAt     DateTime    @default(now())
 
   @@unique([studentId, academicYearId])
+  @@map("pendaftaran_kelas")
 }
 
 model Schedule {
@@ -325,6 +333,7 @@ model Schedule {
   endTime     String    // HH:mm
 
   attendances StudentAttendance[]
+  @@map("jadwal")
 }
 
 // =====================
@@ -347,6 +356,7 @@ model StudentAttendance {
   createdAt    DateTime                @default(now())
 
   @@unique([studentId, date, scheduleId])
+  @@map("absensi_siswa")
 }
 
 model StaffShift {
@@ -356,6 +366,7 @@ model StaffShift {
   endTime   String   // HH:mm
 
   attendances StaffAttendance[]
+  @@map("shift_pegawai")
 }
 
 model StaffAttendance {
@@ -374,6 +385,7 @@ model StaffAttendance {
   notes       String?
   approvedBy  String?
   createdAt   DateTime  @default(now())
+  @@map("absensi_pegawai")
 }
 
 // =====================
@@ -394,6 +406,7 @@ model Assessment {
   weight         Float       @default(1)
   score          Float
   recordedAt     DateTime    @default(now())
+  @@map("penilaian")
 }
 
 model ReportCard {
@@ -414,6 +427,7 @@ model ReportCard {
   approvedById   String?
   approvedAt     DateTime?
   createdAt      DateTime    @default(now())
+  @@map("raport")
 }
 
 // =====================
@@ -437,6 +451,7 @@ model AdmissionApplication {
   enrolledStudentId String?
   notes          String?
   createdAt      DateTime        @default(now())
+  @@map("ppdb_pendaftaran")
 }
 
 // =====================
@@ -451,6 +466,7 @@ model FeeRule {
   amount         Int      // in cents
   recurring      Boolean  @default(false)
   description    String?
+  @@map("aturan_biaya")
 }
 
 model Invoice {
@@ -470,6 +486,7 @@ model Invoice {
   payments       Payment[]
   discounts      Discount[]
   paymentAttempts PaymentAttempt[]
+  @@map("tagihan")
 }
 
 model InvoiceItem {
@@ -478,6 +495,7 @@ model InvoiceItem {
   invoice    Invoice @relation(fields: [invoiceId], references: [id])
   name       String
   amount     Int     // in cents
+  @@map("item_tagihan")
 }
 
 model Payment {
@@ -490,6 +508,7 @@ model Payment {
   reference   String?
   createdById String?
   refunds     Refund[]
+  @@map("pembayaran")
 }
 
 model Discount {
@@ -499,6 +518,7 @@ model Discount {
   name        String
   amount      Int      // in cents
   reason      String?
+  @@map("diskon")
 }
 
 // v1.2: finance additions
@@ -510,6 +530,7 @@ model PaymentAttempt {
   payload   Json?
   updatedAt DateTime @updatedAt
   invoice   Invoice  @relation(fields: [invoiceId], references: [id])
+  @@map("upaya_pembayaran")
 }
 
 model Refund {
@@ -519,6 +540,7 @@ model Refund {
   reason     String?
   processedBy String?
   payment    Payment @relation(fields: [paymentId], references: [id])
+  @@map("pengembalian_dana")
 }
 
 model Cashbook {
@@ -530,6 +552,7 @@ model Cashbook {
   memo      String?
   createdBy String?
   @@index([date, category])
+  @@map("buku_kas")
 }
 
 model Scholarship {
@@ -540,6 +563,7 @@ model Scholarship {
   amount      Int      // monthly amount in cents
   startDate   DateTime
   endDate     DateTime?
+  @@map("beasiswa")
 }
 
 // =====================
@@ -555,6 +579,7 @@ model SavingsAccount {
   updatedAt  DateTime @updatedAt
 
   transactions SavingsTransaction[]
+  @@map("tabungan_akun")
 }
 
 model SavingsTransaction {
@@ -566,6 +591,7 @@ model SavingsTransaction {
   requestedBy  String?
   approvedBy   String?
   createdAt    DateTime       @default(now())
+  @@map("tabungan_transaksi")
 }
 
 // =====================
@@ -585,6 +611,7 @@ model LibItem {
   loans        LibLoan[]
   // v1.2 link
   barcodes     LibBarcode[]
+  @@map("perpus_koleksi")
 }
 
 model LibMember {
@@ -596,6 +623,7 @@ model LibMember {
   joinedAt   DateTime @default(now())
 
   loans      LibLoan[]
+  @@map("perpus_anggota")
 }
 
 // v1.2 additions for Library
@@ -604,6 +632,7 @@ model LibBarcode {
   itemId  String
   barcode String @unique
   item    LibItem @relation(fields: [itemId], references: [id])
+  @@map("perpus_barcode")
 }
 
 model LibSetting {
@@ -611,6 +640,7 @@ model LibSetting {
   maxLoans    Int    @default(3)
   loanDays    Int    @default(7)
   finePerDay  Int    @default(0)
+  @@map("perpus_pengaturan")
 }
 
 model LibLoan {
@@ -623,6 +653,7 @@ model LibLoan {
   dueAt      DateTime
   returnedAt DateTime?
   fine       Int       @default(0)
+  @@map("perpus_pinjaman")
 }
 
 // =====================
@@ -634,6 +665,7 @@ model AssetCategory {
   name        String  @unique
   description String?
   assets      Asset[]
+  @@map("aset_kategori")
 }
 
 model Asset {
@@ -650,6 +682,7 @@ model Asset {
 
   loans          AssetLoan[]
   maintenances   AssetMaintenance[]
+  @@map("aset")
 }
 
 model AssetLoan {
@@ -661,6 +694,7 @@ model AssetLoan {
   borrowedAt   DateTime @default(now())
   dueAt        DateTime?
   returnedAt   DateTime?
+  @@map("aset_peminjaman")
 }
 
 model AssetMaintenance {
@@ -671,6 +705,7 @@ model AssetMaintenance {
   date      DateTime @default(now())
   cost      Int      @default(0)
   notes     String?
+  @@map("aset_perawatan")
 }
 
 // =====================
@@ -687,6 +722,7 @@ model Extracurricular {
   members       ExtraMember[]
   attendances   ExtraAttendance[]
   events        ExtraEvent[]
+  @@map("ekstrakurikuler")
 }
 
 model ExtraMember {
@@ -696,6 +732,7 @@ model ExtraMember {
   studentId     String
   student       Student        @relation(fields: [studentId], references: [id])
   joinedAt      DateTime       @default(now())
+  @@map("ekstra_anggota")
 }
 
 model ExtraAttendance {
@@ -708,6 +745,7 @@ model ExtraAttendance {
   status           StudentAttendanceStatus
 
   @@unique([extracurricularId, date, studentId])
+  @@map("ekstra_absensi")
 }
 
 model ExtraEvent {
@@ -718,6 +756,7 @@ model ExtraEvent {
   date             DateTime
   location         String?
   result           String?
+  @@map("ekstra_event")
 }
 
 // =====================
@@ -736,6 +775,7 @@ model CounselingTicket {
 
   sessions         CounselingSession[]
   referrals        CounselingReferral[]
+  @@map("bk_tiket")
 }
 
 model CounselingSession {
@@ -747,6 +787,7 @@ model CounselingSession {
   startedAt        DateTime @default(now())
   endedAt          DateTime?
   notes            String?
+  @@map("bk_sesi")
 }
 
 model CounselingReferral {
@@ -756,6 +797,7 @@ model CounselingReferral {
   referredTo String
   notes     String?
   createdAt DateTime @default(now())
+  @@map("bk_rujukan")
 }
 
 // =====================
@@ -770,6 +812,7 @@ model LmsLink {
   classroom    Classroom? @relation(fields: [classroomId], references: [id])
   subjectId    String?
   subject      Subject?   @relation(fields: [subjectId], references: [id])
+  @@map("lms_link")
 }
 
 model Exam {
@@ -785,6 +828,7 @@ model Exam {
   attempts    ExamAttempt[]
   // v1.2 additions
   questions   ExamQuestion[]
+  @@map("ujian")
 }
 
 model ExamAttempt {
@@ -796,6 +840,7 @@ model ExamAttempt {
   score     Float?
   startedAt DateTime @default(now())
   endedAt   DateTime?
+  @@map("ujian_pengerjaan")
 }
 
 model ExamQuestion {
@@ -805,6 +850,7 @@ model ExamQuestion {
   options  Json?
   answer   Json?
   exam     Exam    @relation(fields: [examId], references: [id])
+  @@map("ujian_soal")
 }
 
 // v1.2 additions
@@ -814,6 +860,7 @@ model LmsScore {
   studentId String
   score    Float
   syncedAt DateTime @default(now())
+  @@map("lms_skor")
 }
 
 // =====================
@@ -829,6 +876,7 @@ model EventLog {
   user      User?    @relation(fields: [userId], references: [id])
   data      Json?
   createdAt DateTime @default(now())
+  @@map("log_aktivitas")
 }
 
 // v1.2: analytics & WA additions
@@ -841,6 +889,7 @@ model AuditEvent {
   meta      Json?
   occurredAt DateTime @default(now())
   @@index([type, occurredAt])
+  @@map("audit_event")
 }
 
 model WaTemplate {
@@ -849,6 +898,7 @@ model WaTemplate {
   content  String
   variables Json?
   outbox   WaOutbox[]
+  @@map("wa_template")
 }
 
 model WaOutbox {
@@ -861,6 +911,7 @@ model WaOutbox {
   sentAt     DateTime?
   template   WaTemplate? @relation(fields: [templateId], references: [id])
   @@index([status, sentAt])
+  @@map("wa_outbox")
 }
 
 // v1.2: CMS
@@ -871,6 +922,7 @@ model CmsPost {
   content     String
   authorId    String?
   publishedAt DateTime?
+  @@map("cms_post")
 }
 
 model CmsEvent {
@@ -879,4 +931,5 @@ model CmsEvent {
   date      DateTime
   location  String?
   description String?
+  @@map("cms_event")
 }

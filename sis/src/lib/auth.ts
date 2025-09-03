@@ -30,13 +30,12 @@ export const authOptions: NextAuthOptions = {
           where: { email: credentials.email },
           include: {
             role: { include: { perms: { include: { permission: true } } } },
-            roles: true, // legacy m2m (optional)
           },
         });
         if (!user || !user.passwordHash) return null;
         const valid = await bcrypt.compare(credentials.password, user.passwordHash);
         if (!valid) return null;
-        const roleName = user.role?.name ?? user.roles?.[0]?.name;
+        const roleName = user.role?.name;
         const perms = user.role?.perms?.map((rp) => rp.permission.name) ?? [];
         const rbacUser: RBACUser = {
           id: user.id,

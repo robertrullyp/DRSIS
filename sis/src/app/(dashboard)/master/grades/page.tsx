@@ -61,7 +61,7 @@ export default function GradesPage() {
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
-        <button className="bg-black text-white rounded px-4 py-2" disabled={create.isPending}>
+        <button className="rounded-md px-4 py-2 bg-accent text-accent-foreground hover:opacity-90" disabled={create.isPending}>
           Tambah
         </button>
       </form>

@@ -74,7 +74,7 @@ export default function AcademicYearsPage() {
           <label className="block text-xs text-gray-600 mb-1">Selesai</label>
           <input type="date" className="border rounded px-3 py-2 w-full" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
         </div>
-        <button className="bg-black text-white rounded px-4 py-2" disabled={create.isPending}>
+        <button className="rounded-md px-4 py-2 bg-accent text-accent-foreground hover:opacity-90" disabled={create.isPending}>
           Tambah
         </button>
       </form>

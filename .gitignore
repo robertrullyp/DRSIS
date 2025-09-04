@@ -1,4 +1,4 @@
-# Logs
+﻿# Logs
 logs
 *.log
 npm-debug.log*
@@ -143,7 +143,20 @@ vite.config.ts.timestamp-*
 sis/src/generated/
 sis/openapi/
 sis/.vercel/
-sis/prisma/migrations/
+sis/playwright-report/
+sis/test-results/
+sis/*.log
+sis/dev.*.log
+
+# IDE project files
+.vscode/
+.idea/
 
 # OS junk files
 **/.DS_Store
+
+# Local temp files
+TEMP_OUT
+**/Thumbs.db
+**/desktop.ini
+

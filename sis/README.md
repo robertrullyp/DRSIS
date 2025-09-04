@@ -34,3 +34,7 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Theming
+
+This app includes a flexible theme system (Light/Dark + brand examples) powered by CSS variables and Tailwind v4 tokens. Built-in themes: `light`, `dark`, `emerald`, `ocean`. See `docs/THEMING.md` for how to customize or add your own themes.

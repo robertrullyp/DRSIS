@@ -1,0 +1,16 @@
+import { NextRequest, NextResponse } from "next/server";
+import { S3_BUCKET, s3 } from "@/lib/s3";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+
+export async function GET(req: NextRequest) {
+  const key = req.nextUrl.searchParams.get("key");
+  if (!key) return NextResponse.json({ error: "key required" }, { status: 400 });
+  // Restrict uploads to ppdb prefix for public presign
+  if (!key.startsWith("ppdb/")) return NextResponse.json({ error: "invalid key" }, { status: 400 });
+  const contentType = req.nextUrl.searchParams.get("contentType") ?? "application/octet-stream";
+  const cmd = new PutObjectCommand({ Bucket: S3_BUCKET, Key: key, ContentType: contentType });
+  const url = await getSignedUrl(s3, cmd, { expiresIn: 300 });
+  return NextResponse.json({ url, bucket: S3_BUCKET, key });
+}
+

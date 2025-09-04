@@ -21,7 +21,9 @@
     "db:setup:local": "npm run db:generate && npm run db:push && npm run db:seed",
     "db:setup:push:local": "npm run db:generate && npm run db:push && npm run db:seed",
     "db:reset:local": "prisma db push --force-reset && npm run db:seed",
-    "db": "npm run db:setup:push:local"
+    "db": "npm run db:setup:push:local",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.879.0",
@@ -47,6 +49,7 @@
     "@asteasolutions/zod-to-openapi": "^8.1.0",
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@playwright/test": "^1.48.2",
     "@types/bcrypt": "^6.0.0",
     "@types/node": "^20",
     "@types/react": "^19",

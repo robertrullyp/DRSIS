@@ -28,3 +28,11 @@ export const staffAttendanceQuerySchema = z.object({
   pageSize: z.coerce.number().min(1).max(200).default(20),
 });
 
+export const staffAttendanceUpdateSchema = z.object({
+  status: z.string().optional(),
+  checkInAt: z.coerce.date().nullable().optional(),
+  checkOutAt: z.coerce.date().nullable().optional(),
+  notes: z.string().nullable().optional(),
+  shiftId: z.string().nullable().optional(),
+  approve: z.boolean().optional(),
+});

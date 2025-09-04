@@ -21,6 +21,41 @@ export const rules: Rule[] = [
     anyRole: ["admin", "librarian"],
     anyPermissions: ["library.manage"],
   },
+  {
+    matcher: /^\/api\/ppdb\b/,
+    anyRole: ["admin"],
+    anyPermissions: ["ppdb.manage"],
+  },
+  {
+    matcher: /^\/api\/assets\b/,
+    anyRole: ["admin"],
+    anyPermissions: ["asset.manage"],
+  },
+  {
+    matcher: /^\/api\/extras\b/,
+    anyRole: ["admin"],
+    anyPermissions: ["extra.manage"],
+  },
+  {
+    matcher: /^\/api\/savings\b/,
+    anyRole: ["admin", "finance"],
+    anyPermissions: ["savings.manage"],
+  },
+  {
+    matcher: /^\/api\/counseling\b/,
+    anyRole: ["admin"],
+    anyPermissions: ["counsel.manage"],
+  },
+  {
+    matcher: /^\/api\/assessments\b/,
+    anyRole: ["admin", "teacher"],
+    anyPermissions: ["assessment.manage"],
+  },
+  {
+    matcher: /^\/api\/report-cards\b/,
+    anyRole: ["admin"],
+    anyPermissions: ["report.review", "report.approve"],
+  },
 ];
 
 export function checkAccess(
@@ -29,7 +64,14 @@ export function checkAccess(
 ) {
   const path = req.nextUrl.pathname;
   // Public endpoints
-  if (path.startsWith("/api/health") || path.startsWith("/api/public")) return true;
+  if (
+    path.startsWith("/api/health") ||
+    path.startsWith("/api/public") ||
+    path.startsWith("/api/auth")
+  )
+    return true;
+  // Public pages (PPDB apply)
+  if (path === "/" || path.startsWith("/ppdb/apply") || path.startsWith("/ppdb/announcement") || path.startsWith("/ppdb/status")) return true;
 
   // Auth pages & static assets
   if (

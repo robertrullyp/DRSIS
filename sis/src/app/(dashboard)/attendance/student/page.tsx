@@ -95,7 +95,7 @@ export default function StudentAttendancePage() {
           <input type="date" className="border rounded px-3 py-2" value={date} onChange={(e) => setDate(e.target.value)} />
         </div>
         <div className="text-sm text-gray-600">Ringkas: {summaryText}</div>
-        <button className="ml-auto bg-black text-white rounded px-4 py-2" onClick={() => save.mutate()} disabled={save.isPending}>
+        <button className="ml-auto rounded-md px-4 py-2 bg-accent text-accent-foreground hover:opacity-90" onClick={() => save.mutate()} disabled={save.isPending}>
           Simpan
         </button>
       </div>

@@ -90,7 +90,7 @@ export default function StaffAttendancePage() {
           </select>
         </div>
         <div className="col-span-4">
-          <button className="bg-black text-white rounded px-4 py-2" onClick={() => check.mutate()} disabled={check.isPending}>
+          <button className="rounded-md px-4 py-2 bg-accent text-accent-foreground hover:opacity-90" onClick={() => check.mutate()} disabled={check.isPending}>
             Simpan {action === "checkin" ? "Check-in" : "Check-out"}
           </button>
         </div>

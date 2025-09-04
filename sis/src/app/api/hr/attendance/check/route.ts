@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { staffCheckSchema } from "@/lib/schemas/hr";
+import { computeStatusForCheckIn } from "@/lib/hr-rules";
 
 function dateOnlyUTC(d: Date) {
   return new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
@@ -20,7 +21,10 @@ export async function POST(req: NextRequest) {
         employeeId,
         date,
         shiftId: shiftId ?? null,
-        status: "PRESENT",
+        status: action === "checkin" ? computeStatusForCheckIn(
+          shiftId ? (await prisma.staffShift.findUnique({ where: { id: shiftId } }))?.startTime ?? null : null,
+          new Date()
+        ) : "PRESENT",
         checkInAt: action === "checkin" ? new Date() : null,
         checkOutAt: action === "checkout" ? new Date() : null,
         method: method ?? null,
@@ -35,7 +39,17 @@ export async function POST(req: NextRequest) {
       where: { id: existing.id },
       data: {
         shiftId: shiftId ?? existing.shiftId,
-        status: existing.status ?? "PRESENT",
+        status:
+          action === "checkin"
+            ? computeStatusForCheckIn(
+                (shiftId
+                  ? (await prisma.staffShift.findUnique({ where: { id: shiftId } }))?.startTime
+                  : existing.shiftId
+                  ? (await prisma.staffShift.findUnique({ where: { id: existing.shiftId } }))?.startTime
+                  : null) ?? null,
+                new Date()
+              )
+            : existing.status ?? "PRESENT",
         checkInAt: action === "checkin" ? new Date() : existing.checkInAt,
         checkOutAt: action === "checkout" ? new Date() : existing.checkOutAt,
         method: method ?? existing.method,

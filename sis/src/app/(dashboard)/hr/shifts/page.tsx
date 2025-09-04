@@ -60,7 +60,7 @@ export default function ShiftsPage() {
           <label className="block text-xs text-gray-600 mb-1">Selesai (HH:mm)</label>
           <input className="border rounded px-3 py-2 w-full" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
         </div>
-        <button className="bg-black text-white rounded px-4 py-2" disabled={create.isPending}>
+        <button className="rounded-md px-4 py-2 bg-accent text-accent-foreground hover:opacity-90" disabled={create.isPending}>
           Tambah
         </button>
       </form>
@@ -89,4 +89,3 @@ export default function ShiftsPage() {
     </div>
   );
 }
-

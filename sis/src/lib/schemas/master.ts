@@ -47,3 +47,59 @@ export const semesterUpdateSchema = semesterCreateSchema.partial();
 export const classroomUpdateSchema = classroomCreateSchema.partial();
 export const subjectUpdateSchema = subjectCreateSchema.partial();
 export const curriculumUpdateSchema = curriculumCreateSchema.partial();
+
+// --- Additional master schemas (teachers, students, enrollments, schedules)
+
+export const genderEnum = z.enum(["MALE", "FEMALE", "OTHER"]);
+
+export const teacherCreateSchema = z.object({
+  name: z.string().min(1),
+  email: z.string().email(),
+  nidn: z.string().optional(),
+  hireDate: z.coerce.date().optional(),
+});
+export const teacherUpdateSchema = z.object({
+  name: z.string().min(1).optional(),
+  email: z.string().email().optional(),
+  nidn: z.string().optional(),
+  hireDate: z.coerce.date().optional(),
+});
+
+export const studentCreateSchema = z.object({
+  name: z.string().min(1),
+  email: z.string().email(),
+  nis: z.string().optional(),
+  nisn: z.string().optional(),
+  gender: genderEnum.optional(),
+  birthDate: z.coerce.date().optional(),
+  startYear: z.coerce.number().optional(),
+  guardianName: z.string().optional(),
+});
+export const studentUpdateSchema = z.object({
+  name: z.string().min(1).optional(),
+  email: z.string().email().optional(),
+  nis: z.string().optional(),
+  nisn: z.string().optional(),
+  gender: genderEnum.optional(),
+  birthDate: z.coerce.date().optional(),
+  startYear: z.coerce.number().optional(),
+  guardianName: z.string().optional(),
+});
+
+export const enrollmentCreateSchema = z.object({
+  studentId: z.string().min(1),
+  classroomId: z.string().min(1),
+  academicYearId: z.string().min(1),
+  active: z.boolean().optional(),
+});
+export const enrollmentUpdateSchema = enrollmentCreateSchema.partial();
+
+export const scheduleCreateSchema = z.object({
+  classroomId: z.string().min(1),
+  subjectId: z.string().min(1),
+  teacherId: z.string().min(1),
+  dayOfWeek: z.coerce.number().min(1).max(7),
+  startTime: z.string().regex(/^\d{2}:\d{2}$/),
+  endTime: z.string().regex(/^\d{2}:\d{2}$/),
+});
+export const scheduleUpdateSchema = scheduleCreateSchema.partial();

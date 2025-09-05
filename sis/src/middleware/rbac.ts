@@ -17,6 +17,11 @@ export const rules: Rule[] = [
     anyPermissions: ["finance.manage"],
   },
   {
+    matcher: /^\/api\/master\b/,
+    anyRole: ["admin"],
+    anyPermissions: ["master.manage"],
+  },
+  {
     matcher: /^\/api\/library\b/,
     anyRole: ["admin", "librarian"],
     anyPermissions: ["library.manage"],

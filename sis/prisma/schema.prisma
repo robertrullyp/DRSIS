@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/prisma"
@@ -15,19 +9,983 @@ datasource db {
 }
 
 // =====================
-// Enums
+// School Profile
 // =====================
 
+model SchoolProfile {
+  id            String   @id @default(cuid())
+  name          String
+  npsn          String?  @unique
+  address       String?
+  phone         String?
+  email         String?
+  website       String?
+  logoUrl       String?
+  principal     String?
+  accreditation String?
+  motto         String?
+  vision        String?
+  mission       String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("profil_sekolah")
+}
+model User {
+  id              String              @id @default(cuid())
+  email           String              @unique
+  name            String?
+  phone           String?             @unique
+  status          UserStatus          @default(ACTIVE)
+  passwordHash    String?
+  roleId          String?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  assetLoans      AssetLoan[]
+  counselSessions CounselingSession[] @relation("TicketCounselor")
+  createdTickets  CounselingTicket[]  @relation("TicketCreator")
+  teacher         Teacher?
+  events          EventLog[]
+  employee        Employee?
+  role            Role?               @relation("SingleUserRole", fields: [roleId], references: [id])
+  libMembership   LibMember?
+  student         Student?
+
+  @@index([roleId], map: "pengguna_roleId_fkey")
+  @@map("pengguna")
+}
+
+model Role {
+  id          String           @id @default(cuid())
+  name        String           @unique
+  displayName String
+  description String?
+  usersDirect User[]           @relation("SingleUserRole")
+  perms       RolePermission[]
+
+  @@map("peran")
+}
+
+model Permission {
+  id          String           @id @default(cuid())
+  name        String           @unique
+  description String?
+  roleLinks   RolePermission[]
+
+  @@map("hak_akses")
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id])
+  role         Role       @relation(fields: [roleId], references: [id])
+
+  @@id([roleId, permissionId])
+  @@index([permissionId], map: "peran_hak_akses_permissionId_fkey")
+  @@map("peran_hak_akses")
+}
+
+model Teacher {
+  id                  String              @id @default(cuid())
+  userId              String              @unique
+  nidn                String?             @unique
+  hireDate            DateTime?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  recordedAttendances StudentAttendance[] @relation("RecordedByTeacher")
+  coachedExtras       Extracurricular[]
+  user                User                @relation(fields: [userId], references: [id])
+  schedules           Schedule[]
+  homerooms           Classroom[]         @relation("HomeroomTeacher")
+
+  @@map("guru")
+}
+
+model Student {
+  id               String              @id @default(cuid())
+  userId           String              @unique
+  nis              String?             @unique
+  nisn             String?             @unique
+  photoUrl         String?
+  gender           Gender?
+  birthDate        DateTime?
+  startYear        Int?
+  guardianName     String?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  attendances      StudentAttendance[]
+  scholarships     Scholarship[]
+  counseling       CounselingTicket[]
+  extraAttendances ExtraAttendance[]
+  extraMembers     ExtraMember[]
+  enrollments      Enrollment[]
+  assessments      Assessment[]
+  libMember        LibMember?
+  reportCards      ReportCard[]
+  user             User                @relation(fields: [userId], references: [id])
+  savings          SavingsAccount?
+  invoices         Invoice[]
+  examAttempts     ExamAttempt[]
+
+  @@map("siswa")
+}
+
+model Employee {
+  id          String            @id @default(cuid())
+  userId      String            @unique
+  nik         String?           @unique
+  position    String?
+  joinDate    DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  attendances StaffAttendance[]
+  user        User              @relation(fields: [userId], references: [id])
+  leaves      LeaveRequest[]
+
+  @@map("pegawai")
+}
+
+model AcademicYear {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  startDate   DateTime
+  endDate     DateTime
+  isActive    Boolean      @default(false)
+  classes     Classroom[]
+  enrollments Enrollment[]
+  assessments Assessment[]
+  reportCards ReportCard[]
+  semesters   Semester[]
+  invoices    Invoice[]
+
+  @@map("tahun_ajaran")
+}
+
+model Semester {
+  id             String       @id @default(cuid())
+  name           String
+  number         Int?
+  academicYearId String
+  reportCards    ReportCard[]
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id])
+
+  @@index([academicYearId], map: "semester_academicYearId_fkey")
+  @@map("semester")
+}
+
+model Grade {
+  id           String                 @id @default(cuid())
+  name         String                 @unique
+  feeRules     FeeRule[]
+  classes      Classroom[]
+  subjects     Subject[]
+  applications AdmissionApplication[]
+
+  @@map("tingkat")
+}
+
+model Classroom {
+  id                String              @id @default(cuid())
+  code              String              @unique
+  name              String
+  gradeId           String
+  homeroomTeacherId String?
+  academicYearId    String
+  attendances       StudentAttendance[]
+  schedules         Schedule[]
+  academicYear      AcademicYear        @relation(fields: [academicYearId], references: [id])
+  grade             Grade               @relation(fields: [gradeId], references: [id])
+  homeroomTeacher   Teacher?            @relation("HomeroomTeacher", fields: [homeroomTeacherId], references: [id])
+  lmsLinks          LmsLink[]
+  enrollments       Enrollment[]
+  assessments       Assessment[]
+  reportCards       ReportCard[]
+  exams             Exam[]
+
+  @@index([academicYearId], map: "kelas_academicYearId_fkey")
+  @@index([gradeId], map: "kelas_gradeId_fkey")
+  @@index([homeroomTeacherId], map: "kelas_homeroomTeacherId_fkey")
+  @@map("kelas")
+}
+
+model Subject {
+  id           String       @id @default(cuid())
+  code         String       @unique
+  name         String
+  gradeId      String?
+  curriculumId String?
+  schedules    Schedule[]
+  lmsLinks     LmsLink[]
+  curriculum   Curriculum?  @relation(fields: [curriculumId], references: [id])
+  grade        Grade?       @relation(fields: [gradeId], references: [id])
+  assessments  Assessment[]
+  exams        Exam[]
+
+  @@index([curriculumId], map: "mata_pelajaran_curriculumId_fkey")
+  @@index([gradeId], map: "mata_pelajaran_gradeId_fkey")
+  @@map("mata_pelajaran")
+}
+
+model Curriculum {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  year     Int?
+  notes    String?
+  subjects Subject[]
+
+  @@map("kurikulum")
+}
+
+model Enrollment {
+  id             String       @id @default(cuid())
+  studentId      String
+  classroomId    String
+  academicYearId String
+  active         Boolean      @default(true)
+  enrolledAt     DateTime     @default(now())
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id])
+  classroom      Classroom    @relation(fields: [classroomId], references: [id])
+  student        Student      @relation(fields: [studentId], references: [id])
+
+  @@unique([studentId, academicYearId])
+  @@index([academicYearId], map: "pendaftaran_kelas_academicYearId_fkey")
+  @@index([classroomId], map: "pendaftaran_kelas_classroomId_fkey")
+  @@map("pendaftaran_kelas")
+}
+
+model Schedule {
+  id          String              @id @default(cuid())
+  classroomId String
+  subjectId   String
+  teacherId   String
+  dayOfWeek   Int
+  startTime   String
+  endTime     String
+  attendances StudentAttendance[]
+  classroom   Classroom           @relation(fields: [classroomId], references: [id])
+  subject     Subject             @relation(fields: [subjectId], references: [id])
+  teacher     Teacher             @relation(fields: [teacherId], references: [id])
+
+  @@index([classroomId], map: "jadwal_classroomId_fkey")
+  @@index([subjectId], map: "jadwal_subjectId_fkey")
+  @@index([teacherId], map: "jadwal_teacherId_fkey")
+  @@map("jadwal")
+}
+
+model StudentAttendance {
+  id           String                  @id @default(cuid())
+  studentId    String
+  classroomId  String
+  scheduleId   String?
+  date         DateTime
+  status       StudentAttendanceStatus
+  notes        String?
+  recordedById String?
+  createdAt    DateTime                @default(now())
+  classroom    Classroom               @relation(fields: [classroomId], references: [id])
+  recordedBy   Teacher?                @relation("RecordedByTeacher", fields: [recordedById], references: [id])
+  schedule     Schedule?               @relation(fields: [scheduleId], references: [id])
+  student      Student                 @relation(fields: [studentId], references: [id])
+
+  @@unique([studentId, date, scheduleId])
+  @@index([classroomId], map: "absensi_siswa_classroomId_fkey")
+  @@index([recordedById], map: "absensi_siswa_recordedById_fkey")
+  @@index([scheduleId], map: "absensi_siswa_scheduleId_fkey")
+  @@map("absensi_siswa")
+}
+
+model StaffShift {
+  id          String            @id @default(cuid())
+  name        String
+  startTime   String
+  endTime     String
+  attendances StaffAttendance[]
+
+  @@map("shift_pegawai")
+}
+
+model StaffAttendance {
+  id         String                @id @default(cuid())
+  employeeId String
+  shiftId    String?
+  date       DateTime
+  status     StaffAttendanceStatus
+  checkInAt  DateTime?
+  checkOutAt DateTime?
+  method     String?
+  latitude   Float?
+  longitude  Float?
+  notes      String?
+  approvedBy String?
+  createdAt  DateTime              @default(now())
+  employee   Employee              @relation(fields: [employeeId], references: [id])
+  shift      StaffShift?           @relation(fields: [shiftId], references: [id])
+
+  @@index([employeeId], map: "absensi_pegawai_employeeId_fkey")
+  @@index([shiftId], map: "absensi_pegawai_shiftId_fkey")
+  @@map("absensi_pegawai")
+}
+
+model Assessment {
+  id             String       @id @default(cuid())
+  studentId      String
+  subjectId      String
+  classroomId    String
+  academicYearId String
+  type           String
+  weight         Float        @default(1)
+  score          Float
+  recordedAt     DateTime     @default(now())
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id])
+  classroom      Classroom    @relation(fields: [classroomId], references: [id])
+  student        Student      @relation(fields: [studentId], references: [id])
+  subject        Subject      @relation(fields: [subjectId], references: [id])
+
+  @@index([academicYearId], map: "penilaian_academicYearId_fkey")
+  @@index([classroomId], map: "penilaian_classroomId_fkey")
+  @@index([studentId], map: "penilaian_studentId_fkey")
+  @@index([subjectId], map: "penilaian_subjectId_fkey")
+  @@map("penilaian")
+}
+
+model ReportCard {
+  id             String       @id @default(cuid())
+  studentId      String
+  classroomId    String
+  academicYearId String
+  semesterId     String
+  overallScore   Float?
+  remarks        String?
+  pdfUrl         String?
+  validatedById  String?
+  validatedAt    DateTime?
+  approvedById   String?
+  approvedAt     DateTime?
+  createdAt      DateTime     @default(now())
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id])
+  classroom      Classroom    @relation(fields: [classroomId], references: [id])
+  semester       Semester     @relation(fields: [semesterId], references: [id])
+  student        Student      @relation(fields: [studentId], references: [id])
+
+  @@index([academicYearId], map: "raport_academicYearId_fkey")
+  @@index([classroomId], map: "raport_classroomId_fkey")
+  @@index([semesterId], map: "raport_semesterId_fkey")
+  @@index([studentId], map: "raport_studentId_fkey")
+  @@map("raport")
+}
+
+model AdmissionApplication {
+  id                String          @id @default(cuid())
+  fullName          String
+  email             String
+  phone             String?
+  birthDate         DateTime?
+  gradeAppliedId    String?
+  documents         String?         @db.LongText
+  score             Float?
+  status            AdmissionStatus @default(PENDING)
+  verifiedById      String?
+  verifiedAt        DateTime?
+  decisionAt        DateTime?
+  enrolledStudentId String?
+  notes             String?
+  createdAt         DateTime        @default(now())
+  gradeApplied      Grade?          @relation(fields: [gradeAppliedId], references: [id])
+
+  @@index([gradeAppliedId], map: "ppdb_pendaftaran_gradeAppliedId_fkey")
+  @@map("ppdb_pendaftaran")
+}
+
+model FeeRule {
+  id          String  @id @default(cuid())
+  name        String
+  gradeId     String?
+  amount      Int
+  recurring   Boolean @default(false)
+  description String?
+  grade       Grade?  @relation(fields: [gradeId], references: [id])
+
+  @@index([gradeId], map: "aturan_biaya_gradeId_fkey")
+  @@map("aturan_biaya")
+}
+
+model Invoice {
+  id              String           @id @default(cuid())
+  code            String           @unique
+  studentId       String
+  academicYearId  String
+  dueDate         DateTime?
+  status          InvoiceStatus    @default(OPEN)
+  total           Int
+  createdById     String?
+  createdAt       DateTime         @default(now())
+  discounts       Discount[]
+  items           InvoiceItem[]
+  payments        Payment[]
+  academicYear    AcademicYear     @relation(fields: [academicYearId], references: [id])
+  student         Student          @relation(fields: [studentId], references: [id])
+  paymentAttempts PaymentAttempt[]
+
+  @@index([academicYearId], map: "tagihan_academicYearId_fkey")
+  @@index([studentId], map: "tagihan_studentId_fkey")
+  @@map("tagihan")
+}
+
+model InvoiceItem {
+  id        String  @id @default(cuid())
+  invoiceId String
+  name      String
+  amount    Int
+  invoice   Invoice @relation(fields: [invoiceId], references: [id])
+
+  @@index([invoiceId], map: "item_tagihan_invoiceId_fkey")
+  @@map("item_tagihan")
+}
+
+model Payment {
+  id          String        @id @default(cuid())
+  invoiceId   String
+  amount      Int
+  method      PaymentMethod
+  paidAt      DateTime      @default(now())
+  reference   String?
+  createdById String?
+  invoice     Invoice       @relation(fields: [invoiceId], references: [id])
+  refunds     Refund[]
+
+  @@index([invoiceId], map: "pembayaran_invoiceId_fkey")
+  @@map("pembayaran")
+}
+
+model Discount {
+  id        String  @id @default(cuid())
+  invoiceId String
+  name      String
+  amount    Int
+  reason    String?
+  invoice   Invoice @relation(fields: [invoiceId], references: [id])
+
+  @@index([invoiceId], map: "diskon_invoiceId_fkey")
+  @@map("diskon")
+}
+
+model PaymentAttempt {
+  id        String   @id @default(cuid())
+  invoiceId String
+  gateway   String
+  status    String
+  payload   String?  @db.LongText
+  updatedAt DateTime @updatedAt
+  invoice   Invoice  @relation(fields: [invoiceId], references: [id])
+
+  @@index([invoiceId], map: "upaya_pembayaran_invoiceId_fkey")
+  @@map("upaya_pembayaran")
+}
+
+model Refund {
+  id          String  @id @default(cuid())
+  paymentId   String
+  amount      Int
+  reason      String?
+  processedBy String?
+  payment     Payment @relation(fields: [paymentId], references: [id])
+
+  @@index([paymentId], map: "pengembalian_dana_paymentId_fkey")
+  @@map("pengembalian_dana")
+}
+
+model Cashbook {
+  id        String   @id @default(cuid())
+  date      DateTime @default(now())
+  kind      String
+  amount    Int
+  category  String
+  memo      String?
+  createdBy String?
+
+  @@index([date, category])
+  @@map("buku_kas")
+}
+
+model Scholarship {
+  id        String    @id @default(cuid())
+  studentId String
+  name      String
+  amount    Int
+  startDate DateTime
+  endDate   DateTime?
+  student   Student   @relation(fields: [studentId], references: [id])
+
+  @@index([studentId], map: "beasiswa_studentId_fkey")
+  @@map("beasiswa")
+}
+
+model SavingsAccount {
+  id           String               @id @default(cuid())
+  studentId    String               @unique
+  balance      Int                  @default(0)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  student      Student              @relation(fields: [studentId], references: [id])
+  transactions SavingsTransaction[]
+
+  @@map("tabungan_akun")
+}
+
+model SavingsTransaction {
+  id          String         @id @default(cuid())
+  accountId   String
+  type        SavingsTxnType
+  amount      Int
+  requestedBy String?
+  approvedBy  String?
+  createdAt   DateTime       @default(now())
+  account     SavingsAccount @relation(fields: [accountId], references: [id])
+
+  @@index([accountId], map: "tabungan_transaksi_accountId_fkey")
+  @@map("tabungan_transaksi")
+}
+
+model LibItem {
+  id        String       @id @default(cuid())
+  code      String       @unique
+  title     String
+  author    String?
+  publisher String?
+  year      Int?
+  copies    Int          @default(1)
+  available Int          @default(1)
+  barcodes  LibBarcode[]
+  loans     LibLoan[]
+
+  @@map("perpus_koleksi")
+}
+
+model LibMember {
+  id        String    @id @default(cuid())
+  userId    String?   @unique
+  studentId String?   @unique
+  joinedAt  DateTime  @default(now())
+  student   Student?  @relation(fields: [studentId], references: [id])
+  user      User?     @relation(fields: [userId], references: [id])
+  loans     LibLoan[]
+
+  @@map("perpus_anggota")
+}
+
+model LibBarcode {
+  id      String  @id @default(cuid())
+  itemId  String
+  barcode String  @unique
+  item    LibItem @relation(fields: [itemId], references: [id])
+
+  @@index([itemId], map: "perpus_barcode_itemId_fkey")
+  @@map("perpus_barcode")
+}
+
+model LibSetting {
+  id         String @id @default(cuid())
+  maxLoans   Int    @default(3)
+  loanDays   Int    @default(7)
+  finePerDay Int    @default(0)
+
+  @@map("perpus_pengaturan")
+}
+
+model LibLoan {
+  id         String    @id @default(cuid())
+  itemId     String
+  memberId   String
+  borrowedAt DateTime  @default(now())
+  dueAt      DateTime
+  returnedAt DateTime?
+  fine       Int       @default(0)
+  item       LibItem   @relation(fields: [itemId], references: [id])
+  member     LibMember @relation(fields: [memberId], references: [id])
+
+  @@index([itemId], map: "perpus_pinjaman_itemId_fkey")
+  @@index([memberId], map: "perpus_pinjaman_memberId_fkey")
+  @@map("perpus_pinjaman")
+}
+
+model AssetCategory {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  description String?
+  assets      Asset[]
+
+  @@map("aset_kategori")
+}
+
+model Asset {
+  id               String             @id @default(cuid())
+  code             String             @unique
+  name             String
+  categoryId       String?
+  location         String?
+  acquisitionDate  DateTime?
+  value            Int?
+  depreciationRate Float?
+  notes            String?
+  category         AssetCategory?     @relation(fields: [categoryId], references: [id])
+  loans            AssetLoan[]
+  maintenances     AssetMaintenance[]
+
+  @@index([categoryId], map: "aset_categoryId_fkey")
+  @@map("aset")
+}
+
+model AssetLoan {
+  id             String    @id @default(cuid())
+  assetId        String
+  borrowerUserId String
+  borrowedAt     DateTime  @default(now())
+  dueAt          DateTime?
+  returnedAt     DateTime?
+  asset          Asset     @relation(fields: [assetId], references: [id])
+  borrower       User      @relation(fields: [borrowerUserId], references: [id])
+
+  @@index([assetId], map: "aset_peminjaman_assetId_fkey")
+  @@index([borrowerUserId], map: "aset_peminjaman_borrowerUserId_fkey")
+  @@map("aset_peminjaman")
+}
+
+model AssetMaintenance {
+  id      String   @id @default(cuid())
+  assetId String
+  type    String
+  date    DateTime @default(now())
+  cost    Int      @default(0)
+  notes   String?
+  asset   Asset    @relation(fields: [assetId], references: [id])
+
+  @@index([assetId], map: "aset_perawatan_assetId_fkey")
+  @@map("aset_perawatan")
+}
+
+model Extracurricular {
+  id             String            @id @default(cuid())
+  name           String            @unique
+  description    String?
+  coachTeacherId String?
+  attendances    ExtraAttendance[]
+  members        ExtraMember[]
+  events         ExtraEvent[]
+  coachTeacher   Teacher?          @relation(fields: [coachTeacherId], references: [id])
+
+  @@index([coachTeacherId], map: "ekstrakurikuler_coachTeacherId_fkey")
+  @@map("ekstrakurikuler")
+}
+
+model ExtraMember {
+  id                String          @id @default(cuid())
+  extracurricularId String
+  studentId         String
+  joinedAt          DateTime        @default(now())
+  extracurricular   Extracurricular @relation(fields: [extracurricularId], references: [id])
+  student           Student         @relation(fields: [studentId], references: [id])
+
+  @@index([extracurricularId], map: "ekstra_anggota_extracurricularId_fkey")
+  @@index([studentId], map: "ekstra_anggota_studentId_fkey")
+  @@map("ekstra_anggota")
+}
+
+model ExtraAttendance {
+  id                String                  @id @default(cuid())
+  extracurricularId String
+  date              DateTime
+  studentId         String
+  status            StudentAttendanceStatus
+  extracurricular   Extracurricular         @relation(fields: [extracurricularId], references: [id])
+  student           Student                 @relation(fields: [studentId], references: [id])
+
+  @@unique([extracurricularId, date, studentId])
+  @@index([studentId], map: "ekstra_absensi_studentId_fkey")
+  @@map("ekstra_absensi")
+}
+
+model ExtraEvent {
+  id                String          @id @default(cuid())
+  extracurricularId String
+  title             String
+  date              DateTime
+  location          String?
+  result            String?
+  extracurricular   Extracurricular @relation(fields: [extracurricularId], references: [id])
+
+  @@index([extracurricularId], map: "ekstra_event_extracurricularId_fkey")
+  @@map("ekstra_event")
+}
+
+model CounselingTicket {
+  id              String               @id @default(cuid())
+  studentId       String
+  createdByUserId String
+  subject         String
+  status          String               @default("OPEN")
+  createdAt       DateTime             @default(now())
+  referrals       CounselingReferral[]
+  sessions        CounselingSession[]
+  createdBy       User                 @relation("TicketCreator", fields: [createdByUserId], references: [id])
+  student         Student              @relation(fields: [studentId], references: [id])
+
+  @@index([createdByUserId], map: "bk_tiket_createdByUserId_fkey")
+  @@index([studentId], map: "bk_tiket_studentId_fkey")
+  @@map("bk_tiket")
+}
+
+model CounselingSession {
+  id              String           @id @default(cuid())
+  ticketId        String
+  counselorUserId String
+  startedAt       DateTime         @default(now())
+  endedAt         DateTime?
+  notes           String?
+  counselor       User             @relation("TicketCounselor", fields: [counselorUserId], references: [id])
+  ticket          CounselingTicket @relation(fields: [ticketId], references: [id])
+
+  @@index([counselorUserId], map: "bk_sesi_counselorUserId_fkey")
+  @@index([ticketId], map: "bk_sesi_ticketId_fkey")
+  @@map("bk_sesi")
+}
+
+model CounselingReferral {
+  id         String           @id @default(cuid())
+  ticketId   String
+  referredTo String
+  notes      String?
+  createdAt  DateTime         @default(now())
+  ticket     CounselingTicket @relation(fields: [ticketId], references: [id])
+
+  @@index([ticketId], map: "bk_rujukan_ticketId_fkey")
+  @@map("bk_rujukan")
+}
+
+model LmsLink {
+  id          String     @id @default(cuid())
+  external    String
+  externalId  String
+  classroomId String?
+  subjectId   String?
+  classroom   Classroom? @relation(fields: [classroomId], references: [id])
+  subject     Subject?   @relation(fields: [subjectId], references: [id])
+
+  @@index([classroomId], map: "lms_link_classroomId_fkey")
+  @@index([subjectId], map: "lms_link_subjectId_fkey")
+  @@map("lms_link")
+}
+
+model Exam {
+  id          String         @id @default(cuid())
+  title       String
+  subjectId   String?
+  classroomId String?
+  startAt     DateTime?
+  endAt       DateTime?
+  classroom   Classroom?     @relation(fields: [classroomId], references: [id])
+  subject     Subject?       @relation(fields: [subjectId], references: [id])
+  attempts    ExamAttempt[]
+  questions   ExamQuestion[]
+
+  @@index([classroomId], map: "ujian_classroomId_fkey")
+  @@index([subjectId], map: "ujian_subjectId_fkey")
+  @@map("ujian")
+}
+
+model ExamAttempt {
+  id        String    @id @default(cuid())
+  examId    String
+  studentId String
+  score     Float?
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
+  exam      Exam      @relation(fields: [examId], references: [id])
+  student   Student   @relation(fields: [studentId], references: [id])
+
+  @@index([examId], map: "ujian_pengerjaan_examId_fkey")
+  @@index([studentId], map: "ujian_pengerjaan_studentId_fkey")
+  @@map("ujian_pengerjaan")
+}
+
+model ExamQuestion {
+  id      String  @id @default(cuid())
+  examId  String
+  text    String
+  options String? @db.LongText
+  answer  String? @db.LongText
+  exam    Exam    @relation(fields: [examId], references: [id])
+
+  @@index([examId], map: "ujian_soal_examId_fkey")
+  @@map("ujian_soal")
+}
+
+model LmsScore {
+  id        String   @id @default(cuid())
+  linkId    String
+  studentId String
+  score     Float
+  syncedAt  DateTime @default(now())
+
+  @@map("lms_skor")
+}
+
+model EventLog {
+  id        String   @id @default(cuid())
+  type      String
+  entity    String?
+  entityId  String?
+  userId    String?
+  data      String?  @db.LongText
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId], map: "log_aktivitas_userId_fkey")
+  @@map("log_aktivitas")
+}
+
+model AuditEvent {
+  id         String   @id @default(cuid())
+  actorId    String?
+  type       String
+  entity     String?
+  entityId   String?
+  meta       String?  @db.LongText
+  occurredAt DateTime @default(now())
+
+  @@index([type, occurredAt])
+  @@map("audit_event")
+}
+
+model WaTemplate {
+  id        String     @id @default(cuid())
+  key       String     @unique
+  content   String
+  variables String?    @db.LongText
+  outbox    WaOutbox[]
+
+  @@map("wa_template")
+}
+
+model WaOutbox {
+  id            String      @id @default(cuid())
+  templateId    String?
+  to            String
+  payload       String?     @db.LongText
+  status        WaStatus    @default(PENDING)
+  providerMsgId String?
+  sentAt        DateTime?
+  attempts      Int         @default(0)
+  nextAttemptAt DateTime?
+  template      WaTemplate? @relation(fields: [templateId], references: [id])
+
+  @@index([status, sentAt])
+  @@index([templateId], map: "wa_outbox_templateId_fkey")
+  @@map("wa_outbox")
+}
+
+// =====================
+// HR Leave
+// =====================
+
+model LeaveType {
+  id               String        @id @default(cuid())
+  name             String        @unique
+  description      String?
+  maxDaysPerYear   Int?
+  requiresApproval Boolean       @default(true)
+  active           Boolean       @default(true)
+  countsAsPresence Boolean       @default(false)
+
+  requests         LeaveRequest[]
+  @@map("cuti_tipe")
+}
+
+model LeaveRequest {
+  id          String      @id @default(cuid())
+  employeeId  String
+  typeId      String
+  startDate   DateTime
+  endDate     DateTime
+  days        Int
+  reason      String?
+  status      ApprovalStatus @default(PENDING)
+  decidedById String?
+  decidedAt   DateTime?
+  createdAt   DateTime    @default(now())
+
+  employee    Employee   @relation(fields: [employeeId], references: [id])
+  type        LeaveType  @relation(fields: [typeId], references: [id])
+
+  @@index([employeeId], map: "cuti_pengajuan_employeeId_fkey")
+  @@index([typeId], map: "cuti_pengajuan_typeId_fkey")
+  @@map("cuti_pengajuan")
+}
+
+// =====================
+// Email Notifications
+// =====================
+
+model EmailTemplate {
+  id        String     @id @default(cuid())
+  key       String     @unique
+  subject   String
+  content   String
+  variables String?    @db.LongText
+  outbox    EmailOutbox[]
+
+  @@map("email_template")
+}
+
+model EmailOutbox {
+  id            String        @id @default(cuid())
+  templateId    String?
+  to            String
+  subject       String?
+  payload       String?       @db.LongText
+  status        WaStatus      @default(PENDING)
+  providerMsgId String?
+  sentAt        DateTime?
+  attempts      Int           @default(0)
+  nextAttemptAt DateTime?
+  template      EmailTemplate? @relation(fields: [templateId], references: [id])
+
+  @@index([status, sentAt])
+  @@index([templateId], map: "email_outbox_templateId_fkey")
+  @@map("email_outbox")
+}
+
+model CmsPost {
+  id          String    @id @default(cuid())
+  title       String
+  slug        String    @unique
+  content     String
+  authorId    String?
+  publishedAt DateTime?
+
+  @@map("cms_post")
+}
+
+model CmsEvent {
+  id          String   @id @default(cuid())
+  title       String
+  date        DateTime
+  location    String?
+  description String?
+
+  @@map("cms_event")
+}
+
 enum UserStatus {
-  ACTIVE     @map("aktif")
-  INACTIVE   @map("nonaktif")
-  SUSPENDED  @map("ditangguhkan")
+  ACTIVE    @map("aktif")
+  INACTIVE  @map("nonaktif")
+  SUSPENDED @map("ditangguhkan")
 }
 
 enum Gender {
-  MALE    @map("laki_laki")
-  FEMALE  @map("perempuan")
-  OTHER   @map("lainnya")
+  MALE   @map("laki_laki")
+  FEMALE @map("perempuan")
+  OTHER  @map("lainnya")
 }
 
 enum StudentAttendanceStatus {
@@ -47,40 +1005,33 @@ enum StaffAttendanceStatus {
 }
 
 enum AdmissionStatus {
-  PENDING   @map("menunggu")
-  VERIFIED  @map("terverifikasi")
-  REJECTED  @map("ditolak")
-  ACCEPTED  @map("diterima")
-  ENROLLED  @map("terdaftar")
+  PENDING  @map("menunggu")
+  VERIFIED @map("terverifikasi")
+  REJECTED @map("ditolak")
+  ACCEPTED @map("diterima")
+  ENROLLED @map("terdaftar")
 }
 
 enum InvoiceStatus {
-  DRAFT    @map("draf")
-  OPEN     @map("terbuka")
-  PARTIAL  @map("parsial")
-  PAID     @map("lunas")
-  VOID     @map("batal")
+  DRAFT   @map("draf")
+  OPEN    @map("terbuka")
+  PARTIAL @map("parsial")
+  PAID    @map("lunas")
+  VOID    @map("batal")
 }
 
 enum PaymentMethod {
-  CASH      @map("tunai")
-  TRANSFER  @map("transfer")
-  GATEWAY   @map("gateway")
+  CASH        @map("tunai")
+  TRANSFER    @map("transfer")
+  GATEWAY     @map("gateway")
   SCHOLARSHIP @map("beasiswa")
-  ADJUSTMENT @map("penyesuaian")
-}
-
-enum SavingsTxnType {
-  DEPOSIT     @map("setoran")
-  WITHDRAWAL  @map("penarikan")
   ADJUSTMENT  @map("penyesuaian")
 }
 
-enum ApprovalStatus {
-  PENDING   @map("menunggu")
-  APPROVED  @map("disetujui")
-  REJECTED  @map("ditolak")
-  CANCELLED @map("dibatalkan")
+enum SavingsTxnType {
+  DEPOSIT    @map("setoran")
+  WITHDRAWAL @map("penarikan")
+  ADJUSTMENT @map("penyesuaian")
 }
 
 enum WaStatus {
@@ -91,845 +1042,9 @@ enum WaStatus {
   CANCELLED @map("dibatalkan")
 }
 
-// =====================
-// RBAC & Users
-// =====================
-
-model User {
-  id            String      @id @default(cuid())
-  email         String      @unique
-  name          String?
-  phone         String?     @unique
-  status        UserStatus  @default(ACTIVE)
-  passwordHash  String?
-  // v1.2 alignment: single role per user
-  roleId        String?
-  role          Role?       @relation("SingleUserRole", fields: [roleId], references: [id])
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-
-
-  teacher       Teacher?
-  student       Student?
-  employee      Employee?
-
-  // Activity log linkage
-  events        EventLog[]
-  // Misc relations
-  assetLoans    AssetLoan[]
-  createdTickets CounselingTicket[] @relation("TicketCreator")
-  counselSessions CounselingSession[] @relation("TicketCounselor")
-  libMembership LibMember?
-  @@map("pengguna")
-}
-
-model Role {
-  id            String        @id @default(cuid())
-  name          String        @unique // e.g., "admin", "teacher", "student"
-  displayName   String
-  description   String?
-
-  // v1.2 alignment: explicit role-permission join
-  perms         RolePermission[]
-  // backref for single user role
-  usersDirect   User[]        @relation("SingleUserRole")
-  @@map("peran")
-}
-
-model Permission {
-  id            String   @id @default(cuid())
-  name          String   @unique // e.g., "master.read", "finance.invoice.create"
-  description   String?
-
-  // v1.2 alignment
-  roleLinks     RolePermission[]
-  @@map("hak_akses")
-}
-
-// v1.2: explicit role-permission mapping
-model RolePermission {
-  roleId       String
-  permissionId String
-  role         Role       @relation(fields: [roleId], references: [id])
-  permission   Permission @relation(fields: [permissionId], references: [id])
-  @@id([roleId, permissionId])
-  @@map("peran_hak_akses")
-}
-
-// =====================
-// Profiles
-// =====================
-
-model Teacher {
-  id         String  @id @default(cuid())
-  userId     String  @unique
-  user       User    @relation(fields: [userId], references: [id])
-  nidn       String? @unique // teacher identifier (optional per country)
-  hireDate   DateTime?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  homerooms  Classroom[] @relation("HomeroomTeacher")
-  schedules  Schedule[]
-  recordedAttendances StudentAttendance[] @relation("RecordedByTeacher")
-  coachedExtras Extracurricular[]
-  @@map("guru")
-}
-
-model Student {
-  id           String   @id @default(cuid())
-  userId       String   @unique
-  user         User     @relation(fields: [userId], references: [id])
-  nis          String?  @unique // school number
-  nisn         String?  @unique // national student number
-  gender       Gender?
-  birthDate    DateTime?
-  startYear    Int?
-  guardianName String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  enrollments  Enrollment[]
-  attendances  StudentAttendance[]
-  assessments  Assessment[]
-  reportCards  ReportCard[]
-  invoices     Invoice[]
-  savings      SavingsAccount?
-  extraMembers ExtraMember[]
-  libMember    LibMember?
-  counseling   CounselingTicket[]
-  scholarships Scholarship[]
-  examAttempts ExamAttempt[]
-  extraAttendances ExtraAttendance[]
-  @@map("siswa")
-}
-
-model Employee {
-  id         String   @id @default(cuid())
-  userId     String   @unique
-  user       User     @relation(fields: [userId], references: [id])
-  nik        String?  @unique // employee identifier
-  position   String?
-  joinDate   DateTime?
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-
-  attendances StaffAttendance[]
-  @@map("pegawai")
-}
-
-// =====================
-// Academic Master Data
-// =====================
-
-model AcademicYear {
-  id         String    @id @default(cuid())
-  name       String    @unique // e.g., "2024/2025"
-  startDate  DateTime
-  endDate    DateTime
-  isActive   Boolean   @default(false)
-
-  semesters  Semester[]
-  classes    Classroom[]
-  enrollments Enrollment[]
-  assessments Assessment[]
-  reportCards ReportCard[]
-  invoices   Invoice[]
-  @@map("tahun_ajaran")
-}
-
-model Semester {
-  id             String       @id @default(cuid())
-  name           String       // e.g., "Ganjil", "Genap"
-  number         Int?
-  academicYearId String
-  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id])
-
-  reportCards    ReportCard[]
-  @@map("semester")
-}
-
-model Grade {
-  id       String     @id @default(cuid())
-  name     String     @unique // e.g., "X", "XI", "XII"
-  classes  Classroom[]
-  subjects Subject[]
-  applications AdmissionApplication[]
-  feeRules  FeeRule[]
-  @@map("tingkat")
-}
-
-model Classroom {
-  id               String     @id @default(cuid())
-  code             String     @unique
-  name             String
-  gradeId          String
-  grade            Grade      @relation(fields: [gradeId], references: [id])
-  homeroomTeacherId String?
-  homeroomTeacher   Teacher?  @relation("HomeroomTeacher", fields: [homeroomTeacherId], references: [id])
-  academicYearId   String
-  academicYear     AcademicYear @relation(fields: [academicYearId], references: [id])
-
-  enrollments  Enrollment[]
-  schedules    Schedule[]
-  attendances  StudentAttendance[]
-  assessments  Assessment[]
-  reportCards  ReportCard[]
-  exams        Exam[]
-  lmsLinks     LmsLink[]
-  @@map("kelas")
-}
-
-model Subject {
-  id       String     @id @default(cuid())
-  code     String     @unique
-  name     String
-  gradeId  String?
-  grade    Grade?     @relation(fields: [gradeId], references: [id])
-  curriculumId String?
-  curriculum  Curriculum? @relation(fields: [curriculumId], references: [id])
-
-  schedules  Schedule[]
-  assessments Assessment[]
-  exams       Exam[]
-  lmsLinks    LmsLink[]
-  @@map("mata_pelajaran")
-}
-
-model Curriculum {
-  id        String    @id @default(cuid())
-  name      String    @unique
-  year      Int?
-  notes     String?
-  subjects  Subject[]
-  @@map("kurikulum")
-}
-
-model Enrollment {
-  id             String      @id @default(cuid())
-  studentId      String
-  student        Student     @relation(fields: [studentId], references: [id])
-  classroomId    String
-  classroom      Classroom   @relation(fields: [classroomId], references: [id])
-  academicYearId String
-  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id])
-  active         Boolean     @default(true)
-  enrolledAt     DateTime    @default(now())
-
-  @@unique([studentId, academicYearId])
-  @@map("pendaftaran_kelas")
-}
-
-model Schedule {
-  id          String    @id @default(cuid())
-  classroomId String
-  classroom   Classroom @relation(fields: [classroomId], references: [id])
-  subjectId   String
-  subject     Subject   @relation(fields: [subjectId], references: [id])
-  teacherId   String
-  teacher     Teacher   @relation(fields: [teacherId], references: [id])
-  dayOfWeek   Int       // 1-7 (Mon-Sun)
-  startTime   String    // HH:mm
-  endTime     String    // HH:mm
-
-  attendances StudentAttendance[]
-  @@map("jadwal")
-}
-
-// =====================
-// Attendance
-// =====================
-
-model StudentAttendance {
-  id           String                  @id @default(cuid())
-  studentId    String
-  student      Student                 @relation(fields: [studentId], references: [id])
-  classroomId  String
-  classroom    Classroom               @relation(fields: [classroomId], references: [id])
-  scheduleId   String?
-  schedule     Schedule?               @relation(fields: [scheduleId], references: [id])
-  date         DateTime
-  status       StudentAttendanceStatus
-  notes        String?
-  recordedById String?
-  recordedBy   Teacher?                @relation("RecordedByTeacher", fields: [recordedById], references: [id])
-  createdAt    DateTime                @default(now())
-
-  @@unique([studentId, date, scheduleId])
-  @@map("absensi_siswa")
-}
-
-model StaffShift {
-  id        String   @id @default(cuid())
-  name      String
-  startTime String   // HH:mm
-  endTime   String   // HH:mm
-
-  attendances StaffAttendance[]
-  @@map("shift_pegawai")
-}
-
-model StaffAttendance {
-  id          String                @id @default(cuid())
-  employeeId  String
-  employee    Employee              @relation(fields: [employeeId], references: [id])
-  shiftId     String?
-  shift       StaffShift?           @relation(fields: [shiftId], references: [id])
-  date        DateTime
-  status      StaffAttendanceStatus
-  checkInAt   DateTime?
-  checkOutAt  DateTime?
-  method      String? // QR | PIN | GPS
-  latitude    Float?
-  longitude   Float?
-  notes       String?
-  approvedBy  String?
-  createdAt   DateTime  @default(now())
-  @@map("absensi_pegawai")
-}
-
-// =====================
-// Assessment & Report
-// =====================
-
-model Assessment {
-  id             String      @id @default(cuid())
-  studentId      String
-  student        Student     @relation(fields: [studentId], references: [id])
-  subjectId      String
-  subject        Subject     @relation(fields: [subjectId], references: [id])
-  classroomId    String
-  classroom      Classroom   @relation(fields: [classroomId], references: [id])
-  academicYearId String
-  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id])
-  type           String      // e.g., TUGAS, UH, UTS, UAS (free text)
-  weight         Float       @default(1)
-  score          Float
-  recordedAt     DateTime    @default(now())
-  @@map("penilaian")
-}
-
-model ReportCard {
-  id             String      @id @default(cuid())
-  studentId      String
-  student        Student     @relation(fields: [studentId], references: [id])
-  classroomId    String
-  classroom      Classroom   @relation(fields: [classroomId], references: [id])
-  academicYearId String
-  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id])
-  semesterId     String
-  semester       Semester    @relation(fields: [semesterId], references: [id])
-  overallScore   Float?
-  remarks        String?
-  pdfUrl         String?
-  validatedById  String?
-  validatedAt    DateTime?
-  approvedById   String?
-  approvedAt     DateTime?
-  createdAt      DateTime    @default(now())
-  @@map("raport")
-}
-
-// =====================
-// Admissions (PPDB)
-// =====================
-
-model AdmissionApplication {
-  id             String          @id @default(cuid())
-  fullName       String
-  email          String
-  phone          String?
-  birthDate      DateTime?
-  gradeAppliedId String?
-  gradeApplied   Grade?          @relation(fields: [gradeAppliedId], references: [id])
-  documents      Json?
-  score          Float?
-  status         AdmissionStatus @default(PENDING)
-  verifiedById   String?
-  verifiedAt     DateTime?
-  decisionAt     DateTime?
-  enrolledStudentId String?
-  notes          String?
-  createdAt      DateTime        @default(now())
-  @@map("ppdb_pendaftaran")
-}
-
-// =====================
-// Finance
-// =====================
-
-model FeeRule {
-  id             String   @id @default(cuid())
-  name           String
-  gradeId        String?
-  grade          Grade?   @relation(fields: [gradeId], references: [id])
-  amount         Int      // in cents
-  recurring      Boolean  @default(false)
-  description    String?
-  @@map("aturan_biaya")
-}
-
-model Invoice {
-  id             String        @id @default(cuid())
-  code           String        @unique
-  studentId      String
-  student        Student       @relation(fields: [studentId], references: [id])
-  academicYearId String
-  academicYear   AcademicYear  @relation(fields: [academicYearId], references: [id])
-  dueDate        DateTime?
-  status         InvoiceStatus @default(OPEN)
-  total          Int           // in cents
-  createdById    String?
-  createdAt      DateTime      @default(now())
-
-  items          InvoiceItem[]
-  payments       Payment[]
-  discounts      Discount[]
-  paymentAttempts PaymentAttempt[]
-  @@map("tagihan")
-}
-
-model InvoiceItem {
-  id         String  @id @default(cuid())
-  invoiceId  String
-  invoice    Invoice @relation(fields: [invoiceId], references: [id])
-  name       String
-  amount     Int     // in cents
-  @@map("item_tagihan")
-}
-
-model Payment {
-  id          String        @id @default(cuid())
-  invoiceId   String
-  invoice     Invoice       @relation(fields: [invoiceId], references: [id])
-  amount      Int           // in cents
-  method      PaymentMethod
-  paidAt      DateTime      @default(now())
-  reference   String?
-  createdById String?
-  refunds     Refund[]
-  @@map("pembayaran")
-}
-
-model Discount {
-  id          String   @id @default(cuid())
-  invoiceId   String
-  invoice     Invoice  @relation(fields: [invoiceId], references: [id])
-  name        String
-  amount      Int      // in cents
-  reason      String?
-  @@map("diskon")
-}
-
-// v1.2: finance additions
-model PaymentAttempt {
-  id        String   @id @default(cuid())
-  invoiceId String
-  gateway   String
-  status    String
-  payload   Json?
-  updatedAt DateTime @updatedAt
-  invoice   Invoice  @relation(fields: [invoiceId], references: [id])
-  @@map("upaya_pembayaran")
-}
-
-model Refund {
-  id         String  @id @default(cuid())
-  paymentId  String
-  amount     Int
-  reason     String?
-  processedBy String?
-  payment    Payment @relation(fields: [paymentId], references: [id])
-  @@map("pengembalian_dana")
-}
-
-model Cashbook {
-  id        String   @id @default(cuid())
-  date      DateTime @default(now())
-  kind      String   // in/out
-  amount    Int
-  category  String
-  memo      String?
-  createdBy String?
-  @@index([date, category])
-  @@map("buku_kas")
-}
-
-model Scholarship {
-  id          String   @id @default(cuid())
-  studentId   String
-  student     Student  @relation(fields: [studentId], references: [id])
-  name        String
-  amount      Int      // monthly amount in cents
-  startDate   DateTime
-  endDate     DateTime?
-  @@map("beasiswa")
-}
-
-// =====================
-// Savings
-// =====================
-
-model SavingsAccount {
-  id         String   @id @default(cuid())
-  studentId  String   @unique
-  student    Student  @relation(fields: [studentId], references: [id])
-  balance    Int      @default(0) // in cents
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  transactions SavingsTransaction[]
-  @@map("tabungan_akun")
-}
-
-model SavingsTransaction {
-  id           String         @id @default(cuid())
-  accountId    String
-  account      SavingsAccount @relation(fields: [accountId], references: [id])
-  type         SavingsTxnType
-  amount       Int            // in cents
-  requestedBy  String?
-  approvedBy   String?
-  createdAt    DateTime       @default(now())
-  @@map("tabungan_transaksi")
-}
-
-// =====================
-// Library
-// =====================
-
-model LibItem {
-  id           String   @id @default(cuid())
-  code         String   @unique
-  title        String
-  author       String?
-  publisher    String?
-  year         Int?
-  copies       Int      @default(1)
-  available    Int      @default(1)
-
-  loans        LibLoan[]
-  // v1.2 link
-  barcodes     LibBarcode[]
-  @@map("perpus_koleksi")
-}
-
-model LibMember {
-  id         String   @id @default(cuid())
-  userId     String?  @unique
-  user       User?    @relation(fields: [userId], references: [id])
-  studentId  String?  @unique
-  student    Student? @relation(fields: [studentId], references: [id])
-  joinedAt   DateTime @default(now())
-
-  loans      LibLoan[]
-  @@map("perpus_anggota")
-}
-
-// v1.2 additions for Library
-model LibBarcode {
-  id      String @id @default(cuid())
-  itemId  String
-  barcode String @unique
-  item    LibItem @relation(fields: [itemId], references: [id])
-  @@map("perpus_barcode")
-}
-
-model LibSetting {
-  id          String @id @default(cuid())
-  maxLoans    Int    @default(3)
-  loanDays    Int    @default(7)
-  finePerDay  Int    @default(0)
-  @@map("perpus_pengaturan")
-}
-
-model LibLoan {
-  id         String    @id @default(cuid())
-  itemId     String
-  item       LibItem   @relation(fields: [itemId], references: [id])
-  memberId   String
-  member     LibMember @relation(fields: [memberId], references: [id])
-  borrowedAt DateTime  @default(now())
-  dueAt      DateTime
-  returnedAt DateTime?
-  fine       Int       @default(0)
-  @@map("perpus_pinjaman")
-}
-
-// =====================
-// Assets
-// =====================
-
-model AssetCategory {
-  id          String  @id @default(cuid())
-  name        String  @unique
-  description String?
-  assets      Asset[]
-  @@map("aset_kategori")
-}
-
-model Asset {
-  id             String         @id @default(cuid())
-  code           String         @unique
-  name           String
-  categoryId     String?
-  category       AssetCategory? @relation(fields: [categoryId], references: [id])
-  location       String?
-  acquisitionDate DateTime?
-  value          Int?
-  depreciationRate Float?
-  notes          String?
-
-  loans          AssetLoan[]
-  maintenances   AssetMaintenance[]
-  @@map("aset")
-}
-
-model AssetLoan {
-  id           String  @id @default(cuid())
-  assetId      String
-  asset        Asset   @relation(fields: [assetId], references: [id])
-  borrowerUserId String
-  borrower     User    @relation(fields: [borrowerUserId], references: [id])
-  borrowedAt   DateTime @default(now())
-  dueAt        DateTime?
-  returnedAt   DateTime?
-  @@map("aset_peminjaman")
-}
-
-model AssetMaintenance {
-  id        String  @id @default(cuid())
-  assetId   String
-  asset     Asset   @relation(fields: [assetId], references: [id])
-  type      String
-  date      DateTime @default(now())
-  cost      Int      @default(0)
-  notes     String?
-  @@map("aset_perawatan")
-}
-
-// =====================
-// Extracurricular
-// =====================
-
-model Extracurricular {
-  id            String       @id @default(cuid())
-  name          String       @unique
-  description   String?
-  coachTeacherId String?
-  coachTeacher   Teacher?    @relation(fields: [coachTeacherId], references: [id])
-
-  members       ExtraMember[]
-  attendances   ExtraAttendance[]
-  events        ExtraEvent[]
-  @@map("ekstrakurikuler")
-}
-
-model ExtraMember {
-  id           String          @id @default(cuid())
-  extracurricularId String
-  extracurricular   Extracurricular @relation(fields: [extracurricularId], references: [id])
-  studentId     String
-  student       Student        @relation(fields: [studentId], references: [id])
-  joinedAt      DateTime       @default(now())
-  @@map("ekstra_anggota")
-}
-
-model ExtraAttendance {
-  id               String          @id @default(cuid())
-  extracurricularId String
-  extracurricular   Extracurricular @relation(fields: [extracurricularId], references: [id])
-  date             DateTime
-  studentId        String
-  student          Student        @relation(fields: [studentId], references: [id])
-  status           StudentAttendanceStatus
-
-  @@unique([extracurricularId, date, studentId])
-  @@map("ekstra_absensi")
-}
-
-model ExtraEvent {
-  id               String          @id @default(cuid())
-  extracurricularId String
-  extracurricular   Extracurricular @relation(fields: [extracurricularId], references: [id])
-  title            String
-  date             DateTime
-  location         String?
-  result           String?
-  @@map("ekstra_event")
-}
-
-// =====================
-// Counseling
-// =====================
-
-model CounselingTicket {
-  id               String   @id @default(cuid())
-  studentId        String
-  student          Student  @relation(fields: [studentId], references: [id])
-  createdByUserId  String
-  createdBy        User     @relation("TicketCreator", fields: [createdByUserId], references: [id])
-  subject          String
-  status           String   @default("OPEN")
-  createdAt        DateTime @default(now())
-
-  sessions         CounselingSession[]
-  referrals        CounselingReferral[]
-  @@map("bk_tiket")
-}
-
-model CounselingSession {
-  id               String   @id @default(cuid())
-  ticketId         String
-  ticket           CounselingTicket @relation(fields: [ticketId], references: [id])
-  counselorUserId  String
-  counselor        User     @relation("TicketCounselor", fields: [counselorUserId], references: [id])
-  startedAt        DateTime @default(now())
-  endedAt          DateTime?
-  notes            String?
-  @@map("bk_sesi")
-}
-
-model CounselingReferral {
-  id        String   @id @default(cuid())
-  ticketId  String
-  ticket    CounselingTicket @relation(fields: [ticketId], references: [id])
-  referredTo String
-  notes     String?
-  createdAt DateTime @default(now())
-  @@map("bk_rujukan")
-}
-
-// =====================
-// LMS/Exams (lightweight + integrations)
-// =====================
-
-model LmsLink {
-  id           String   @id @default(cuid())
-  external     String   // e.g., moodle, google-classroom
-  externalId   String
-  classroomId  String?
-  classroom    Classroom? @relation(fields: [classroomId], references: [id])
-  subjectId    String?
-  subject      Subject?   @relation(fields: [subjectId], references: [id])
-  @@map("lms_link")
-}
-
-model Exam {
-  id          String    @id @default(cuid())
-  title       String
-  subjectId   String?
-  subject     Subject?  @relation(fields: [subjectId], references: [id])
-  classroomId String?
-  classroom   Classroom? @relation(fields: [classroomId], references: [id])
-  startAt     DateTime?
-  endAt       DateTime?
-
-  attempts    ExamAttempt[]
-  // v1.2 additions
-  questions   ExamQuestion[]
-  @@map("ujian")
-}
-
-model ExamAttempt {
-  id        String   @id @default(cuid())
-  examId    String
-  exam      Exam     @relation(fields: [examId], references: [id])
-  studentId String
-  student   Student  @relation(fields: [studentId], references: [id])
-  score     Float?
-  startedAt DateTime @default(now())
-  endedAt   DateTime?
-  @@map("ujian_pengerjaan")
-}
-
-model ExamQuestion {
-  id       String  @id @default(cuid())
-  examId   String
-  text     String
-  options  Json?
-  answer   Json?
-  exam     Exam    @relation(fields: [examId], references: [id])
-  @@map("ujian_soal")
-}
-
-// v1.2 additions
-model LmsScore {
-  id       String @id @default(cuid())
-  linkId   String
-  studentId String
-  score    Float
-  syncedAt DateTime @default(now())
-  @@map("lms_skor")
-}
-
-// =====================
-// Analytics & Notifications
-// =====================
-
-model EventLog {
-  id        String   @id @default(cuid())
-  type      String
-  entity    String?
-  entityId  String?
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id])
-  data      Json?
-  createdAt DateTime @default(now())
-  @@map("log_aktivitas")
-}
-
-// v1.2: analytics & WA additions
-model AuditEvent {
-  id        String   @id @default(cuid())
-  actorId   String?
-  type      String
-  entity    String?
-  entityId  String?
-  meta      Json?
-  occurredAt DateTime @default(now())
-  @@index([type, occurredAt])
-  @@map("audit_event")
-}
-
-model WaTemplate {
-  id       String @id @default(cuid())
-  key      String @unique
-  content  String
-  variables Json?
-  outbox   WaOutbox[]
-  @@map("wa_template")
-}
-
-model WaOutbox {
-  id         String  @id @default(cuid())
-  templateId String?
-  to         String
-  payload    Json?
-  status     WaStatus @default(PENDING)
-  providerMsgId String?
-  sentAt     DateTime?
-  template   WaTemplate? @relation(fields: [templateId], references: [id])
-  @@index([status, sentAt])
-  @@map("wa_outbox")
-}
-
-// v1.2: CMS
-model CmsPost {
-  id          String  @id @default(cuid())
-  title       String
-  slug        String  @unique
-  content     String
-  authorId    String?
-  publishedAt DateTime?
-  @@map("cms_post")
-}
-
-model CmsEvent {
-  id        String  @id @default(cuid())
-  title     String
-  date      DateTime
-  location  String?
-  description String?
-  @@map("cms_event")
+enum ApprovalStatus {
+  PENDING   @map("menunggu")
+  APPROVED  @map("disetujui")
+  REJECTED  @map("ditolak")
+  CANCELLED @map("dibatalkan")
 }

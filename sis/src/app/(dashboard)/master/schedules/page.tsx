@@ -109,7 +109,7 @@ export default function SchedulesPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-lg font-semibold">Master: Jadwal</h1>
+      <h1 className="text-lg font-semibold">Akademik: Jadwal</h1>
       <form
         onSubmit={(e) => {
           e.preventDefault();

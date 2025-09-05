@@ -8,6 +8,7 @@ type Student = {
   nis?: string | null;
   nisn?: string | null;
   gender?: string | null;
+  photoUrl?: string | null;
   user: { name?: string | null; email: string };
 };
 
@@ -111,12 +112,41 @@ export default function StudentsPage() {
           <tbody>
             {data?.items?.map((s) => (
               <tr key={s.id}>
-                <td className="p-2 border-b">{s.user?.name ?? "-"}</td>
+                <td className="p-2 border-b flex items-center gap-2">
+                  {s.photoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={`/api/storage/presign-get?key=${encodeURIComponent(s.photoUrl)}`}
+                      alt="Foto"
+                      className="h-8 w-8 rounded object-cover bg-white"
+                    />
+                  ) : null}
+                  <span>{s.user?.name ?? "-"}</span>
+                </td>
                 <td className="p-2 border-b">{s.user?.email}</td>
                 <td className="p-2 border-b">{s.nis ?? "-"}</td>
                 <td className="p-2 border-b">{s.nisn ?? "-"}</td>
                 <td className="p-2 border-b">{s.gender ?? "-"}</td>
                 <td className="p-2 border-b">
+                  <label className="text-xs px-2 py-1 rounded border border-border hover:bg-muted cursor-pointer inline-block mr-2">
+                    Upload Foto
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const contentType = file.type || "image/jpeg";
+                        const ext = file.name.includes(".") ? file.name.split(".").pop() : "jpg";
+                        const key = `public/students/${s.id}-${Date.now()}.${ext}`;
+                        const pres = await fetch(`/api/storage/presign?key=${encodeURIComponent(key)}&contentType=${encodeURIComponent(contentType)}`).then((r) => r.json());
+                        await fetch(pres.url, { method: "PUT", headers: { "Content-Type": contentType }, body: file });
+                        await fetch(`/api/master/students/${s.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ photoUrl: key }) });
+                        qc.invalidateQueries({ queryKey: ["students"] });
+                      }}
+                    />
+                  </label>
                   <button className="text-xs px-2 py-1 rounded border border-red-500 text-red-600" onClick={() => remove.mutate(s.id)} disabled={remove.isPending}>
                     Hapus
                   </button>

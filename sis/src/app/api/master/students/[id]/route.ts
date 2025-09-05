@@ -13,7 +13,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const body = await req.json();
   const parsed = studentUpdateSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.format() }, { status: 400 });
-  const { name, email, nis, nisn, gender, birthDate, startYear, guardianName } = parsed.data;
+  const { name, email, nis, nisn, photoUrl, gender, birthDate, startYear, guardianName } = parsed.data;
 
   const updated = await prisma.student.update({
     where: { id },
@@ -21,6 +21,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       nis: nis ?? undefined,
       nisn: nisn ?? undefined,
       gender: gender ?? undefined,
+      photoUrl: photoUrl ?? undefined,
       birthDate: birthDate ?? undefined,
       startYear: startYear ?? undefined,
       guardianName: guardianName ?? undefined,
@@ -30,4 +31,3 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   });
   return NextResponse.json(updated);
 }
-

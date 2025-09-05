@@ -80,6 +80,7 @@ export const studentUpdateSchema = z.object({
   email: z.string().email().optional(),
   nis: z.string().optional(),
   nisn: z.string().optional(),
+  photoUrl: z.string().optional(),
   gender: genderEnum.optional(),
   birthDate: z.coerce.date().optional(),
   startYear: z.coerce.number().optional(),
@@ -103,3 +104,20 @@ export const scheduleCreateSchema = z.object({
   endTime: z.string().regex(/^\d{2}:\d{2}$/),
 });
 export const scheduleUpdateSchema = scheduleCreateSchema.partial();
+
+// School profile
+export const schoolProfileSchema = z.object({
+  name: z.string().min(1),
+  npsn: z.string().optional(),
+  address: z.string().optional(),
+  phone: z.string().optional(),
+  email: z.string().email().optional(),
+  website: z.string().url().optional(),
+  logoUrl: z.string().url().optional(),
+  principal: z.string().optional(),
+  accreditation: z.string().optional(),
+  motto: z.string().optional(),
+  vision: z.string().optional(),
+  mission: z.string().optional(),
+});
+export const schoolProfileUpdateSchema = schoolProfileSchema.partial();

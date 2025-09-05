@@ -5,11 +5,25 @@ import { usePathname } from "next/navigation";
 import { PropsWithChildren } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { ThemeToggle } from "./theme-toggle";
+import { useQuery } from "@tanstack/react-query";
 
 const nav: any[] = [
   { label: "Dashboard", href: "/dashboard" },
   {
-    label: "Master Data",
+    label: "Portal Siswa",
+    children: [
+      { label: "Jadwalku", href: "/portal/student/schedule" },
+      { label: "Nilai", href: "/portal/student/grades" },
+      { label: "Raport", href: "/portal/student/report-cards" },
+      { label: "Presensi", href: "/portal/student/attendance" },
+      { label: "Tagihan", href: "/portal/student/billing" },
+      { label: "Tabungan", href: "/portal/student/savings" },
+      { label: "Notifikasi", href: "/portal/student/notifications" },
+      { label: "Kartu Pelajar", href: "/portal/student/id-card" },
+    ],
+  },
+  {
+    label: "Akademik",
     children: [
       { label: "Tahun Ajaran", href: "/master/academic-years" },
       { label: "Tingkat/Kelas", href: "/master/grades" },
@@ -21,6 +35,7 @@ const nav: any[] = [
       { label: "Guru", href: "/master/teachers" },
       { label: "Siswa", href: "/master/students" },
       { label: "Enrollments", href: "/master/enrollments" },
+      { label: "Profil Sekolah", href: "/master/school", adminOnly: true },
     ],
   },
   {
@@ -43,6 +58,10 @@ const nav: any[] = [
       { label: "Users & Roles", href: "/admin/users" },
       { label: "Roles & Permissions", href: "/admin/roles" },
       { label: "Devtools", href: "/admin/devtools", adminOnly: true },
+      { label: "WA Outbox", href: "/admin/wa/outbox", adminOnly: true },
+      { label: "WA Templates", href: "/admin/wa/templates", adminOnly: true },
+      { label: "Email Outbox", href: "/admin/email/outbox", adminOnly: true },
+      { label: "Email Templates", href: "/admin/email/templates", adminOnly: true },
     ],
   },
   {
@@ -112,6 +131,16 @@ const nav: any[] = [
       { label: "Shift Pegawai", href: "/hr/shifts" },
       { label: "Rekap Absensi", href: "/hr/attendance" },
       { label: "Timesheet", href: "/hr/timesheets" },
+      { label: "Pengajuan Cuti/Izin", href: "/hr/leaves" },
+      { label: "Tipe Cuti/Izin", href: "/hr/leave-types" },
+    ],
+  },
+  {
+    label: "Portal Pegawai",
+    children: [
+      { label: "Check-in/Out", href: "/portal/staff/checkin" },
+      { label: "Timesheet Saya", href: "/portal/staff/timesheet" },
+      { label: "Cuti/Izin Saya", href: "/portal/staff/leaves" },
     ],
   },
 ];
@@ -119,15 +148,30 @@ const nav: any[] = [
 export function AppShell({ children }: PropsWithChildren) {
   const pathname = usePathname();
   const session = useSession();
-  const isAdmin = Array.isArray((session.data?.user as any)?.roles) && (session.data?.user as any).roles.includes("admin");
+  const roles = (Array.isArray((session.data?.user as any)?.roles) ? (session.data?.user as any).roles : []) as string[];
+  const isAdmin = roles.includes("admin");
+  const isStudentLike = roles.some((r) => ["student", "parent", "guardian"].includes(r));
+  type School = { name?: string | null; logoSignedUrl?: string | null } | null;
+  const { data: school } = useQuery<School>({ queryKey: ["school-profile-nav"], queryFn: async () => (await fetch("/api/public/school")).json() });
   return (
     <div className="min-h-screen grid grid-cols-[240px_1fr] bg-background text-foreground">
       <aside className="border-r border-border bg-card p-4 glass-card">
-        <div className="mb-6 font-bold tracking-tight">
-          <span className="text-lg">SIS</span>
+        <div className="mb-6 font-bold tracking-tight flex items-center gap-2">
+          {school?.logoSignedUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={school.logoSignedUrl} alt="Logo" className="h-8 w-8 rounded-sm object-contain bg-white/50" />
+          ) : (
+            <span className="text-lg">🏫</span>
+          )}
+          <span className="text-lg">{school?.name || "SIS"}</span>
         </div>
         <nav className="space-y-3">
-          {nav.map((item, idx) => (
+          {nav
+            // Hide student/staff portal groups unless eligible; hide Akademik from non-admin
+            .filter((item) => (item.label !== "Portal Siswa" || isStudentLike || isAdmin)
+              && (item.label !== "Portal Pegawai" || roles.includes("employee") || isAdmin)
+              && (item.label !== "Akademik" || isAdmin))
+            .map((item, idx) => (
             <div key={item.href ?? `${item.label}-${idx}`}>
               {item.href ? (
                 <Link

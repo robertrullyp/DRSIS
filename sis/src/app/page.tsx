@@ -1,15 +1,42 @@
 import Link from "next/link";
+import { prisma } from "@/lib/prisma";
+import { s3, S3_BUCKET } from "@/lib/s3";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import PublicFooter from "@/components/public-footer";
 
-export default function Home() {
+export default async function Home() {
+  const profile = await prisma.schoolProfile.findFirst();
+  let logoSignedUrl: string | undefined;
+  if (profile?.logoUrl) {
+    if (/^https?:\/\//i.test(profile.logoUrl)) logoSignedUrl = profile.logoUrl;
+    else {
+      try {
+        const cmd = new GetObjectCommand({ Bucket: S3_BUCKET, Key: profile.logoUrl });
+        logoSignedUrl = await getSignedUrl(s3, cmd, { expiresIn: 300 });
+      } catch {
+        // ignore presign error
+      }
+    }
+  }
   return (
     <main className="min-h-[calc(100vh-0px)] p-8">
       <section className="max-w-5xl mx-auto space-y-8">
         <div className="text-center space-y-3">
+          <div className="flex justify-center mb-2">
+            {logoSignedUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logoSignedUrl} alt="Logo Sekolah" className="h-16 w-16 rounded-md object-contain bg-white/60" />
+            ) : null}
+          </div>
           <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight">
             <span className="bg-[linear-gradient(90deg,var(--accent),#8b5cf6)] bg-clip-text text-transparent">
-              Sistem Informasi Sekolah
+              {profile?.name || "Sistem Informasi Sekolah"}
             </span>
           </h1>
+          {profile?.address ? (
+            <p className="text-xs sm:text-sm text-muted-foreground">{profile.address}</p>
+          ) : null}
           <p className="text-sm sm:text-base text-muted-foreground">
             Portal publik untuk pengumuman, pendaftaran, dan akses cepat ke informasi.
           </p>
@@ -33,6 +60,7 @@ export default function Home() {
           </Link>
         </div>
       </section>
+      <PublicFooter />
     </main>
   );
 }

@@ -14,9 +14,16 @@ P0 - Fondasi
 - [x] Header AppShell: Profil Saya + Logout
 - [x] Sistem tema UI (token CSS variables, ThemeProvider, toggle light/dark/system + contoh tema brand)
  - [x] Penerapan tema ke seluruh halaman (token-based) + gaya modern/futuristik (gradien, glass)
+ - [x] Branding profil sekolah (logo+nama) di AppShell & beranda publik
+ - [x] API publik profil sekolah (`/api/public/school`)
+ - [x] Halaman Sign-in & Auth Error dengan branding sekolah
+ - [x] Web App Manifest dinamis (nama+ikon dari profil sekolah)
+ - [x] Footer publik (alamat, kontak)
 
 P1 - Akademik & HR
-- [x] Master Data CRUD (academic-years, semesters, grades, classrooms, subjects, curricula, teachers, students, enrollments, schedules)
+- [x] Master/Akademik Data CRUD (academic-years, semesters, grades, classrooms, subjects, curricula, teachers, students, enrollments, schedules)
+- [x] Profil Sekolah (CRUD)
+ - [x] Rename menu "Master Data" -> "Akademik"
 - [x] Users & Roles Admin UI (assign roles, manage permissions)
 - [x] Absensi siswa (by class+date)
 - [x] Absensi pegawai (shift + checkin/checkout basic)
@@ -24,9 +31,22 @@ P1 - Akademik & HR
 - [x] Absensi pegawai (rules lanjutan: toleransi check-in, jam inti, export CSV)
 - [x] Penilaian input + agregasi
 - [x] Raport PDF (React-PDF) + S3 upload
-- [ ] Cuti/Izin pegawai (leave types, pengajuan, approval)
+- [x] Cuti/Izin pegawai (leave types, pengajuan, approval)
 - [ ] Portal Siswa/Ortu (jadwal, nilai, raport, presensi, tagihan, tabungan, notifikasi)
+  - [x] Jadwalku (kelas aktif)
+  - [x] Nilai (rata-rata per mapel)
+  - [x] Raport (daftar + link PDF)
+  - [x] Presensi (status harian)
+  - [x] Tagihan
+  - [x] Tabungan
+  - [x] Notifikasi (ringkasan portal)
+  - [x] Kartu Pelajar (PDF CR-80 via portal)
 - [ ] Portal Pegawai (check-in/out, timesheet, cuti/izin)
+  - [x] Check-in/Out (WEB)
+  - [x] Timesheet Saya (rentang tanggal)
+  - [x] Geolocation capture (check-in/out; tampil di timesheet)
+  - [x] Cuti/Izin (tipe, pengajuan, approval)
+  - [x] Dinas/Pelatihan via tipe cuti (counts-as-presence)
 
 P2 - Admin/Operasional
 - [x] PPDB (form publik + upload, verifikasi, skor, auto-enroll)
@@ -47,6 +67,12 @@ P3 - Finansial
 P4 - Integrasi & Notifikasi
 - [ ] LMS/CBT link, impor skor
 - [ ] Notifikasi WA/Email (templates, outbox, webhook, retry)
+  - [x] WA Outbox enqueue untuk workflow Cuti/Izin (ajukan/approve/reject)
+  - [x] Sender route (manual) + retry/cancel actions
+  - [x] Admin UI (WA Outbox + WA Templates)
+  - [x] Email SMTP outbox (provider, templates, outbox, UI)
+  - [x] Cron facade endpoint (/api/admin/cron/tick)
+  - [ ] Panggil cron secara terjadwal (Actions/cron/systemd)
 - [ ] Analitik & dashboard (events + KPI presensi/nilai/ppdb/perpustakaan/aset)
 - [ ] CBT internal (bank soal, ujian, attempts, skor)
 

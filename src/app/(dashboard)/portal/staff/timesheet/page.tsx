@@ -23,7 +23,7 @@ export default function StaffTimesheetPage() {
     queryKey: ["my-timesheet", empId, range.start, range.end],
     enabled: Boolean(empId),
     queryFn: async () => {
-      const url = `/api/hr/attendance?employeeId=${encodeURIComponent(empId!)}&start=${encodeURIComponent(range.start)}&end=${encodeURIComponent(range.end)}&pageSize=500`;
+      const url = `/api/portal/staff/attendance?start=${encodeURIComponent(range.start)}&end=${encodeURIComponent(range.end)}&pageSize=500`;
       const res = await fetch(url); if (!res.ok) throw new Error("Failed");
       return (await res.json()) as { items: Row[] };
     },

@@ -20,14 +20,14 @@ export default function StaffCheckinPage() {
     queryKey: ["staff-attn", empId, date],
     enabled: Boolean(empId),
     queryFn: async () => {
-      const res = await fetch(`/api/hr/attendance?employeeId=${encodeURIComponent(empId!)}&date=${date}&pageSize=1`);
+      const res = await fetch(`/api/portal/staff/attendance?date=${date}&pageSize=1`);
       if (!res.ok) throw new Error("Failed");
       return (await res.json()) as { items: any[] };
     },
   });
   const today = (attn?.items ?? [])[0] as Attn | undefined;
 
-  const { data: shifts } = useQuery<{ items: Shift[] }>({ queryKey: ["shifts"], queryFn: async () => (await fetch("/api/hr/shifts?pageSize=200")).json() });
+  const { data: shifts } = useQuery<{ items: Shift[] }>({ queryKey: ["portal-staff-shifts"], queryFn: async () => (await fetch("/api/portal/staff/shifts?pageSize=200")).json() });
   const [shiftId, setShiftId] = useState<string>("");
   const defaultShift = useMemo(() => (shifts?.items ?? [])[0]?.id ?? "", [shifts]);
 
@@ -51,7 +51,6 @@ export default function StaffCheckinPage() {
     mutationFn: async (action: "checkin" | "checkout") => {
       const coords = (await captureGeo()) ?? geo;
       const body = {
-        employeeId: empId,
         action,
         method: coords ? "WEB+GPS" : "WEB",
         date,

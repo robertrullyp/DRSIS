@@ -169,7 +169,7 @@ export function AppShell({ children }: PropsWithChildren) {
   );
 
   return (
-    <div className="min-h-screen text-foreground">
+    <div className="dashboard-main min-h-screen text-foreground">
       <div className="lg:grid lg:grid-cols-[280px_minmax(0,1fr)]">
         <aside
           className={`fixed inset-y-0 left-0 z-40 w-72 border-r border-border bg-card/95 p-4 shadow-xl backdrop-blur-lg transition-transform duration-200 lg:sticky lg:top-0 lg:h-screen lg:w-auto lg:translate-x-0 lg:shadow-none ${

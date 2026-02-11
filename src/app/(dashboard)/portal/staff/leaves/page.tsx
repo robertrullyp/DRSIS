@@ -8,7 +8,7 @@ type Leave = { id: string; type: LeaveType; startDate: string; endDate: string; 
 
 export default function StaffLeavesPage() {
   const qc = useQueryClient();
-  const { data: types } = useQuery<{ items: LeaveType[] }>({ queryKey: ["leave-types"], queryFn: async () => (await fetch("/api/hr/leave-types?pageSize=200")).json() });
+  const { data: types } = useQuery<{ items: LeaveType[] }>({ queryKey: ["portal-staff-leave-types"], queryFn: async () => (await fetch("/api/portal/staff/leave-types?pageSize=200")).json() });
   const { data } = useQuery<{ items: Leave[] }>({ queryKey: ["my-leaves"], queryFn: async () => (await fetch("/api/portal/staff/leaves")).json() });
 
   const [typeId, setTypeId] = useState("");
@@ -92,4 +92,3 @@ export default function StaffLeavesPage() {
     </div>
   );
 }
-

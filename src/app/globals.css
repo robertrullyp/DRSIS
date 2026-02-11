@@ -257,6 +257,33 @@ table { border-collapse: separate; border-spacing: 0; }
 table thead { background: var(--muted); }
 table th, table td { border-bottom: 1px solid var(--border); }
 
+@media (max-width: 1024px) {
+  .dashboard-main .grid.items-end[class*="grid-cols-"] {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .dashboard-main form.grid[class*="grid-cols-"] {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .dashboard-main table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 640px) {
+  .dashboard-main input,
+  .dashboard-main select,
+  .dashboard-main textarea,
+  .dashboard-main button {
+    min-height: 2.5rem;
+  }
+}
+
 .text-gray-700, .text-gray-600, .text-gray-500 { color: var(--muted-foreground) !important; }
 .bg-gray-50 { background-color: var(--muted) !important; }
 .hover\:bg-gray-50:hover { background-color: var(--muted) !important; }

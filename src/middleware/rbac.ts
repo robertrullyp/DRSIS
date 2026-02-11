@@ -69,8 +69,7 @@ export const rules: Rule[] = [
   },
   {
     matcher: /^\/api\/hr\b/,
-    anyRole: ["admin", "staff", "employee"],
-    anyPermissions: ["attendance.staff.manage"],
+    anyRole: ["admin"],
   },
   {
     matcher: /^\/api\/attendance\b/,

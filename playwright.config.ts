@@ -17,7 +17,7 @@ export default defineConfig({
   reporter: 'list',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: 'http://127.0.0.1:3000',
     trace: 'on-first-retry',
     headless: true,
     navigationTimeout: 45_000,
@@ -28,16 +28,14 @@ export default defineConfig({
   ],
   /* Start dev server before running tests */
   webServer: {
-    command: 'npm run dev -- -p 3000',
-    url: 'http://localhost:3000',
-    timeout: 120_000,
-    reuseExistingServer: true,
+    command: 'bash tests/e2e-webserver.sh',
+    url: 'http://127.0.0.1:3000',
+    timeout: 240_000,
+    reuseExistingServer: false,
     env: {
       ...process.env,
       DATABASE_URL: e2eDatabaseUrl,
       E2E_DATABASE_URL: e2eDatabaseUrl,
     },
   },
-  /* Prepare database before tests */
-  globalSetup: './tests/global-setup.ts',
 });

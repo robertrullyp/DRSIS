@@ -1,7 +1,12 @@
 import { prisma } from "@/lib/prisma";
+import Link from "next/link";
+import { getPublicCmsMenu } from "@/server/cms/menu.service";
 
 export default async function PublicFooter() {
-  const profile = await prisma.schoolProfile.findFirst();
+  const [profile, footerLinks] = await Promise.all([
+    prisma.schoolProfile.findFirst(),
+    getPublicCmsMenu("footer"),
+  ]);
   const year = new Date().getFullYear();
   return (
     <footer className="mt-12 border-t border-border/80 py-10 text-sm text-muted-foreground">
@@ -19,6 +24,15 @@ export default async function PublicFooter() {
             <div className="space-y-2 text-left md:text-right">
               <div className="text-xs uppercase tracking-[0.14em]">Informasi</div>
               <div>Portal publik dan dashboard sekolah terpadu.</div>
+              {footerLinks.length > 0 ? (
+                <div className="flex flex-wrap gap-2 md:justify-end">
+                  {footerLinks.map((item) => (
+                    <Link key={item.id} href={item.href} className="rounded-md border border-border px-2 py-1 text-xs hover:bg-muted/70">
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              ) : null}
             </div>
           </div>
           {profile?.website ? (

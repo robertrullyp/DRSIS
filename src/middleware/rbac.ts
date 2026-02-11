@@ -11,6 +11,11 @@ type Rule = {
 
 // Basic RBAC rules – extend as needed
 export const rules: Rule[] = [
+  {
+    matcher: /^\/api\/admin\/cms\b/,
+    anyRole: ["admin", "operator", "editor"],
+    anyPermissions: ["cms.read", "cms.write", "cms.publish", "cms.admin"],
+  },
   { matcher: /^\/api\/admin\b/, anyRole: ["admin"] },
   {
     matcher: /^\/api\/school\b/,
@@ -143,7 +148,24 @@ export function checkAccess(
   )
     return true;
   // Public pages (PPDB apply)
-  if (path === "/" || path.startsWith("/ppdb/apply") || path.startsWith("/ppdb/announcement") || path.startsWith("/ppdb/status")) return true;
+  if (
+    path === "/" ||
+    path === "/berita" ||
+    path.startsWith("/berita/") ||
+    path === "/agenda" ||
+    path.startsWith("/agenda/") ||
+    path === "/galeri" ||
+    path.startsWith("/galeri/") ||
+    path === "/kontak" ||
+    path === "/robots.txt" ||
+    path === "/sitemap.xml" ||
+    path === "/manifest.webmanifest" ||
+    path.startsWith("/p/") ||
+    path.startsWith("/ppdb/apply") ||
+    path.startsWith("/ppdb/announcement") ||
+    path.startsWith("/ppdb/status")
+  )
+    return true;
 
   // Auth pages & static assets
   if (

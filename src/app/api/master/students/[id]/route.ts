@@ -27,7 +27,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       guardianName: guardianName ?? undefined,
       user: name || email ? { update: { name: name ?? undefined, email: email ?? undefined } } : undefined,
     },
-    include: { user: true },
+    include: {
+      user: true,
+      guardians: {
+        include: {
+          guardianUser: {
+            include: {
+              role: true,
+            },
+          },
+        },
+        orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
+      },
+    },
   });
   return NextResponse.json(updated);
 }

@@ -1,37 +1,59 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { PortalStudentScopeBanner, usePortalStudentScope } from "@/components/portal/student-scope";
 
-type Item = { id: string; code: string; total: number; status: string; dueDate?: string | null; academicYear: { name: string } };
+type BillingItem = {
+  id: string;
+  code: string;
+  total: number;
+  status: string;
+  dueDate?: string | null;
+  academicYear: { name: string };
+};
 
 export default function MyBillingPage() {
-  const { data, isFetching } = useQuery<{ items: Item[] }>({ queryKey: ["portal-billing"], queryFn: async () => (await fetch("/api/portal/billing")).json() });
+  const { me, isLoading, selectedChildId, childScopedUrl, setSelectedChildId } = usePortalStudentScope();
+
+  const { data, isFetching } = useQuery<{ items: BillingItem[] }>({
+    queryKey: ["portal-billing", selectedChildId],
+    enabled: Boolean(me?.student),
+    queryFn: async () => {
+      const res = await fetch(childScopedUrl("/api/portal/billing"));
+      if (!res.ok) throw new Error("Failed");
+      return (await res.json()) as { items: BillingItem[] };
+    },
+  });
+
   return (
     <div className="space-y-4">
       <h1 className="text-lg font-semibold">Tagihan</h1>
+      <PortalStudentScopeBanner me={me} isLoading={isLoading} onSelectChild={setSelectedChildId} />
       {isFetching ? (
-        <div>Memuat…</div>
+        <div>Memuat...</div>
       ) : (
-        <table className="w-full text-sm border">
+        <table className="w-full border text-sm">
           <thead className="bg-muted/50">
             <tr>
-              <th className="text-left p-2 border-b">Kode</th>
-              <th className="text-left p-2 border-b">Tahun Ajaran</th>
-              <th className="text-left p-2 border-b">Jatuh Tempo</th>
-              <th className="text-left p-2 border-b">Status</th>
-              <th className="text-left p-2 border-b">Total</th>
-              <th className="text-left p-2 border-b">Kuitansi</th>
+              <th className="border-b p-2 text-left">Kode</th>
+              <th className="border-b p-2 text-left">Tahun Ajaran</th>
+              <th className="border-b p-2 text-left">Jatuh Tempo</th>
+              <th className="border-b p-2 text-left">Status</th>
+              <th className="border-b p-2 text-left">Total</th>
+              <th className="border-b p-2 text-left">Kuitansi</th>
             </tr>
           </thead>
           <tbody>
-            {(data?.items ?? []).map((inv) => (
-              <tr key={inv.id}>
-                <td className="p-2 border-b">{inv.code}</td>
-                <td className="p-2 border-b">{inv.academicYear?.name}</td>
-                <td className="p-2 border-b">{inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : "-"}</td>
-                <td className="p-2 border-b">{inv.status}</td>
-                <td className="p-2 border-b">{(inv.total / 100).toLocaleString(undefined, { style: "currency", currency: "IDR" })}</td>
-                <td className="p-2 border-b"><a className="text-accent underline" href={`/api/portal/billing/${inv.id}/receipt`} target="_blank" rel="noreferrer">Lihat</a></td>
+            {(data?.items ?? []).map((invoice) => (
+              <tr key={invoice.id}>
+                <td className="border-b p-2">{invoice.code}</td>
+                <td className="border-b p-2">{invoice.academicYear?.name}</td>
+                <td className="border-b p-2">{invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : "-"}</td>
+                <td className="border-b p-2">{invoice.status}</td>
+                <td className="border-b p-2">{(invoice.total / 100).toLocaleString(undefined, { style: "currency", currency: "IDR" })}</td>
+                <td className="border-b p-2">
+                  <a className="text-accent underline" href={childScopedUrl(`/api/portal/billing/${invoice.id}/receipt`)} target="_blank" rel="noreferrer">Lihat</a>
+                </td>
               </tr>
             ))}
             {(data?.items?.length ?? 0) === 0 && (

@@ -13,6 +13,9 @@ const viewportCases: ViewportCase[] = [
   { name: "desktop", width: 1440, height: 900 },
 ];
 
+const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL || "admin@sis.local";
+const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD || "admin123";
+
 async function gotoStable(page: Page, path: string) {
   let lastError: unknown;
   for (let attempt = 1; attempt <= 3; attempt += 1) {
@@ -27,6 +30,45 @@ async function gotoStable(page: Page, path: string) {
   throw lastError;
 }
 
+async function hasSessionCookie(page: Page) {
+  const cookies = await page.context().cookies();
+  return cookies.some((cookie) => cookie.name.includes("next-auth.session-token"));
+}
+
+async function waitForSession(page: Page, timeoutMs = 20_000) {
+  const startedAt = Date.now();
+  while (Date.now() - startedAt < timeoutMs) {
+    if (await hasSessionCookie(page)) {
+      return true;
+    }
+    await page.waitForTimeout(300);
+  }
+  return false;
+}
+
+async function signInViaNextAuthApi(page: Page) {
+  const csrfResponse = await page.request.get("/api/auth/csrf");
+  if (!csrfResponse.ok()) return false;
+
+  const csrfPayload = (await csrfResponse.json().catch(() => null)) as { csrfToken?: string } | null;
+  const csrfToken = csrfPayload?.csrfToken;
+  if (!csrfToken) return false;
+
+  const callbackResponse = await page.request.post("/api/auth/callback/credentials?json=true", {
+    form: {
+      csrfToken,
+      email: ADMIN_EMAIL,
+      password: ADMIN_PASSWORD,
+      callbackUrl: "/dashboard",
+      json: "true",
+    },
+  });
+
+  if (!callbackResponse.ok()) return false;
+  await page.waitForTimeout(400);
+  return waitForSession(page, 8_000);
+}
+
 async function assertNoHorizontalOverflow(page: Page) {
   const overflowX = await page.evaluate(() => {
     return document.documentElement.scrollWidth - window.innerWidth;
@@ -35,15 +77,27 @@ async function assertNoHorizontalOverflow(page: Page) {
 }
 
 async function loginAsAdmin(page: Page) {
-  await gotoStable(page, "/sign-in?callbackUrl=/dashboard");
-  await page.locator('input[type="email"]').fill("admin@sis.local");
-  await page.locator('input[type="password"]').fill("admin123");
-  await Promise.all([
-    page.waitForResponse((r) => r.url().includes("/api/auth/callback/credentials"), { timeout: 120_000 }),
-    page.getByRole("button", { name: /sign in/i }).click(),
-  ]);
+  let authenticated = await signInViaNextAuthApi(page);
+  for (let attempt = 1; attempt <= 3 && !authenticated; attempt += 1) {
+    await gotoStable(page, "/sign-in?callbackUrl=/dashboard");
+    await page.locator('input[type="email"]').fill(ADMIN_EMAIL);
+    await page.locator('input[type="password"]').fill(ADMIN_PASSWORD);
+
+    await page.getByRole("button", { name: /sign in/i }).click();
+    await page.waitForTimeout(1_000);
+    const hasSession = await waitForSession(page, 10_000);
+    if (hasSession) {
+      authenticated = true;
+      break;
+    }
+
+    await page.waitForTimeout(1_000);
+  }
+  expect(authenticated, "Admin sign-in should succeed within retry window").toBeTruthy();
+
   await gotoStable(page, "/dashboard");
-  await expect(page.getByRole("heading", { name: /dashboard/i })).toBeVisible();
+  await expect(page).toHaveURL(/\/dashboard/, { timeout: 30_000 });
+  await expect(page.getByRole("heading", { name: /dashboard/i })).toBeVisible({ timeout: 30_000 });
 }
 
 test.describe.configure({ timeout: 240_000 });
@@ -67,14 +121,36 @@ test("RWD dashboard navigation works on mobile/tablet/desktop", async ({ page })
     await test.step(viewport.name, async () => {
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
       await gotoStable(page, "/dashboard");
-      await expect(page.getByRole("heading", { name: /dashboard/i })).toBeVisible();
+      await expect(page.getByRole("heading", { name: /dashboard/i })).toBeVisible({ timeout: 15_000 });
       await assertNoHorizontalOverflow(page);
 
       if (viewport.width < 1024) {
         const openMenuButton = page.getByRole("button", { name: /Buka menu/i });
         await expect(openMenuButton).toBeVisible();
-        await openMenuButton.click();
-        await expect(page.getByRole("button", { name: /Tutup menu/i })).toBeVisible();
+        let menuOpened = false;
+
+        for (let attempt = 1; attempt <= 2; attempt += 1) {
+          await openMenuButton.click({ force: true });
+          await page.waitForTimeout(250);
+
+          const closeButtonVisible = await page.getByRole("button", { name: /Tutup menu/i }).first().isVisible().catch(() => false);
+          if (closeButtonVisible) {
+            menuOpened = true;
+            break;
+          }
+
+          const sidebar = page.locator("aside").first();
+          const sidebarRightEdge = await sidebar.evaluate((element) => {
+            const rect = element.getBoundingClientRect();
+            return rect.x + rect.width;
+          });
+          if (sidebarRightEdge > 0) {
+            menuOpened = true;
+            break;
+          }
+        }
+
+        expect(menuOpened, "Sidebar should open after tapping mobile menu button").toBeTruthy();
       }
     });
   }

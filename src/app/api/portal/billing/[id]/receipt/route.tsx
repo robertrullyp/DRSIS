@@ -3,6 +3,7 @@ import { getToken } from "next-auth/jwt";
 import { prisma } from "@/lib/prisma";
 import React from "react";
 import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
+import { resolvePortalStudentContext } from "@/server/portal/student-context";
 
 export const runtime = "nodejs";
 
@@ -12,12 +13,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
   const userId = token?.sub as string | undefined;
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const user = await prisma.user.findUnique({ where: { id: userId }, include: { student: true } });
-  if (!user?.student) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const requestedStudentId = req.nextUrl.searchParams.get("childId");
+  const { studentId } = await resolvePortalStudentContext(userId, requestedStudentId);
+  if (!studentId) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const { id } = await params;
   const inv = await prisma.invoice.findUnique({ where: { id }, include: { items: true, payments: true, student: { include: { user: true } }, academicYear: true } });
-  if (!inv || inv.studentId !== user.student.id) return NextResponse.json({ error: "not found" }, { status: 404 });
+  if (!inv || inv.studentId !== studentId) return NextResponse.json({ error: "not found" }, { status: 404 });
 
   const paid = inv.payments.reduce((a, b) => a + (b.amount || 0), 0);
   const due = Math.max(0, inv.total - paid);

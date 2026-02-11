@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { prisma } from "@/lib/prisma";
+import { resolvePortalStudentContext } from "@/server/portal/student-context";
 
 function dateOnlyUTC(d: Date) {
   return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
@@ -11,12 +12,12 @@ export async function GET(req: NextRequest) {
   const userId = token?.sub as string | undefined;
   if (!userId) return NextResponse.json({ items: [] });
 
-  const user = await prisma.user.findUnique({ where: { id: userId }, include: { student: true } });
+  const requestedStudentId = req.nextUrl.searchParams.get("childId");
+  const { studentId } = await resolvePortalStudentContext(userId, requestedStudentId);
   const items: Array<{ id: string; type: string; title: string; description?: string; href?: string; date?: Date; severity?: "info" | "warning" | "danger" }> = [];
   const today = dateOnlyUTC(new Date());
 
-  if (user?.student) {
-    const studentId = user.student.id;
+  if (studentId) {
     // Unpaid/overdue invoices (next 7 days or overdue)
     const soon = new Date();
     soon.setDate(soon.getDate() + 7);
@@ -65,4 +66,3 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({ items });
 }
-

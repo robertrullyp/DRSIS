@@ -20,7 +20,19 @@ export async function GET(req: NextRequest) {
   const [items, total] = await Promise.all([
     prisma.student.findMany({
       where,
-      include: { user: true },
+      include: {
+        user: true,
+        guardians: {
+          include: {
+            guardianUser: {
+              include: {
+                role: true,
+              },
+            },
+          },
+          orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
+        },
+      },
       orderBy: { user: { name: "asc" } },
       skip: (page - 1) * pageSize,
       take: pageSize,
@@ -58,4 +70,3 @@ export async function POST(req: NextRequest) {
   });
   return NextResponse.json(created, { status: 201 });
 }
-

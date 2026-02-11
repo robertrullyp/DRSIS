@@ -2,11 +2,7 @@
 
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-
-type Me = {
-  student: { id: string } | null;
-  activeEnrollment: { academicYearId: string } | null;
-};
+import { PortalStudentScopeBanner, usePortalStudentScope } from "@/components/portal/student-scope";
 
 type Assessment = {
   id: string;
@@ -17,52 +13,47 @@ type Assessment = {
 };
 
 export default function MyGradesPage() {
-  const { data: me } = useQuery<Me>({ queryKey: ["portal-me"], queryFn: async () => (await fetch("/api/portal/me")).json() });
-  const studentId = me?.student?.id;
-  const ayId = me?.activeEnrollment?.academicYearId;
+  const { me, isLoading, selectedChildId, childScopedUrl, setSelectedChildId } = usePortalStudentScope();
 
   const { data } = useQuery<{ items: Assessment[] }>({
-    queryKey: ["my-grades", studentId, ayId],
-    enabled: Boolean(studentId),
+    queryKey: ["my-grades", selectedChildId],
+    enabled: Boolean(me?.student),
     queryFn: async () => {
-      const res = await fetch("/api/portal/student/grades");
+      const res = await fetch(childScopedUrl("/api/portal/student/grades"));
       if (!res.ok) throw new Error("Failed");
       return (await res.json()) as { items: Assessment[] };
     },
   });
 
   const rows = useMemo(() => {
-    const map = new Map<string, { name: string; sum: number; wsum: number }>();
-    (data?.items ?? []).forEach((a) => {
-      const w = a.weight ?? 1;
-      const n = a.subject?.name ?? a.subjectId;
-      const cur = map.get(a.subjectId) || { name: n, sum: 0, wsum: 0 };
-      cur.sum += a.score * w;
-      cur.wsum += w;
-      map.set(a.subjectId, cur);
+    const aggregate = new Map<string, { name: string; sum: number; wsum: number }>();
+    (data?.items ?? []).forEach((assessment) => {
+      const weight = assessment.weight ?? 1;
+      const name = assessment.subject?.name ?? assessment.subjectId;
+      const current = aggregate.get(assessment.subjectId) || { name, sum: 0, wsum: 0 };
+      current.sum += assessment.score * weight;
+      current.wsum += weight;
+      aggregate.set(assessment.subjectId, current);
     });
-    return Array.from(map.values()).map((r) => ({ name: r.name, avg: r.wsum > 0 ? r.sum / r.wsum : 0 }));
+    return Array.from(aggregate.values()).map((row) => ({ name: row.name, avg: row.wsum > 0 ? row.sum / row.wsum : 0 }));
   }, [data]);
-
-  if (me && !me.student) {
-    return <div className="space-y-2"><h1 className="text-lg font-semibold">Nilai</h1><div className="text-sm text-muted-foreground">Akun ini tidak terkait dengan siswa.</div></div>;
-  }
 
   return (
     <div className="space-y-4">
       <h1 className="text-lg font-semibold">Nilai</h1>
-      <table className="w-full text-sm border">
+      <PortalStudentScopeBanner me={me} isLoading={isLoading} onSelectChild={setSelectedChildId} />
+      <table className="w-full border text-sm">
         <thead className="bg-muted/50">
           <tr>
-            <th className="text-left p-2 border-b">Mata Pelajaran</th>
-            <th className="text-left p-2 border-b">Rata-rata</th>
+            <th className="border-b p-2 text-left">Mata Pelajaran</th>
+            <th className="border-b p-2 text-left">Rata-rata</th>
           </tr>
         </thead>
         <tbody>
-          {rows.map((r, idx) => (
-            <tr key={idx}>
-              <td className="p-2 border-b">{r.name}</td>
-              <td className="p-2 border-b">{r.avg.toFixed(2)}</td>
+          {rows.map((row, index) => (
+            <tr key={index}>
+              <td className="border-b p-2">{row.name}</td>
+              <td className="border-b p-2">{row.avg.toFixed(2)}</td>
             </tr>
           ))}
           {rows.length === 0 && (

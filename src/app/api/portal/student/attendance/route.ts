@@ -22,7 +22,8 @@ export async function GET(req: NextRequest) {
   const range = parseDateRange(req.nextUrl.searchParams.get("date"));
   if (!range) return NextResponse.json({ error: "Invalid date" }, { status: 400 });
 
-  const { studentId } = await resolvePortalStudentContext(userId);
+  const requestedStudentId = req.nextUrl.searchParams.get("childId");
+  const { studentId } = await resolvePortalStudentContext(userId, requestedStudentId);
   if (!studentId) return NextResponse.json({ item: null });
 
   const item = await prisma.studentAttendance.findFirst({

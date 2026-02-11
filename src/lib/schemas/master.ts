@@ -95,6 +95,20 @@ export const enrollmentCreateSchema = z.object({
 });
 export const enrollmentUpdateSchema = enrollmentCreateSchema.partial();
 
+export const guardianRelationEnum = z.enum(["FATHER", "MOTHER", "GUARDIAN", "OTHER"]);
+export const studentGuardianCreateSchema = z.object({
+  guardianUserId: z.string().min(1).optional(),
+  guardianEmail: z.string().email().optional(),
+  relation: guardianRelationEnum.optional(),
+  isPrimary: z.boolean().optional(),
+}).refine((v) => Boolean(v.guardianUserId || v.guardianEmail), {
+  message: "guardianUserId or guardianEmail is required",
+});
+export const studentGuardianUpdateSchema = z.object({
+  relation: guardianRelationEnum.optional(),
+  isPrimary: z.boolean().optional(),
+});
+
 export const scheduleCreateSchema = z.object({
   classroomId: z.string().min(1),
   subjectId: z.string().min(1),

@@ -21,7 +21,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const userId = token?.sub;
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { studentId } = await resolvePortalStudentContext(userId);
+  const requestedStudentId = req.nextUrl.searchParams.get("childId");
+  const { studentId } = await resolvePortalStudentContext(userId, requestedStudentId);
   if (!studentId) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const { id } = await params;

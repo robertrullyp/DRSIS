@@ -7,6 +7,7 @@ import { Document, Image, Page, StyleSheet, Text, View } from "@react-pdf/render
 import { s3, S3_BUCKET } from "@/lib/s3";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { resolvePortalStudentContext } from "@/server/portal/student-context";
 
 export const runtime = "nodejs";
 
@@ -17,15 +18,19 @@ export async function GET(req: NextRequest) {
   const userId = token?.sub as string | undefined;
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const [user, school, activeYear] = await Promise.all([
-    prisma.user.findUnique({ where: { id: userId }, include: { student: true } }),
+  const requestedStudentId = req.nextUrl.searchParams.get("childId");
+  const { studentId, academicYearId } = await resolvePortalStudentContext(userId, requestedStudentId);
+  if (!studentId) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+  const [student, school, activeYear] = await Promise.all([
+    prisma.student.findUnique({ where: { id: studentId }, include: { user: true } }),
     prisma.schoolProfile.findFirst({}),
     prisma.academicYear.findFirst({ where: { isActive: true }, orderBy: { startDate: "desc" } }),
   ]);
-  if (!user?.student) return NextResponse.json({ error: "Not a student" }, { status: 400 });
+  if (!student?.user) return NextResponse.json({ error: "Student not found" }, { status: 404 });
 
   const enrollment = await prisma.enrollment.findFirst({
-    where: { studentId: user.student.id, active: true, ...(activeYear ? { academicYearId: activeYear.id } : {}) },
+    where: { studentId: student.id, active: true, ...(academicYearId ? { academicYearId } : activeYear ? { academicYearId: activeYear.id } : {}) },
     include: { classroom: { include: { grade: true, academicYear: true } } },
     orderBy: { enrolledAt: "desc" },
   });
@@ -65,17 +70,17 @@ export async function GET(req: NextRequest) {
 
   // Build verification URL and QR image URL (using external provider by default)
   const base = `${req.nextUrl.protocol}//${req.nextUrl.host}`;
-  const verifyUrl = `${base}/student/${user.student.id}`;
+  const verifyUrl = `${base}/student/${student.id}`;
   const qrProvider = process.env.QR_PROVIDER_URL || "https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=";
   const qrUrl = `${qrProvider}${encodeURIComponent(verifyUrl)}`;
 
   // Student photo presign (optional)
   let photoUrl: string | undefined;
-  if (user.student.photoUrl) {
-    if (/^https?:\/\//i.test(user.student.photoUrl)) photoUrl = user.student.photoUrl;
+  if (student.photoUrl) {
+    if (/^https?:\/\//i.test(student.photoUrl)) photoUrl = student.photoUrl;
     else {
       try {
-        const cmd = new GetObjectCommand({ Bucket: S3_BUCKET, Key: user.student.photoUrl });
+        const cmd = new GetObjectCommand({ Bucket: S3_BUCKET, Key: student.photoUrl });
         photoUrl = await getSignedUrl(s3, cmd, { expiresIn: 300 });
       } catch {}
     }
@@ -97,9 +102,9 @@ export async function GET(req: NextRequest) {
             {photoUrl ? <Image src={photoUrl} style={{ width: 42, height: 56, border: "1px solid #e5e7eb" }} /> : <View style={{ width: 42, height: 56, backgroundColor: "#f3f4f6" }} />}
           </View>
           <View style={{ gap: 2, flexGrow: 1 }}>
-            <Text><Text style={styles.label}>Nama:</Text> <Text style={styles.value}>{user.name || user.email}</Text></Text>
-            {user.student.nis ? <Text><Text style={styles.label}>NIS:</Text> <Text style={styles.value}>{user.student.nis}</Text></Text> : null}
-            {user.student.nisn ? <Text><Text style={styles.label}>NISN:</Text> <Text style={styles.value}>{user.student.nisn}</Text></Text> : null}
+            <Text><Text style={styles.label}>Nama:</Text> <Text style={styles.value}>{student.user.name || student.user.email}</Text></Text>
+            {student.nis ? <Text><Text style={styles.label}>NIS:</Text> <Text style={styles.value}>{student.nis}</Text></Text> : null}
+            {student.nisn ? <Text><Text style={styles.label}>NISN:</Text> <Text style={styles.value}>{student.nisn}</Text></Text> : null}
             {enrollment?.classroom?.name ? <Text><Text style={styles.label}>Kelas:</Text> <Text style={styles.value}>{enrollment.classroom.name}</Text></Text> : null}
           </View>
           <View>
@@ -107,7 +112,7 @@ export async function GET(req: NextRequest) {
           </View>
         </View>
         <View style={styles.footer}>
-          <Text>ID: {user.student.id.slice(0, 8)}</Text>
+          <Text>ID: {student.id.slice(0, 8)}</Text>
           <Text>TA {enrollment?.classroom?.academicYear?.name || activeYear?.name || "-"}</Text>
         </View>
       </Page>
@@ -116,5 +121,5 @@ export async function GET(req: NextRequest) {
 
   const { renderToBuffer } = await import("@react-pdf/renderer");
   const buf = await renderToBuffer(Doc);
-  return new NextResponse(new Uint8Array(buf), { headers: { "Content-Type": "application/pdf", "Content-Disposition": `inline; filename=student_id_${user.student.id}.pdf` } });
+  return new NextResponse(new Uint8Array(buf), { headers: { "Content-Type": "application/pdf", "Content-Disposition": `inline; filename=student_id_${student.id}.pdf` } });
 }

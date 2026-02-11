@@ -1,7 +1,16 @@
 import { defineConfig, devices } from '@playwright/test';
+import { loadEnvConfig } from '@next/env';
 
-const defaultE2eDatabaseUrl = 'mysql://sis:sis@127.0.0.1:3307/sis?connect_timeout=5';
-const e2eDatabaseUrl = process.env.E2E_DATABASE_URL || defaultE2eDatabaseUrl;
+loadEnvConfig(process.cwd());
+
+function withConnectTimeout(url: string) {
+  if (!url) return url;
+  if (/connect_timeout=/i.test(url)) return url;
+  return `${url}${url.includes('?') ? '&' : '?'}connect_timeout=5`;
+}
+
+const defaultE2eDatabaseUrl = process.env.DATABASE_URL || 'mysql://sis:sis@127.0.0.1:3306/sis';
+const e2eDatabaseUrl = withConnectTimeout(process.env.E2E_DATABASE_URL || defaultE2eDatabaseUrl);
 process.env.E2E_DATABASE_URL = e2eDatabaseUrl;
 
 export default defineConfig({
@@ -17,7 +26,7 @@ export default defineConfig({
   reporter: 'list',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    baseURL: 'http://127.0.0.1:3000',
+    baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
     headless: true,
     navigationTimeout: 45_000,
@@ -29,13 +38,14 @@ export default defineConfig({
   /* Start dev server before running tests */
   webServer: {
     command: 'bash tests/e2e-webserver.sh',
-    url: 'http://127.0.0.1:3000',
+    url: 'http://localhost:3000',
     timeout: 240_000,
     reuseExistingServer: false,
     env: {
       ...process.env,
       DATABASE_URL: e2eDatabaseUrl,
       E2E_DATABASE_URL: e2eDatabaseUrl,
+      NEXTAUTH_URL: 'http://localhost:3000',
     },
   },
 });

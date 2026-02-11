@@ -19,20 +19,15 @@ function withConnectTimeout(url: string) {
 
 async function ensureDb() {
   const selected = withConnectTimeout(
-    process.env.E2E_DATABASE_URL || 'mysql://sis:sis@127.0.0.1:3307/sis'
+    process.env.E2E_DATABASE_URL ||
+      process.env.DATABASE_URL ||
+      'mysql://sis:sis@127.0.0.1:3306/sis'
   );
-
-  // Boot dedicated E2E DB to avoid conflict with local dev DB.
-  try {
-    run('docker compose -f docker-compose.e2e.yml up -d mariadb_e2e');
-  } catch {
-    // Continue; user may provide external DB via E2E_DATABASE_URL.
-  }
 
   let ready = false;
   for (let attempt = 1; attempt <= 20; attempt += 1) {
     try {
-      run('npx prisma db push --skip-generate', { ...process.env, DATABASE_URL: selected });
+      run('npx prisma db push --skip-generate --accept-data-loss', { ...process.env, DATABASE_URL: selected });
       ready = true;
       break;
     } catch {
@@ -45,7 +40,7 @@ async function ensureDb() {
   if (!ready) {
     throw new Error(
       `[global-setup] Could not connect to E2E MariaDB (${selected}). ` +
-        'Start Docker or set E2E_DATABASE_URL to a reachable MySQL/MariaDB instance.'
+        'Set E2E_DATABASE_URL (or DATABASE_URL) to a reachable MySQL/MariaDB instance.'
     );
   }
 

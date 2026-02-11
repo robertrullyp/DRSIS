@@ -47,6 +47,7 @@ model User {
   teacher         Teacher?
   events          EventLog[]
   employee        Employee?
+  guardianLinks   StudentGuardian[]   @relation("GuardianUserLinks")
   role            Role?               @relation("SingleUserRole", fields: [roleId], references: [id])
   libMembership   LibMember?
   student         Student?
@@ -121,6 +122,7 @@ model Student {
   extraMembers     ExtraMember[]
   enrollments      Enrollment[]
   assessments      Assessment[]
+  guardians        StudentGuardian[]
   libMember        LibMember?
   reportCards      ReportCard[]
   user             User                @relation(fields: [userId], references: [id])
@@ -129,6 +131,22 @@ model Student {
   examAttempts     ExamAttempt[]
 
   @@map("siswa")
+}
+
+model StudentGuardian {
+  id             String               @id @default(cuid())
+  studentId      String
+  guardianUserId String
+  relation       GuardianRelationType @default(GUARDIAN)
+  isPrimary      Boolean              @default(false)
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  guardianUser   User                 @relation("GuardianUserLinks", fields: [guardianUserId], references: [id], onDelete: Cascade)
+  student        Student              @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, guardianUserId])
+  @@index([guardianUserId], map: "relasi_wali_siswa_guardianUserId_fkey")
+  @@map("relasi_wali_siswa")
 }
 
 model Employee {
@@ -955,25 +973,263 @@ model EmailOutbox {
   @@map("email_outbox")
 }
 
-model CmsPost {
-  id          String    @id @default(cuid())
-  title       String
-  slug        String    @unique
-  content     String
-  authorId    String?
-  publishedAt DateTime?
+enum CmsStatus {
+  DRAFT
+  REVIEW
+  PUBLISHED
+  ARCHIVED
+}
 
+enum CmsPostType {
+  NEWS
+  ARTICLE
+  ANNOUNCEMENT
+}
+
+enum CmsMenuItemType {
+  INTERNAL
+  EXTERNAL
+  PAGE
+  CATEGORY
+  TAG
+}
+
+model CmsMenu {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  description String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  items       CmsMenuItem[]
+
+  @@map("cms_menu")
+}
+
+model CmsPage {
+  id          String       @id @default(cuid())
+  title       String
+  slug        String       @unique
+  content     String       @db.LongText
+  excerpt     String?
+  status      CmsStatus    @default(DRAFT)
+  publishedAt DateTime?
+  createdBy   String?
+  updatedBy   String?
+  publishedBy String?
+  deletedAt   DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  menuItems   CmsMenuItem[]
+
+  @@index([status, publishedAt], map: "cms_page_status_publishedAt_idx")
+  @@map("cms_page")
+}
+
+model CmsMenuItem {
+  id        String          @id @default(cuid())
+  menuId    String
+  parentId  String?
+  label     String
+  type      CmsMenuItemType @default(INTERNAL)
+  href      String?
+  pageId    String?
+  order     Int             @default(0)
+  isActive  Boolean         @default(true)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  menu      CmsMenu         @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  page      CmsPage?        @relation(fields: [pageId], references: [id], onDelete: SetNull)
+  parent    CmsMenuItem?    @relation("CmsMenuTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children  CmsMenuItem[]   @relation("CmsMenuTree")
+
+  @@index([menuId, parentId, order], map: "cms_menu_item_menu_parent_order_idx")
+  @@index([pageId], map: "cms_menu_item_pageId_fkey")
+  @@map("cms_menu_item")
+}
+
+model CmsPost {
+  id          String      @id @default(cuid())
+  type        CmsPostType @default(NEWS)
+  title       String
+  slug        String      @unique
+  excerpt     String?
+  content     String      @db.LongText
+  coverMediaId String?
+  authorId    String?
+  createdBy   String?
+  updatedBy   String?
+  publishedBy String?
+  status      CmsStatus   @default(DRAFT)
+  publishedAt DateTime?
+  deletedAt   DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  coverMedia  CmsMedia?   @relation("CmsPostCoverMedia", fields: [coverMediaId], references: [id], onDelete: SetNull)
+  categories  CmsPostCategory[]
+  tags        CmsPostTag[]
+
+  @@index([type, status, publishedAt], map: "cms_post_type_status_publishedAt_idx")
+  @@index([status, publishedAt], map: "cms_post_status_publishedAt_idx")
+  @@index([coverMediaId], map: "cms_post_coverMediaId_fkey")
   @@map("cms_post")
 }
 
-model CmsEvent {
-  id          String   @id @default(cuid())
-  title       String
-  date        DateTime
-  location    String?
-  description String?
+model CmsMedia {
+  id        String    @id @default(cuid())
+  key       String    @unique
+  filename  String    @default("")
+  url       String?
+  mime      String
+  size      Int
+  width     Int?
+  height    Int?
+  alt       String?
+  title     String?
+  module    String?
+  createdBy String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  posts     CmsPost[] @relation("CmsPostCoverMedia")
+  galleryCoverOf CmsGallery[] @relation("CmsGalleryCoverMedia")
+  galleryItems   CmsGalleryItem[] @relation("CmsGalleryItemMedia")
+  eventCoverOf   CmsEvent[] @relation("CmsEventCoverMedia")
 
+  @@index([module, createdAt], map: "cms_media_module_createdAt_idx")
+  @@map("cms_media")
+}
+
+model CmsCategory {
+  id        String            @id @default(cuid())
+  name      String
+  slug      String            @unique
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  posts     CmsPostCategory[]
+
+  @@map("cms_category")
+}
+
+model CmsTag {
+  id        String       @id @default(cuid())
+  name      String
+  slug      String       @unique
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  posts     CmsPostTag[]
+
+  @@map("cms_tag")
+}
+
+model CmsPostCategory {
+  postId     String
+  categoryId String
+  post       CmsPost     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  category   CmsCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([postId, categoryId])
+  @@index([categoryId], map: "cms_post_category_categoryId_fkey")
+  @@map("cms_post_category")
+}
+
+model CmsPostTag {
+  postId String
+  tagId  String
+  post   CmsPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag    CmsTag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+  @@index([tagId], map: "cms_post_tag_tagId_fkey")
+  @@map("cms_post_tag")
+}
+
+model CmsEvent {
+  id          String    @id @default(cuid())
+  title       String
+  slug        String    @unique
+  description String?   @db.LongText
+  location    String?
+  startAt     DateTime  @default(now())
+  endAt       DateTime?
+  coverMediaId String?
+  status      CmsStatus @default(DRAFT)
+  publishedAt DateTime?
+  createdBy   String?
+  updatedBy   String?
+  publishedBy String?
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  coverMedia  CmsMedia? @relation("CmsEventCoverMedia", fields: [coverMediaId], references: [id], onDelete: SetNull)
+
+  @@index([status, publishedAt, startAt], map: "cms_event_status_publishedAt_startAt_idx")
+  @@index([coverMediaId], map: "cms_event_coverMediaId_fkey")
   @@map("cms_event")
+}
+
+model CmsGallery {
+  id          String          @id @default(cuid())
+  title       String
+  slug        String          @unique
+  description String?         @db.LongText
+  coverMediaId String?
+  status      CmsStatus       @default(DRAFT)
+  publishedAt DateTime?
+  createdBy   String?
+  updatedBy   String?
+  publishedBy String?
+  deletedAt   DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  coverMedia  CmsMedia?       @relation("CmsGalleryCoverMedia", fields: [coverMediaId], references: [id], onDelete: SetNull)
+  items       CmsGalleryItem[]
+
+  @@index([status, publishedAt], map: "cms_gallery_status_publishedAt_idx")
+  @@index([coverMediaId], map: "cms_gallery_coverMediaId_fkey")
+  @@map("cms_gallery")
+}
+
+model CmsGalleryItem {
+  id        String      @id @default(cuid())
+  galleryId String
+  mediaId   String
+  caption   String?
+  itemOrder Int         @default(0)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  gallery   CmsGallery  @relation(fields: [galleryId], references: [id], onDelete: Cascade)
+  media     CmsMedia    @relation("CmsGalleryItemMedia", fields: [mediaId], references: [id], onDelete: Restrict)
+
+  @@index([galleryId, itemOrder], map: "cms_gallery_item_gallery_itemOrder_idx")
+  @@index([mediaId], map: "cms_gallery_item_mediaId_fkey")
+  @@map("cms_gallery_item")
+}
+
+model CmsContactMessage {
+  id         String   @id @default(cuid())
+  name       String
+  email      String?
+  phone      String?
+  subject    String?
+  message    String   @db.LongText
+  isRead     Boolean  @default(false)
+  isResolved Boolean  @default(false)
+  metaJson   String?  @db.LongText
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([isRead, isResolved, createdAt], map: "cms_contact_message_status_createdAt_idx")
+  @@map("cms_contact_message")
+}
+
+model CmsSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String   @db.LongText
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("cms_setting")
 }
 
 enum UserStatus {
@@ -1010,6 +1266,13 @@ enum AdmissionStatus {
   REJECTED @map("ditolak")
   ACCEPTED @map("diterima")
   ENROLLED @map("terdaftar")
+}
+
+enum GuardianRelationType {
+  FATHER
+  MOTHER
+  GUARDIAN
+  OTHER
 }
 
 enum InvoiceStatus {

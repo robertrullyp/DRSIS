@@ -7,7 +7,7 @@ import { useSession, signOut } from "next-auth/react";
 import { ThemeToggle } from "./theme-toggle";
 import { useQuery } from "@tanstack/react-query";
 
-type NavChild = { label: string; href: string; adminOnly?: boolean };
+type NavChild = { label: string; href: string; adminOnly?: boolean; cmsAccess?: boolean };
 type NavItem = { label: string; href?: string; children?: NavChild[] };
 
 const nav: NavItem[] = [
@@ -61,6 +61,14 @@ const nav: NavItem[] = [
       { label: "Users & Roles", href: "/admin/users" },
       { label: "Roles & Permissions", href: "/admin/roles" },
       { label: "Devtools", href: "/admin/devtools", adminOnly: true },
+      { label: "CMS Posts", href: "/admin/cms/posts", cmsAccess: true },
+      { label: "CMS Events", href: "/admin/cms/events", cmsAccess: true },
+      { label: "CMS Pages", href: "/admin/cms/pages", cmsAccess: true },
+      { label: "CMS Galleries", href: "/admin/cms/galleries", cmsAccess: true },
+      { label: "CMS Menus", href: "/admin/cms/menus", cmsAccess: true },
+      { label: "CMS Media", href: "/admin/cms/media", cmsAccess: true },
+      { label: "CMS Inbox", href: "/admin/cms/inbox", cmsAccess: true },
+      { label: "CMS Settings", href: "/admin/cms/settings", adminOnly: true },
       { label: "WA Outbox", href: "/admin/wa/outbox", adminOnly: true },
       { label: "WA Templates", href: "/admin/wa/templates", adminOnly: true },
       { label: "Email Outbox", href: "/admin/email/outbox", adminOnly: true },
@@ -139,7 +147,7 @@ const nav: NavItem[] = [
 ];
 
 type School = { name?: string | null; logoSignedUrl?: string | null } | null;
-type SessionUser = { roles?: string[] } | undefined;
+type SessionUser = { roles?: string[]; permissions?: string[] } | undefined;
 
 export function AppShell({ children }: PropsWithChildren) {
   const pathname = usePathname();
@@ -151,8 +159,13 @@ export function AppShell({ children }: PropsWithChildren) {
     const user = session.data?.user as SessionUser;
     return Array.isArray(user?.roles) ? user.roles : [];
   }, [session.data?.user]);
+  const permissions = useMemo(() => {
+    const user = session.data?.user as SessionUser;
+    return Array.isArray(user?.permissions) ? user.permissions : [];
+  }, [session.data?.user]);
 
   const isAdmin = roles.includes("admin");
+  const canAccessCms = isAdmin || roles.some((r) => ["operator", "editor"].includes(r)) || permissions.some((p) => p.startsWith("cms."));
   const isStudentLike = roles.some((r) => ["student", "parent", "guardian"].includes(r));
   const isStaffLike = roles.some((r) => ["employee", "staff"].includes(r));
 
@@ -214,7 +227,11 @@ export function AppShell({ children }: PropsWithChildren) {
                       </Link>
                     ) : item.children ? (
                       (() => {
-                        const children = item.children.filter((child) => !child.adminOnly || isAdmin);
+                        const children = item.children.filter(
+                          (child) =>
+                            (!child.adminOnly || isAdmin) &&
+                            (!child.cmsAccess || canAccessCms)
+                        );
                         const hasActiveChild = children.some((child) => pathname === child.href);
                         const isCollapsed = collapsedSections[item.label] ?? false;
                         const isOpen = hasActiveChild || !isCollapsed;
@@ -290,12 +307,18 @@ export function AppShell({ children }: PropsWithChildren) {
                 <button
                   type="button"
                   className="grid h-10 w-10 place-items-center rounded-xl border border-border bg-card lg:hidden"
-                  onClick={() => setMenuOpen(true)}
-                  aria-label="Buka menu"
+                  onClick={() => setMenuOpen((current) => !current)}
+                  aria-label={isMenuOpen ? "Tutup menu" : "Buka menu"}
                 >
-                  <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M3 6h18M3 12h18M3 18h18" />
-                  </svg>
+                  {isMenuOpen ? (
+                    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M6 6l12 12M18 6L6 18" />
+                    </svg>
+                  ) : (
+                    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M3 6h18M3 12h18M3 18h18" />
+                    </svg>
+                  )}
                 </button>
                 <div className="min-w-0">
                   <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">Campus Command Center</p>

@@ -8,7 +8,8 @@ export async function GET(req: NextRequest) {
   const userId = token?.sub;
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { studentId, academicYearId } = await resolvePortalStudentContext(userId);
+  const requestedStudentId = req.nextUrl.searchParams.get("childId");
+  const { studentId, academicYearId } = await resolvePortalStudentContext(userId, requestedStudentId);
   if (!studentId) return NextResponse.json({ items: [] });
 
   const items = await prisma.assessment.findMany({

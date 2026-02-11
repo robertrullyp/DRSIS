@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getToken } from "next-auth/jwt";
+import { resolvePortalStudentContext } from "@/server/portal/student-context";
 
 function signAmount(type: string, amount: number, approvedBy: string | null) {
   if (type === "WITHDRAWAL") return approvedBy ? -amount : 0;
@@ -11,8 +12,9 @@ export async function GET(req: NextRequest) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
   const userId = token?.sub as string | undefined;
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const user = await prisma.user.findUnique({ where: { id: userId }, include: { student: true } });
-  if (!user?.student) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const requestedStudentId = req.nextUrl.searchParams.get("childId");
+  const { studentId } = await resolvePortalStudentContext(userId, requestedStudentId);
+  if (!studentId) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const startStr = req.nextUrl.searchParams.get("start");
   const endStr = req.nextUrl.searchParams.get("end");
@@ -21,7 +23,7 @@ export async function GET(req: NextRequest) {
   const end = new Date(endStr);
   if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return NextResponse.json({ error: "invalid date" }, { status: 400 });
 
-  const acc = await prisma.savingsAccount.findUnique({ where: { studentId: user.student.id } });
+  const acc = await prisma.savingsAccount.findUnique({ where: { studentId } });
   if (!acc) return NextResponse.json({ opening: 0, inflow: 0, outflow: 0, closing: 0, start, end });
 
   const [before, within] = await Promise.all([
@@ -35,4 +37,3 @@ export async function GET(req: NextRequest) {
   const closing = opening + inflow - outflow;
   return NextResponse.json({ opening, inflow, outflow, closing, start, end });
 }
-

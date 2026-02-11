@@ -64,11 +64,11 @@ export default function SemestersPage() {
         className="grid grid-cols-4 gap-2 items-end"
       >
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Nama</label>
+          <label className="block text-xs text-muted-foreground mb-1">Nama</label>
           <input className="border rounded px-3 py-2 w-full" value={name} onChange={(e) => setName(e.target.value)} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Nomor</label>
+          <label className="block text-xs text-muted-foreground mb-1">Nomor</label>
           <input
             className="border rounded px-3 py-2 w-full"
             type="number"
@@ -77,7 +77,7 @@ export default function SemestersPage() {
           />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Tahun Ajaran</label>
+          <label className="block text-xs text-muted-foreground mb-1">Tahun Ajaran</label>
           <select className="border rounded px-3 py-2 w-full" value={ayId} onChange={(e) => setAyId(e.target.value)}>
             {ayData?.items?.map((x) => (
               <option key={x.id} value={x.id}>
@@ -94,7 +94,7 @@ export default function SemestersPage() {
         <div>Memuat…</div>
       ) : (
         <table className="w-full text-sm border">
-          <thead className="bg-gray-50">
+          <thead className="bg-muted/50">
             <tr>
               <th className="text-left p-2 border-b">Nama</th>
               <th className="text-left p-2 border-b">Nomor</th>

@@ -57,11 +57,17 @@ Buka `http://localhost:3000`.
 - `npm run lint` - jalankan ESLint
 - `npm run db:up` - nyalakan MariaDB via Docker
 - `npm run db:down` - matikan service Docker
+- `npm run db:e2e:up` - nyalakan MariaDB khusus E2E (port `3307`)
+- `npm run db:e2e:down` - matikan MariaDB E2E
 - `npm run db:generate` - generate Prisma Client
 - `npm run db:push` - sinkronkan schema ke database
 - `npm run db:seed` - seed role, permission, dan admin
 - `npm run openapi:gen` - generate `openapi/openapi.json`
 - `npm run test:e2e` - jalankan Playwright tests
+
+Catatan E2E:
+- Playwright menggunakan database terisolasi default `mysql://sis:sis@127.0.0.1:3307/sis`.
+- Override via env `E2E_DATABASE_URL` bila ingin pakai database lain.
 
 ## Struktur Project
 

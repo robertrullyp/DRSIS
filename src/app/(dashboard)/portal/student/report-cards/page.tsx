@@ -12,22 +12,21 @@ export default function MyReportCardsPage() {
     queryKey: ["my-report-cards", studentId],
     enabled: Boolean(studentId),
     queryFn: async () => {
-      const p = new URLSearchParams({ studentId: studentId!, pageSize: "100" });
-      const res = await fetch(`/api/report-cards?${p.toString()}`);
+      const res = await fetch("/api/portal/student/report-cards");
       if (!res.ok) throw new Error("Failed");
       return (await res.json()) as { items: RCRow[] };
     },
   });
 
   if (me && !me.student) {
-    return <div className="space-y-2"><h1 className="text-lg font-semibold">Raport</h1><div className="text-sm text-gray-600">Akun ini tidak terkait dengan siswa.</div></div>;
+    return <div className="space-y-2"><h1 className="text-lg font-semibold">Raport</h1><div className="text-sm text-muted-foreground">Akun ini tidak terkait dengan siswa.</div></div>;
   }
 
   return (
     <div className="space-y-4">
       <h1 className="text-lg font-semibold">Raport</h1>
       <table className="w-full text-sm border">
-        <thead className="bg-gray-50">
+        <thead className="bg-muted/50">
           <tr>
             <th className="text-left p-2 border-b">Kelas</th>
             <th className="text-left p-2 border-b">Semester</th>
@@ -42,7 +41,9 @@ export default function MyReportCardsPage() {
               <td className="p-2 border-b">{r.semester.name}</td>
               <td className="p-2 border-b">{typeof r.overallScore === "number" ? r.overallScore.toFixed(2) : "-"}</td>
               <td className="p-2 border-b">
-                <a className="text-blue-600 underline" href={r.pdfUrl || `/api/report-cards/${r.id}/pdf`} target="_blank" rel="noreferrer">Lihat PDF</a>
+                <a className="text-accent underline" href={`/api/portal/student/report-cards/${r.id}/pdf`} target="_blank" rel="noreferrer">
+                  Lihat PDF
+                </a>
               </td>
             </tr>
           ))}
@@ -56,4 +57,3 @@ export default function MyReportCardsPage() {
     </div>
   );
 }
-

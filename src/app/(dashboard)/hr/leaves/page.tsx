@@ -34,7 +34,7 @@ export default function HRLeavesPage() {
       <h1 className="text-lg font-semibold">HR: Pengajuan Cuti/Izin</h1>
       <div className="flex gap-2 items-end">
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Filter Status</label>
+          <label className="block text-xs text-muted-foreground mb-1">Filter Status</label>
           <select className="border rounded px-3 py-2" value={status} onChange={(e) => setStatus(e.target.value)}>
             {(["PENDING", "APPROVED", "REJECTED", "CANCELLED", ""] as string[]).map((s) => (
               <option key={s || "ALL"} value={s}>{s || "(Semua)"}</option>
@@ -47,7 +47,7 @@ export default function HRLeavesPage() {
         <div>Memuat…</div>
       ) : (
         <table className="w-full text-sm border">
-          <thead className="bg-gray-50">
+          <thead className="bg-muted/50">
             <tr>
               <th className="text-left p-2 border-b">Diajukan</th>
               <th className="text-left p-2 border-b">Pegawai</th>

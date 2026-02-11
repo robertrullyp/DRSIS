@@ -7,7 +7,7 @@ type Noti = { id: string; type: string; title: string; description?: string; hre
 export default function StudentNotificationsPage() {
   const { data, isFetching } = useQuery<{ items: Noti[] }>({ queryKey: ["portal-notifications"], queryFn: async () => (await fetch("/api/portal/notifications")).json() });
   const items = data?.items ?? [];
-  const badge = (sev?: string) => (sev === "danger" ? "bg-red-600" : sev === "warning" ? "bg-amber-500" : "bg-blue-600");
+  const badge = (sev?: string) => (sev === "danger" ? "bg-red-600" : sev === "warning" ? "bg-amber-500" : "bg-accent");
   return (
     <div className="space-y-4">
       <h1 className="text-lg font-semibold">Notifikasi</h1>
@@ -24,7 +24,7 @@ export default function StudentNotificationsPage() {
                 <div className="font-medium">{n.title}</div>
                 {n.description ? <div className="text-sm text-muted-foreground">{n.description}</div> : null}
                 {n.href ? (
-                  <a href={n.href} className="text-xs text-blue-600 underline">Lihat</a>
+                  <a href={n.href} className="text-xs text-accent underline">Lihat</a>
                 ) : null}
               </div>
             </li>
@@ -34,4 +34,3 @@ export default function StudentNotificationsPage() {
     </div>
   );
 }
-

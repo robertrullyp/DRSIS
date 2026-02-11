@@ -35,8 +35,7 @@ export default function MySchedulePage() {
     queryKey: ["my-schedule", classId],
     enabled: Boolean(classId),
     queryFn: async () => {
-      const p = new URLSearchParams({ pageSize: "200", classroomId: classId! });
-      const res = await fetch(`/api/master/schedules?${p.toString()}`);
+      const res = await fetch("/api/portal/student/schedule");
       if (!res.ok) throw new Error("Failed");
       return (await res.json()) as { items: Schedule[] };
     },
@@ -53,7 +52,7 @@ export default function MySchedulePage() {
   }, [data]);
 
   if (me && !me.student) {
-    return <div className="space-y-2"><h1 className="text-lg font-semibold">Jadwalku</h1><div className="text-sm text-gray-600">Akun ini tidak terkait dengan siswa.</div></div>;
+    return <div className="space-y-2"><h1 className="text-lg font-semibold">Jadwalku</h1><div className="text-sm text-muted-foreground">Akun ini tidak terkait dengan siswa.</div></div>;
   }
 
   return (
@@ -62,19 +61,19 @@ export default function MySchedulePage() {
       <div className="grid md:grid-cols-2 gap-4">
         {days.map((d) => (
           <div key={d.value} className="border rounded-md">
-            <div className="px-3 py-2 font-medium bg-gray-50">{d.label}</div>
+            <div className="bg-muted/50 px-3 py-2 font-medium">{d.label}</div>
             <div>
               {(grouped[d.value] ?? []).length === 0 ? (
-                <div className="p-3 text-sm text-gray-500">Tidak ada jadwal</div>
+                <div className="p-3 text-sm text-muted-foreground">Tidak ada jadwal</div>
               ) : (
                 <ul>
                   {(grouped[d.value] ?? []).map((s) => (
                     <li key={s.id} className="px-3 py-2 border-t text-sm flex justify-between">
                       <div>
                         <div className="font-medium">{s.subject?.name}</div>
-                        <div className="text-gray-600">{s.teacher?.user?.name ?? "-"}</div>
+                        <div className="text-muted-foreground">{s.teacher?.user?.name ?? "-"}</div>
                       </div>
-                      <div className="text-gray-700">{s.startTime} - {s.endTime}</div>
+                      <div className="text-foreground/80">{s.startTime} - {s.endTime}</div>
                     </li>
                   ))}
                 </ul>
@@ -86,4 +85,3 @@ export default function MySchedulePage() {
     </div>
   );
 }
-

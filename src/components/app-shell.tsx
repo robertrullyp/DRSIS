@@ -144,6 +144,7 @@ type SessionUser = { roles?: string[] } | undefined;
 export function AppShell({ children }: PropsWithChildren) {
   const pathname = usePathname();
   const [isMenuOpen, setMenuOpen] = useState(false);
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
   const session = useSession();
 
   const roles = useMemo(() => {
@@ -211,29 +212,60 @@ export function AppShell({ children }: PropsWithChildren) {
                       >
                         {item.label}
                       </Link>
-                    ) : (
-                      <p className="mb-2 px-2 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">{item.label}</p>
-                    )}
+                    ) : item.children ? (
+                      (() => {
+                        const children = item.children.filter((child) => !child.adminOnly || isAdmin);
+                        const hasActiveChild = children.some((child) => pathname === child.href);
+                        const isCollapsed = collapsedSections[item.label] ?? false;
+                        const isOpen = hasActiveChild || !isCollapsed;
 
-                    {item.children ? (
-                      <div className="space-y-1.5">
-                        {item.children
-                          .filter((child) => !child.adminOnly || isAdmin)
-                          .map((child) => (
-                            <Link
-                              key={child.href}
-                              href={child.href}
-                              onClick={() => setMenuOpen(false)}
-                              className={`block rounded-lg border px-3 py-2 text-sm transition-colors ${
-                                pathname === child.href
-                                  ? "border-accent/60 bg-[color-mix(in_oklab,var(--accent)_14%,var(--card))] font-semibold"
-                                  : "border-transparent hover:border-border hover:bg-muted/70"
+                        return (
+                          <div>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setCollapsedSections((prev) => ({ ...prev, [item.label]: isOpen }))
+                              }
+                              className={`mb-2 flex w-full items-center justify-between rounded-lg border px-2.5 py-2 text-left text-[11px] uppercase tracking-[0.14em] transition-colors ${
+                                hasActiveChild
+                                  ? "border-accent/40 bg-[color-mix(in_oklab,var(--accent)_8%,var(--card))] text-foreground"
+                                  : "border-transparent text-muted-foreground hover:border-border hover:bg-muted/60"
                               }`}
+                              aria-expanded={isOpen}
                             >
-                              {child.label}
-                            </Link>
-                          ))}
-                      </div>
+                              <span>{item.label}</span>
+                              <svg
+                                viewBox="0 0 20 20"
+                                className={`h-3.5 w-3.5 transition-transform ${isOpen ? "rotate-180" : ""}`}
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.8"
+                              >
+                                <path d="M4 7l6 6 6-6" />
+                              </svg>
+                            </button>
+
+                            {isOpen ? (
+                              <div className="space-y-1.5">
+                                {children.map((child) => (
+                                  <Link
+                                    key={child.href}
+                                    href={child.href}
+                                    onClick={() => setMenuOpen(false)}
+                                    className={`block rounded-lg border px-3 py-2 text-sm transition-colors ${
+                                      pathname === child.href
+                                        ? "border-accent/60 bg-[color-mix(in_oklab,var(--accent)_14%,var(--card))] font-semibold"
+                                        : "border-transparent hover:border-border hover:bg-muted/70"
+                                    }`}
+                                  >
+                                    {child.label}
+                                  </Link>
+                                ))}
+                              </div>
+                            ) : null}
+                          </div>
+                        );
+                      })()
                     ) : null}
                   </div>
                 );

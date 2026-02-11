@@ -7,6 +7,11 @@ type Classroom = { id: string; name: string; academicYear?: { id: string; name: 
 type Semester = { id: string; name: string; academicYearId: string };
 type RCRow = { id: string; student: { id: string; user: { name?: string | null } }; classroom: { name: string }; semester: { name: string }; overallScore?: number | null; pdfUrl?: string | null };
 
+function resolveReportPdfHref(id: string, pdfUrl?: string | null) {
+  if (pdfUrl && /^https?:\/\//i.test(pdfUrl)) return pdfUrl;
+  return `/api/report-cards/${id}/pdf`;
+}
+
 export default function ReportCardsPage() {
   const qc = useQueryClient();
   const { data: classes } = useQuery<{ items: Classroom[] }>({
@@ -66,7 +71,7 @@ export default function ReportCardsPage() {
       <h1 className="text-lg font-semibold">Raport</h1>
       <div className="grid grid-cols-4 gap-2 items-end">
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Kelas</label>
+          <label className="block text-xs text-muted-foreground mb-1">Kelas</label>
           <select className="border rounded px-3 py-2 w-full" value={classId} onChange={(e) => setClassId(e.target.value)}>
             {classes?.items?.map((c) => (
               <option key={c.id} value={c.id}>
@@ -76,7 +81,7 @@ export default function ReportCardsPage() {
           </select>
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Semester</label>
+          <label className="block text-xs text-muted-foreground mb-1">Semester</label>
           <select className="border rounded px-3 py-2 w-full" value={semesterId} onChange={(e) => setSemesterId(e.target.value)}>
             {filteredSemesters.map((s) => (
               <option key={s.id} value={s.id}>
@@ -96,7 +101,7 @@ export default function ReportCardsPage() {
         <div>Memuat…</div>
       ) : (
         <table className="w-full text-sm border">
-          <thead className="bg-gray-50">
+          <thead className="bg-muted/50">
             <tr>
               <th className="text-left p-2 border-b">Siswa</th>
               <th className="text-left p-2 border-b">Kelas</th>
@@ -114,8 +119,8 @@ export default function ReportCardsPage() {
                 <td className="p-2 border-b">{typeof r.overallScore === "number" ? r.overallScore.toFixed(2) : "-"}</td>
                 <td className="p-2 border-b">
                   <a
-                    className="text-blue-600 underline"
-                    href={r.pdfUrl || `/api/report-cards/${r.id}/pdf`}
+                    className="text-accent underline"
+                    href={resolveReportPdfHref(r.id, r.pdfUrl)}
                     target="_blank"
                     rel="noreferrer"
                   >

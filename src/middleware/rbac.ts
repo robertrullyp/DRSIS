@@ -6,11 +6,17 @@ type Rule = {
   anyRole?: string[];
   allPermissions?: string[];
   anyPermissions?: string[];
+  allowAuthenticated?: boolean;
 };
 
 // Basic RBAC rules – extend as needed
 export const rules: Rule[] = [
   { matcher: /^\/api\/admin\b/, anyRole: ["admin"] },
+  {
+    matcher: /^\/api\/school\b/,
+    anyRole: ["admin"],
+    anyPermissions: ["master.write"],
+  },
   {
     matcher: /^\/api\/finance\b/,
     anyRole: ["admin", "finance"],
@@ -19,7 +25,7 @@ export const rules: Rule[] = [
   {
     matcher: /^\/api\/master\b/,
     anyRole: ["admin"],
-    anyPermissions: ["master.manage"],
+    anyPermissions: ["master.write"],
   },
   {
     matcher: /^\/api\/library\b/,
@@ -61,13 +67,75 @@ export const rules: Rule[] = [
     anyRole: ["admin"],
     anyPermissions: ["report.review", "report.approve"],
   },
+  {
+    matcher: /^\/api\/hr\b/,
+    anyRole: ["admin", "staff", "employee"],
+    anyPermissions: ["attendance.staff.manage"],
+  },
+  {
+    matcher: /^\/api\/attendance\b/,
+    anyRole: ["admin", "teacher"],
+    anyPermissions: ["attendance.student.manage"],
+  },
+  {
+    matcher: /^\/api\/portal\b/,
+    anyRole: [
+      "admin",
+      "teacher",
+      "student",
+      "parent",
+      "guardian",
+      "staff",
+      "employee",
+      "finance",
+      "librarian",
+    ],
+  },
+  {
+    matcher: /^\/api\/storage\b/,
+    anyRole: ["admin", "teacher", "staff", "employee", "finance", "librarian"],
+  },
 ];
+
+const sensitiveApiPrefixes = [
+  "/api/admin",
+  "/api/school",
+  "/api/finance",
+  "/api/master",
+  "/api/library",
+  "/api/ppdb",
+  "/api/assets",
+  "/api/extras",
+  "/api/savings",
+  "/api/counseling",
+  "/api/assessments",
+  "/api/report-cards",
+  "/api/hr",
+  "/api/attendance",
+  "/api/portal",
+  "/api/storage",
+];
+
+function isUnderPrefix(path: string, prefix: string) {
+  return path === prefix || path.startsWith(`${prefix}/`);
+}
 
 export function checkAccess(
   req: NextRequest,
   token: (JWT & { roles?: string[]; permissions?: string[] }) | null
 ) {
   const path = req.nextUrl.pathname;
+  const cronSecret = process.env.CRON_SECRET;
+
+  // Allow scheduler calls for cron tick when secret header is valid.
+  if (
+    path === "/api/admin/cron/tick" &&
+    cronSecret &&
+    req.headers.get("x-cron-key") === cronSecret
+  ) {
+    return true;
+  }
+
   // Public endpoints
   if (
     path.startsWith("/api/health") ||
@@ -95,9 +163,14 @@ export function checkAccess(
 
   for (const rule of rules) {
     if (!rule.matcher.test(path)) continue;
+    if (rule.allowAuthenticated) return true;
     if (rule.anyRole && rule.anyRole.some((r) => roles.includes(r))) return true;
     if (rule.allPermissions && rule.allPermissions.every((p) => perms.includes(p))) return true;
     if (rule.anyPermissions && rule.anyPermissions.some((p) => perms.includes(p))) return true;
+    return false;
+  }
+
+  if (path.startsWith("/api") && sensitiveApiPrefixes.some((prefix) => isUnderPrefix(path, prefix))) {
     return false;
   }
 

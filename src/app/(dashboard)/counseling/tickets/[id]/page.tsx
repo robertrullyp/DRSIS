@@ -48,7 +48,7 @@ export default function TicketDetailPage() {
           <div> Subjek: {ticket.subject} | Status: {ticket.status} </div>
           <form onSubmit={(e) => { e.preventDefault(); updateTicket.mutate(); }} className="grid grid-cols-3 gap-2 items-end">
             <div>
-              <label className="block text-xs text-gray-600 mb-1">Ubah Status</label>
+              <label className="block text-xs text-muted-foreground mb-1">Ubah Status</label>
               <select className="border rounded px-3 py-2 w-full" value={status} onChange={(e) => setStatus(e.target.value)}>
                 <option value="">(tidak diubah)</option>
                 <option value="OPEN">OPEN</option>
@@ -57,7 +57,7 @@ export default function TicketDetailPage() {
               </select>
             </div>
             <div className="col-span-2">
-              <label className="block text-xs text-gray-600 mb-1">Catatan</label>
+              <label className="block text-xs text-muted-foreground mb-1">Catatan</label>
               <input className="border rounded px-3 py-2 w-full" value={notes} onChange={(e) => setNotes(e.target.value)} />
             </div>
             <div className="col-span-3"><button className="border rounded px-3 py-2" disabled={updateTicket.isPending}>Simpan</button></div>
@@ -67,17 +67,17 @@ export default function TicketDetailPage() {
             <div className="font-medium">Sesi</div>
             <form onSubmit={(e) => { e.preventDefault(); createSession.mutate(); }} className="grid grid-cols-3 gap-2 items-end">
               <div className="col-span-2">
-                <label className="block text-xs text-gray-600 mb-1">Catatan</label>
+                <label className="block text-xs text-muted-foreground mb-1">Catatan</label>
                 <input className="border rounded px-3 py-2 w-full" value={sessNotes} onChange={(e) => setSessNotes(e.target.value)} />
               </div>
               <div>
-                <label className="block text-xs text-gray-600 mb-1">Selesai</label>
+                <label className="block text-xs text-muted-foreground mb-1">Selesai</label>
                 <input className="border rounded px-3 py-2 w-full" type="datetime-local" value={sessEnded} onChange={(e) => setSessEnded(e.target.value)} />
               </div>
               <div className="col-span-3"><button className="border rounded px-3 py-2" disabled={createSession.isPending}>Tambah Sesi</button></div>
             </form>
             <table className="w-full text-sm border">
-              <thead className="bg-gray-50"><tr><th className="text-left p-2 border-b">Dimulai</th><th className="text-left p-2 border-b">Selesai</th><th className="text-left p-2 border-b">Catatan</th></tr></thead>
+              <thead className="bg-muted/50"><tr><th className="text-left p-2 border-b">Dimulai</th><th className="text-left p-2 border-b">Selesai</th><th className="text-left p-2 border-b">Catatan</th></tr></thead>
               <tbody>
                 {(sessions?.items ?? []).map((s) => (
                   <tr key={s.id}><td className="p-2 border-b">{new Date(s.startedAt).toLocaleString()}</td><td className="p-2 border-b">{s.endedAt ? new Date(s.endedAt).toLocaleString() : '-'}</td><td className="p-2 border-b">{s.notes ?? '-'}</td></tr>
@@ -90,17 +90,17 @@ export default function TicketDetailPage() {
             <div className="font-medium">Rujukan</div>
             <form onSubmit={(e) => { e.preventDefault(); if (!refTo) return; createReferral.mutate(); }} className="grid grid-cols-3 gap-2 items-end">
               <div>
-                <label className="block text-xs text-gray-600 mb-1">Dirujuk Ke</label>
+                <label className="block text-xs text-muted-foreground mb-1">Dirujuk Ke</label>
                 <input className="border rounded px-3 py-2 w-full" value={refTo} onChange={(e) => setRefTo(e.target.value)} />
               </div>
               <div className="col-span-2">
-                <label className="block text-xs text-gray-600 mb-1">Catatan</label>
+                <label className="block text-xs text-muted-foreground mb-1">Catatan</label>
                 <input className="border rounded px-3 py-2 w-full" value={refNotes} onChange={(e) => setRefNotes(e.target.value)} />
               </div>
               <div className="col-span-3"><button className="border rounded px-3 py-2" disabled={createReferral.isPending}>Tambah Rujukan</button></div>
             </form>
             <table className="w-full text-sm border">
-              <thead className="bg-gray-50"><tr><th className="text-left p-2 border-b">Waktu</th><th className="text-left p-2 border-b">Dirujuk Ke</th><th className="text-left p-2 border-b">Catatan</th></tr></thead>
+              <thead className="bg-muted/50"><tr><th className="text-left p-2 border-b">Waktu</th><th className="text-left p-2 border-b">Dirujuk Ke</th><th className="text-left p-2 border-b">Catatan</th></tr></thead>
               <tbody>
                 {(refs?.items ?? []).map((r) => (
                   <tr key={r.id}><td className="p-2 border-b">{new Date(r.createdAt).toLocaleString()}</td><td className="p-2 border-b">{r.referredTo}</td><td className="p-2 border-b">{r.notes ?? '-'}</td></tr>

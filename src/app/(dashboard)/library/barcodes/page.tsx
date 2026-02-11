@@ -58,7 +58,7 @@ export default function LibraryBarcodesPage() {
       <h1 className="text-lg font-semibold">Perpustakaan: Barcodes</h1>
       <div className="grid grid-cols-3 gap-2 items-end">
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Koleksi</label>
+          <label className="block text-xs text-muted-foreground mb-1">Koleksi</label>
           <Select value={itemId} onChange={(e) => setItemId(e.target.value)}>
             <option value="">(Pilih koleksi)</option>
             {items.map((it) => (
@@ -67,7 +67,7 @@ export default function LibraryBarcodesPage() {
           </Select>
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Barcode Baru</label>
+          <label className="block text-xs text-muted-foreground mb-1">Barcode Baru</label>
           <Input value={code} onChange={(e) => setCode(e.target.value)} />
         </div>
         <Button variant="outline" onClick={addBarcode} disabled={!itemId || !code}>Tambah</Button>
@@ -76,10 +76,10 @@ export default function LibraryBarcodesPage() {
       <div>
         <h2 className="font-medium mb-2">Daftar Barcode</h2>
         {barcodes.length === 0 ? (
-          <div className="text-sm text-gray-500">Belum ada barcode</div>
+          <div className="text-sm text-muted-foreground">Belum ada barcode</div>
         ) : (
           <table className="w-full text-sm border">
-            <thead className="bg-gray-50">
+            <thead className="bg-muted/50">
               <tr>
                 <th className="text-left p-2 border-b">Barcode</th>
                 <th className="text-left p-2 border-b">Aksi</th>

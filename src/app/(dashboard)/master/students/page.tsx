@@ -68,23 +68,23 @@ export default function StudentsPage() {
         className="grid grid-cols-6 gap-2 items-end"
       >
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Nama</label>
+          <label className="block text-xs text-muted-foreground mb-1">Nama</label>
           <input className="border rounded px-3 py-2 w-full" value={name} onChange={(e) => setName(e.target.value)} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Email</label>
+          <label className="block text-xs text-muted-foreground mb-1">Email</label>
           <input className="border rounded px-3 py-2 w-full" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">NIS (opsional)</label>
+          <label className="block text-xs text-muted-foreground mb-1">NIS (opsional)</label>
           <input className="border rounded px-3 py-2 w-full" value={nis} onChange={(e) => setNis(e.target.value)} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">NISN (opsional)</label>
+          <label className="block text-xs text-muted-foreground mb-1">NISN (opsional)</label>
           <input className="border rounded px-3 py-2 w-full" value={nisn} onChange={(e) => setNisn(e.target.value)} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Gender (opsional)</label>
+          <label className="block text-xs text-muted-foreground mb-1">Gender (opsional)</label>
           <select className="border rounded px-3 py-2 w-full" value={gender} onChange={(e) => setGender(e.target.value)}>
             <option value="">(tidak ditentukan)</option>
             <option value="MALE">MALE</option>
@@ -99,7 +99,7 @@ export default function StudentsPage() {
         <div>Memuat…</div>
       ) : (
         <table className="w-full text-sm border">
-          <thead className="bg-gray-50">
+          <thead className="bg-muted/50">
             <tr>
               <th className="text-left p-2 border-b">Nama</th>
               <th className="text-left p-2 border-b">Email</th>

@@ -48,7 +48,7 @@ async function main() {
     )
   );
 
-  const [adminRole, teacherRole, , staffRole, financeRole, librarianRole] = await Promise.all([
+  const [adminRole, teacherRole, , staffRole, employeeRole, financeRole, librarianRole] = await Promise.all([
     prisma.role.upsert({
       where: { name: "admin" },
       update: {},
@@ -83,6 +83,14 @@ async function main() {
         name: "staff",
         displayName: "Staff",
         
+      },
+    }),
+    prisma.role.upsert({
+      where: { name: "employee" },
+      update: {},
+      create: {
+        name: "employee",
+        displayName: "Employee",
       },
     }),
     prisma.role.upsert({
@@ -136,6 +144,10 @@ async function main() {
       skipDuplicates: true,
     }),
     prisma.rolePermission.createMany({
+      data: rp(employeeRole.id, ["attendance.staff.manage", "analytics.read"]),
+      skipDuplicates: true,
+    }),
+    prisma.rolePermission.createMany({
       data: rp(financeRole.id, ["finance.manage", "analytics.read"]),
       skipDuplicates: true,
     }),
@@ -172,4 +184,3 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
-

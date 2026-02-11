@@ -58,31 +58,31 @@ export default function SchoolProfilePage() {
       <h1 className="text-lg font-semibold">Profil Sekolah</h1>
       <div className="grid md:grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Nama Sekolah</label>
+          <label className="block text-xs text-muted-foreground mb-1">Nama Sekolah</label>
           <input className="border rounded px-3 py-2 w-full" value={form.name ?? ""} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">NPSN</label>
+          <label className="block text-xs text-muted-foreground mb-1">NPSN</label>
           <input className="border rounded px-3 py-2 w-full" value={form.npsn ?? ""} onChange={(e) => setForm((f) => ({ ...f, npsn: e.target.value }))} />
         </div>
         <div className="md:col-span-2">
-          <label className="block text-xs text-gray-600 mb-1">Alamat</label>
+          <label className="block text-xs text-muted-foreground mb-1">Alamat</label>
           <input className="border rounded px-3 py-2 w-full" value={form.address ?? ""} onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Telepon</label>
+          <label className="block text-xs text-muted-foreground mb-1">Telepon</label>
           <input className="border rounded px-3 py-2 w-full" value={form.phone ?? ""} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Email</label>
+          <label className="block text-xs text-muted-foreground mb-1">Email</label>
           <input className="border rounded px-3 py-2 w-full" type="email" value={form.email ?? ""} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Website</label>
+          <label className="block text-xs text-muted-foreground mb-1">Website</label>
           <input className="border rounded px-3 py-2 w-full" value={form.website ?? ""} onChange={(e) => setForm((f) => ({ ...f, website: e.target.value }))} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">URL Logo</label>
+          <label className="block text-xs text-muted-foreground mb-1">URL Logo</label>
           <input className="border rounded px-3 py-2 w-full" value={form.logoUrl ?? ""} onChange={(e) => setForm((f) => ({ ...f, logoUrl: e.target.value }))} />
           <div className="mt-2">
             <input
@@ -96,23 +96,23 @@ export default function SchoolProfilePage() {
           </div>
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Kepala Sekolah</label>
+          <label className="block text-xs text-muted-foreground mb-1">Kepala Sekolah</label>
           <input className="border rounded px-3 py-2 w-full" value={form.principal ?? ""} onChange={(e) => setForm((f) => ({ ...f, principal: e.target.value }))} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Akreditasi</label>
+          <label className="block text-xs text-muted-foreground mb-1">Akreditasi</label>
           <input className="border rounded px-3 py-2 w-full" value={form.accreditation ?? ""} onChange={(e) => setForm((f) => ({ ...f, accreditation: e.target.value }))} />
         </div>
         <div className="md:col-span-2">
-          <label className="block text-xs text-gray-600 mb-1">Motto</label>
+          <label className="block text-xs text-muted-foreground mb-1">Motto</label>
           <input className="border rounded px-3 py-2 w-full" value={form.motto ?? ""} onChange={(e) => setForm((f) => ({ ...f, motto: e.target.value }))} />
         </div>
         <div className="md:col-span-2">
-          <label className="block text-xs text-gray-600 mb-1">Visi</label>
+          <label className="block text-xs text-muted-foreground mb-1">Visi</label>
           <textarea className="border rounded px-3 py-2 w-full" rows={3} value={form.vision ?? ""} onChange={(e) => setForm((f) => ({ ...f, vision: e.target.value }))} />
         </div>
         <div className="md:col-span-2">
-          <label className="block text-xs text-gray-600 mb-1">Misi</label>
+          <label className="block text-xs text-muted-foreground mb-1">Misi</label>
           <textarea className="border rounded px-3 py-2 w-full" rows={4} value={form.mission ?? ""} onChange={(e) => setForm((f) => ({ ...f, mission: e.target.value }))} />
         </div>
       </div>

@@ -81,7 +81,7 @@ export default function StudentAttendancePage() {
       <h1 className="text-lg font-semibold">Absensi Siswa</h1>
       <div className="flex gap-2 items-end">
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Kelas</label>
+          <label className="block text-xs text-muted-foreground mb-1">Kelas</label>
           <select className="border rounded px-3 py-2" value={classId} onChange={(e) => setClassId(e.target.value)}>
             {classes?.items?.map((c) => (
               <option key={c.id} value={c.id}>
@@ -91,10 +91,10 @@ export default function StudentAttendancePage() {
           </select>
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Tanggal</label>
+          <label className="block text-xs text-muted-foreground mb-1">Tanggal</label>
           <input type="date" className="border rounded px-3 py-2" value={date} onChange={(e) => setDate(e.target.value)} />
         </div>
-        <div className="text-sm text-gray-600">Ringkas: {summaryText}</div>
+        <div className="text-sm text-muted-foreground">Ringkas: {summaryText}</div>
         <button className="ml-auto rounded-md px-4 py-2 bg-accent text-accent-foreground hover:opacity-90" onClick={() => save.mutate()} disabled={save.isPending}>
           Simpan
         </button>
@@ -104,7 +104,7 @@ export default function StudentAttendancePage() {
         <div>Memuat…</div>
       ) : (
         <table className="w-full text-sm border">
-          <thead className="bg-gray-50">
+          <thead className="bg-muted/50">
             <tr>
               <th className="text-left p-2 border-b">Siswa</th>
               <th className="text-left p-2 border-b">Status</th>

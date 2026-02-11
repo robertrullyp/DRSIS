@@ -88,7 +88,7 @@ export default function AssessmentPage() {
       <h1 className="text-lg font-semibold">Input Nilai</h1>
       <div className="grid grid-cols-6 gap-2 items-end">
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Kelas</label>
+          <label className="block text-xs text-muted-foreground mb-1">Kelas</label>
           <select className="border rounded px-3 py-2 w-full" value={classId} onChange={(e) => setClassId(e.target.value)}>
             {classes?.items?.map((c) => (
               <option key={c.id} value={c.id}>
@@ -98,7 +98,7 @@ export default function AssessmentPage() {
           </select>
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Mapel</label>
+          <label className="block text-xs text-muted-foreground mb-1">Mapel</label>
           <select className="border rounded px-3 py-2 w-full" value={subjectId} onChange={(e) => setSubjectId(e.target.value)}>
             {subjects?.items?.map((s) => (
               <option key={s.id} value={s.id}>
@@ -108,21 +108,21 @@ export default function AssessmentPage() {
           </select>
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Jenis</label>
+          <label className="block text-xs text-muted-foreground mb-1">Jenis</label>
           <input className="border rounded px-3 py-2 w-full" value={type} onChange={(e) => setType(e.target.value)} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Bobot</label>
+          <label className="block text-xs text-muted-foreground mb-1">Bobot</label>
           <input className="border rounded px-3 py-2 w-full" type="number" value={weight} onChange={(e) => setWeight(e.target.value)} />
         </div>
-        <div className="col-span-2 text-sm text-gray-600">TA: {selectedClass?.academicYear?.name ?? "-"}</div>
+        <div className="col-span-2 text-sm text-muted-foreground">TA: {selectedClass?.academicYear?.name ?? "-"}</div>
       </div>
 
       {isFetching ? (
         <div>Memuat…</div>
       ) : (
         <table className="w-full text-sm border">
-          <thead className="bg-gray-50">
+          <thead className="bg-muted/50">
             <tr>
               <th className="text-left p-2 border-b">Siswa</th>
               <th className="text-left p-2 border-b">Nilai</th>

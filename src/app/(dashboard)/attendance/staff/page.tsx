@@ -51,7 +51,7 @@ export default function StaffAttendancePage() {
       <h1 className="text-lg font-semibold">Absensi Pegawai</h1>
       <div className="grid grid-cols-4 gap-2 items-end">
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Pegawai</label>
+          <label className="block text-xs text-muted-foreground mb-1">Pegawai</label>
           <select className="border rounded px-3 py-2 w-full" value={employeeId} onChange={(e) => setEmployeeId(e.target.value)}>
             {employees?.items?.map((e) => (
               <option key={e.id} value={e.id}>
@@ -61,7 +61,7 @@ export default function StaffAttendancePage() {
           </select>
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Shift</label>
+          <label className="block text-xs text-muted-foreground mb-1">Shift</label>
           <select className="border rounded px-3 py-2 w-full" value={shiftId} onChange={(e) => setShiftId(e.target.value)}>
             {shifts?.items?.map((s) => (
               <option key={s.id} value={s.id}>
@@ -71,7 +71,7 @@ export default function StaffAttendancePage() {
           </select>
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Aksi</label>
+          <label className="block text-xs text-muted-foreground mb-1">Aksi</label>
           <select
             className="border rounded px-3 py-2 w-full"
             value={action}
@@ -82,7 +82,7 @@ export default function StaffAttendancePage() {
           </select>
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Metode</label>
+          <label className="block text-xs text-muted-foreground mb-1">Metode</label>
           <select className="border rounded px-3 py-2 w-full" value={method} onChange={(e) => setMethod(e.target.value)}>
             <option value="qr">QR</option>
             <option value="pin">PIN</option>

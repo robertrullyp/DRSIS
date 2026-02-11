@@ -71,7 +71,7 @@ export default function StaffCheckinPage() {
       <h1 className="text-lg font-semibold">Portal Pegawai: Check-in/Out</h1>
       <div className="grid md:grid-cols-3 gap-3 items-end">
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Shift</label>
+          <label className="block text-xs text-muted-foreground mb-1">Shift</label>
           <select className="border rounded px-3 py-2 w-full" value={shiftId} onChange={(e) => setShiftId(e.target.value)}>
             <option value="">(Pilih)</option>
             {(shifts?.items ?? []).map((s) => (
@@ -83,9 +83,9 @@ export default function StaffCheckinPage() {
           <button type="button" className="rounded-md px-3 py-2 border border-border hover:bg-muted" onClick={() => captureGeo()}>
             Ambil Lokasi
           </button>
-          {geo ? <span className="text-xs text-gray-600">Lokasi: {geo.lat.toFixed(5)}, {geo.lng.toFixed(5)}</span> : <span className="text-xs text-gray-500">Lokasi belum diambil</span>}
+          {geo ? <span className="text-xs text-muted-foreground">Lokasi: {geo.lat.toFixed(5)}, {geo.lng.toFixed(5)}</span> : <span className="text-xs text-muted-foreground">Lokasi belum diambil</span>}
           <button className="rounded-md px-4 py-2 bg-green-600 text-white hover:opacity-90 disabled:opacity-50" onClick={() => check.mutate("checkin")} disabled={check.isPending || !empId}>Check-in</button>
-          <button className="rounded-md px-4 py-2 bg-blue-600 text-white hover:opacity-90 disabled:opacity-50" onClick={() => check.mutate("checkout")} disabled={check.isPending || !empId}>Check-out</button>
+          <button className="rounded-md px-4 py-2 bg-accent text-white hover:opacity-90 disabled:opacity-50" onClick={() => check.mutate("checkout")} disabled={check.isPending || !empId}>Check-out</button>
         </div>
       </div>
 
@@ -97,7 +97,7 @@ export default function StaffCheckinPage() {
         <div className="text-sm">Check-out: {today?.checkOutAt ? new Date(today.checkOutAt).toLocaleTimeString() : "-"}</div>
         {typeof (today as any)?.latitude === "number" && typeof (today as any)?.longitude === "number" ? (
           <div className="text-sm">Lokasi: {(today as any).latitude.toFixed(5)}, {(today as any).longitude.toFixed(5)} {" "}
-            <a className="text-blue-600 underline" href={`https://www.google.com/maps?q=${(today as any).latitude},${(today as any).longitude}`} target="_blank" rel="noreferrer">(Map)</a>
+            <a className="text-accent underline" href={`https://www.google.com/maps?q=${(today as any).latitude},${(today as any).longitude}`} target="_blank" rel="noreferrer">(Map)</a>
           </div>
         ) : null}
       </div>

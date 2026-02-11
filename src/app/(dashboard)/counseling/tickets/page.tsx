@@ -32,7 +32,7 @@ export default function CounselingTicketsPage() {
       <h1 className="text-lg font-semibold">BK/Konseling: Tiket</h1>
       <form onSubmit={(e) => { e.preventDefault(); if (!studentId || !subject) return; create.mutate(); }} className="grid grid-cols-3 gap-2 items-end">
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Siswa</label>
+          <label className="block text-xs text-muted-foreground mb-1">Siswa</label>
           <select className="border rounded px-3 py-2 w-full" value={studentId} onChange={(e) => setStudentId(e.target.value)}>
             {students?.items?.map((s) => (
               <option key={s.id} value={s.id}>{s.user?.name ?? s.id}</option>
@@ -40,7 +40,7 @@ export default function CounselingTicketsPage() {
           </select>
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Subjek</label>
+          <label className="block text-xs text-muted-foreground mb-1">Subjek</label>
           <input className="border rounded px-3 py-2 w-full" value={subject} onChange={(e) => setSubject(e.target.value)} />
         </div>
         <button className="rounded-md px-4 py-2 bg-accent text-accent-foreground hover:opacity-90" disabled={create.isPending}>Buat Tiket</button>
@@ -50,7 +50,7 @@ export default function CounselingTicketsPage() {
         <div>Memuat…</div>
       ) : (
         <table className="w-full text-sm border">
-          <thead className="bg-gray-50">
+          <thead className="bg-muted/50">
             <tr>
               <th className="text-left p-2 border-b">Siswa</th>
               <th className="text-left p-2 border-b">Subjek</th>

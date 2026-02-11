@@ -69,7 +69,7 @@ export default function GradesPage() {
         <div>Memuat…</div>
       ) : (
         <table className="w-full text-sm border">
-          <thead className="bg-gray-50">
+          <thead className="bg-muted/50">
             <tr>
               <th className="text-left p-2 border-b">Nama</th>
               <th className="text-left p-2 border-b">Aksi</th>

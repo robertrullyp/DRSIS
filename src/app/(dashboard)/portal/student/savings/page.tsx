@@ -43,24 +43,24 @@ export default function MySavingsPage() {
     <div className="space-y-4">
       <h1 className="text-lg font-semibold">Tabungan</h1>
       {!hasAcc ? (
-        <div className="text-sm text-gray-600">Belum ada akun tabungan.</div>
+        <div className="text-sm text-muted-foreground">Belum ada akun tabungan.</div>
       ) : (
         <>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div className="border rounded-md p-3">
-              <div className="text-xs text-gray-600">Saldo Saat Ini</div>
+              <div className="text-xs text-muted-foreground">Saldo Saat Ini</div>
               <div className="font-semibold">{fmt(account!.balance)}</div>
             </div>
             <div className="border rounded-md p-3">
-              <div className="text-xs text-gray-600">Saldo Awal Periode</div>
+              <div className="text-xs text-muted-foreground">Saldo Awal Periode</div>
               <div className="font-semibold">{fmt(summary?.opening ?? 0)}</div>
             </div>
             <div className="border rounded-md p-3">
-              <div className="text-xs text-gray-600">Masuk</div>
+              <div className="text-xs text-muted-foreground">Masuk</div>
               <div className="font-semibold">{fmt(summary?.inflow ?? 0)}</div>
             </div>
             <div className="border rounded-md p-3">
-              <div className="text-xs text-gray-600">Keluar (disetujui)</div>
+              <div className="text-xs text-muted-foreground">Keluar (disetujui)</div>
               <div className="font-semibold">{fmt(summary?.outflow ?? 0)}</div>
             </div>
           </div>
@@ -71,17 +71,17 @@ export default function MySavingsPage() {
 
           <div className="flex gap-2 items-end">
             <div>
-              <label className="block text-xs text-gray-600 mb-1">Mulai</label>
+              <label className="mb-1 block text-xs text-muted-foreground">Mulai</label>
               <input type="date" className="border rounded px-3 py-2" value={range.start} onChange={(e) => setRange((r) => ({ ...r, start: e.target.value }))} />
             </div>
             <div>
-              <label className="block text-xs text-gray-600 mb-1">Selesai</label>
+              <label className="mb-1 block text-xs text-muted-foreground">Selesai</label>
               <input type="date" className="border rounded px-3 py-2" value={range.end} onChange={(e) => setRange((r) => ({ ...r, end: e.target.value }))} />
             </div>
           </div>
 
           <table className="w-full text-sm border">
-            <thead className="bg-gray-50">
+            <thead className="bg-muted/50">
               <tr>
                 <th className="text-left p-2 border-b">Tanggal</th>
                 <th className="text-left p-2 border-b">Jenis</th>
@@ -110,4 +110,3 @@ export default function MySavingsPage() {
     </div>
   );
 }
-

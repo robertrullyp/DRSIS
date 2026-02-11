@@ -61,7 +61,7 @@ export default function ExtraAttendancePage() {
       <h1 className="text-lg font-semibold">Presensi Ekstrakurikuler</h1>
       <div className="flex gap-2 items-end">
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Kegiatan</label>
+          <label className="block text-xs text-muted-foreground mb-1">Kegiatan</label>
           <Select value={extraId} onChange={(e) => setExtraId(e.target.value)}>
             {extras?.items?.map((x) => (
               <option key={x.id} value={x.id}>{x.name}</option>
@@ -69,10 +69,10 @@ export default function ExtraAttendancePage() {
           </Select>
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Tanggal</label>
+          <label className="block text-xs text-muted-foreground mb-1">Tanggal</label>
           <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
         </div>
-        <div className="text-sm text-gray-600">Ringkas: {summaryText}</div>
+        <div className="text-sm text-muted-foreground">Ringkas: {summaryText}</div>
         <Button className="ml-auto" onClick={() => save.mutate()} disabled={save.isPending}>Simpan</Button>
       </div>
 
@@ -80,7 +80,7 @@ export default function ExtraAttendancePage() {
         <div>Memuat…</div>
       ) : (
         <table className="w-full text-sm border">
-          <thead className="bg-gray-50">
+          <thead className="bg-muted/50">
             <tr>
               <th className="text-left p-2 border-b">Siswa</th>
               <th className="text-left p-2 border-b">Status</th>

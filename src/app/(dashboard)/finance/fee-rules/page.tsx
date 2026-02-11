@@ -33,15 +33,15 @@ export default function FeeRulesPage() {
       <h1 className="text-lg font-semibold">Keuangan: Aturan Biaya</h1>
       <form onSubmit={(e) => { e.preventDefault(); if (!name || !amount) return; create.mutate(); }} className="grid grid-cols-5 gap-2 items-end">
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Nama</label>
+          <label className="block text-xs text-muted-foreground mb-1">Nama</label>
           <Input value={name} onChange={(e) => setName(e.target.value)} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Jumlah</label>
+          <label className="block text-xs text-muted-foreground mb-1">Jumlah</label>
           <Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Tingkat (opsional)</label>
+          <label className="block text-xs text-muted-foreground mb-1">Tingkat (opsional)</label>
           <select className="border rounded px-3 py-2 w-full" value={gradeId} onChange={(e) => setGradeId(e.target.value)}>
             <option value="">(Tidak ditentukan)</option>
             {grades?.items?.map((g) => (<option key={g.id} value={g.id}>{g.name}</option>))}
@@ -56,7 +56,7 @@ export default function FeeRulesPage() {
 
       {isLoading ? <div>Memuat…</div> : (
         <table className="w-full text-sm border">
-          <thead className="bg-gray-50"><tr><th className="text-left p-2 border-b">Nama</th><th className="text-left p-2 border-b">Jumlah</th><th className="text-left p-2 border-b">Tingkat</th><th className="text-left p-2 border-b">Recurring</th></tr></thead>
+          <thead className="bg-muted/50"><tr><th className="text-left p-2 border-b">Nama</th><th className="text-left p-2 border-b">Jumlah</th><th className="text-left p-2 border-b">Tingkat</th><th className="text-left p-2 border-b">Recurring</th></tr></thead>
           <tbody>
             {(data?.items ?? []).map((f) => (
               <tr key={f.id}><td className="p-2 border-b">{f.name}</td><td className="p-2 border-b">{f.amount}</td><td className="p-2 border-b">{f.grade?.name ?? '-'}</td><td className="p-2 border-b">{f.recurring ? 'Ya' : '-'}</td></tr>

@@ -40,18 +40,18 @@ export default function LibrarySettingsPage() {
         <div>Memuat…</div>
       ) : data ? (
         <div className="space-y-3">
-          <div className="text-sm text-gray-600">Saat ini: maxLoans {data.maxLoans}, loanDays {data.loanDays}, finePerDay {data.finePerDay}</div>
+          <div className="text-sm text-muted-foreground">Saat ini: maxLoans {data.maxLoans}, loanDays {data.loanDays}, finePerDay {data.finePerDay}</div>
           <form onSubmit={(e) => { e.preventDefault(); save.mutate(); }} className="grid grid-cols-3 gap-3 items-end">
             <div>
-              <label className="block text-xs text-gray-600 mb-1">Maks Pinjaman Aktif</label>
+              <label className="block text-xs text-muted-foreground mb-1">Maks Pinjaman Aktif</label>
               <Input type="number" value={maxLoans} onChange={(e) => setMaxLoans(e.target.value)} placeholder={String(data.maxLoans)} />
             </div>
             <div>
-              <label className="block text-xs text-gray-600 mb-1">Hari Peminjaman</label>
+              <label className="block text-xs text-muted-foreground mb-1">Hari Peminjaman</label>
               <Input type="number" value={loanDays} onChange={(e) => setLoanDays(e.target.value)} placeholder={String(data.loanDays)} />
             </div>
             <div>
-              <label className="block text-xs text-gray-600 mb-1">Denda / Hari</label>
+              <label className="block text-xs text-muted-foreground mb-1">Denda / Hari</label>
               <Input type="number" value={finePerDay} onChange={(e) => setFinePerDay(e.target.value)} placeholder={String(data.finePerDay)} />
             </div>
             <div className="col-span-3">

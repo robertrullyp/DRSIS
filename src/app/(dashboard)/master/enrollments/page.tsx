@@ -87,7 +87,7 @@ export default function EnrollmentsPage() {
         className="grid grid-cols-4 gap-2 items-end"
       >
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Siswa</label>
+          <label className="block text-xs text-muted-foreground mb-1">Siswa</label>
           <select className="border rounded px-3 py-2 w-full" value={studentId} onChange={(e) => setStudentId(e.target.value)}>
             {students?.items?.map((s) => (
               <option key={s.id} value={s.id}>
@@ -97,7 +97,7 @@ export default function EnrollmentsPage() {
           </select>
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Kelas</label>
+          <label className="block text-xs text-muted-foreground mb-1">Kelas</label>
           <select className="border rounded px-3 py-2 w-full" value={classroomId} onChange={(e) => setClassroomId(e.target.value)}>
             {classes?.items?.map((c) => (
               <option key={c.id} value={c.id}>
@@ -107,7 +107,7 @@ export default function EnrollmentsPage() {
           </select>
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Tahun Ajaran</label>
+          <label className="block text-xs text-muted-foreground mb-1">Tahun Ajaran</label>
           <select className="border rounded px-3 py-2 w-full" value={academicYearId} onChange={(e) => setAcademicYearId(e.target.value)}>
             {years?.items?.map((y) => (
               <option key={y.id} value={y.id}>
@@ -123,7 +123,7 @@ export default function EnrollmentsPage() {
         <div>Memuat…</div>
       ) : (
         <table className="w-full text-sm border">
-          <thead className="bg-gray-50">
+          <thead className="bg-muted/50">
             <tr>
               <th className="text-left p-2 border-b">Siswa</th>
               <th className="text-left p-2 border-b">Kelas</th>

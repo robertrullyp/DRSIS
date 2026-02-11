@@ -119,7 +119,7 @@ export default function SchedulesPage() {
         className="grid grid-cols-6 gap-2 items-end"
       >
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Kelas</label>
+          <label className="block text-xs text-muted-foreground mb-1">Kelas</label>
           <select className="border rounded px-3 py-2 w-full" value={classroomId} onChange={(e) => setClassroomId(e.target.value)}>
             {classes?.items?.map((c) => (
               <option key={c.id} value={c.id}>
@@ -129,7 +129,7 @@ export default function SchedulesPage() {
           </select>
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Mapel</label>
+          <label className="block text-xs text-muted-foreground mb-1">Mapel</label>
           <select className="border rounded px-3 py-2 w-full" value={subjectId} onChange={(e) => setSubjectId(e.target.value)}>
             {subjects?.items?.map((s) => (
               <option key={s.id} value={s.id}>
@@ -139,7 +139,7 @@ export default function SchedulesPage() {
           </select>
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Guru</label>
+          <label className="block text-xs text-muted-foreground mb-1">Guru</label>
           <select className="border rounded px-3 py-2 w-full" value={teacherId} onChange={(e) => setTeacherId(e.target.value)}>
             {teachers?.items?.map((t) => (
               <option key={t.id} value={t.id}>
@@ -149,7 +149,7 @@ export default function SchedulesPage() {
           </select>
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Hari</label>
+          <label className="block text-xs text-muted-foreground mb-1">Hari</label>
           <select className="border rounded px-3 py-2 w-full" value={dayOfWeek} onChange={(e) => setDayOfWeek(Number(e.target.value))}>
             {days.map((d) => (
               <option key={d.value} value={d.value}>
@@ -159,11 +159,11 @@ export default function SchedulesPage() {
           </select>
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Mulai</label>
+          <label className="block text-xs text-muted-foreground mb-1">Mulai</label>
           <input className="border rounded px-3 py-2 w-full" placeholder="HH:mm" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Selesai</label>
+          <label className="block text-xs text-muted-foreground mb-1">Selesai</label>
           <input className="border rounded px-3 py-2 w-full" placeholder="HH:mm" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
         </div>
         <div className="col-span-6">
@@ -173,7 +173,7 @@ export default function SchedulesPage() {
 
       <div className="flex gap-2 items-end">
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Filter Kelas</label>
+          <label className="block text-xs text-muted-foreground mb-1">Filter Kelas</label>
           <select className="border rounded px-3 py-2" value={filterClassId} onChange={(e) => setFilterClassId(e.target.value)}>
             <option value="">(Semua)</option>
             {classes?.items?.map((c) => (
@@ -189,7 +189,7 @@ export default function SchedulesPage() {
         <div>Memuat…</div>
       ) : (
         <table className="w-full text-sm border">
-          <thead className="bg-gray-50">
+          <thead className="bg-muted/50">
             <tr>
               <th className="text-left p-2 border-b">Kelas</th>
               <th className="text-left p-2 border-b">Mapel</th>

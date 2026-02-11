@@ -25,25 +25,25 @@ export default function FinanceToolsPage() {
       <h1 className="text-lg font-semibold">Keuangan: Tools</h1>
       <div className="grid grid-cols-4 gap-2 items-end">
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Tahun Ajaran</label>
+          <label className="block text-xs text-muted-foreground mb-1">Tahun Ajaran</label>
           <select className="border rounded px-3 py-2 w-full" value={ayId} onChange={(e) => setAyId(e.target.value)}>
             {years?.items?.map((y) => (<option key={y.id} value={y.id}>{y.name}</option>))}
           </select>
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Tingkat (opsional)</label>
+          <label className="block text-xs text-muted-foreground mb-1">Tingkat (opsional)</label>
           <select className="border rounded px-3 py-2 w-full" value={gradeId} onChange={(e) => setGradeId(e.target.value)}>
             <option value="">(Semua)</option>
             {grades?.items?.map((g) => (<option key={g.id} value={g.id}>{g.name}</option>))}
           </select>
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Jatuh Tempo</label>
+          <label className="block text-xs text-muted-foreground mb-1">Jatuh Tempo</label>
           <Input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
         </div>
         <Button onClick={() => bulk.mutate()} disabled={bulk.isPending || !ayId}>Generate Invoice Massal</Button>
       </div>
-      <div className="text-sm text-gray-600">Gunakan filter tingkat untuk generate fee rule grade-specific otomatis.</div>
+      <div className="text-sm text-muted-foreground">Gunakan filter tingkat untuk generate fee rule grade-specific otomatis.</div>
     </div>
   );
 }

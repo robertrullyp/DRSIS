@@ -44,7 +44,7 @@ export default function ExtrasEventsPage() {
       <h1 className="text-lg font-semibold">Ekstrakurikuler: Event</h1>
       <div className="grid grid-cols-5 gap-2 items-end">
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Kegiatan</label>
+          <label className="block text-xs text-muted-foreground mb-1">Kegiatan</label>
           <Select value={extraId} onChange={(e) => setExtraId(e.target.value)}>
             {extras?.items?.map((x) => (
               <option key={x.id} value={x.id}>{x.name}</option>
@@ -52,15 +52,15 @@ export default function ExtrasEventsPage() {
           </Select>
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Judul</label>
+          <label className="block text-xs text-muted-foreground mb-1">Judul</label>
           <Input value={title} onChange={(e) => setTitle(e.target.value)} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Tanggal</label>
+          <label className="block text-xs text-muted-foreground mb-1">Tanggal</label>
           <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Lokasi</label>
+          <label className="block text-xs text-muted-foreground mb-1">Lokasi</label>
           <Input value={location} onChange={(e) => setLocation(e.target.value)} />
         </div>
         <Button disabled={create.isPending || !extraId || !title || !date}>Tambah</Button>
@@ -70,7 +70,7 @@ export default function ExtrasEventsPage() {
         <div>Memuat…</div>
       ) : (
         <table className="w-full text-sm border">
-          <thead className="bg-gray-50">
+          <thead className="bg-muted/50">
             <tr>
               <th className="text-left p-2 border-b">Judul</th>
               <th className="text-left p-2 border-b">Tanggal</th>

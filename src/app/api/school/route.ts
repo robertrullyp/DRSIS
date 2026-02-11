@@ -13,7 +13,7 @@ export async function PUT(req: NextRequest) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
   const roles = (token as any)?.roles as string[] | undefined;
   const perms = (token as any)?.permissions as string[] | undefined;
-  const allowed = Boolean(roles?.includes("admin") || perms?.includes("admin.manage"));
+  const allowed = Boolean(roles?.includes("admin") || perms?.includes("master.write"));
   if (!allowed) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const body = await req.json();
@@ -30,4 +30,3 @@ export async function PUT(req: NextRequest) {
   const created = await prisma.schoolProfile.create({ data: data as any });
   return NextResponse.json(created, { status: 201 });
 }
-

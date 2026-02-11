@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) return NextResponse.json({ error: parsed.error.format() }, { status: 400 });
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
   const creatorId = (token as any)?.sub as string | undefined;
-  const created = await prisma.counselingTicket.create({ data: { ...parsed.data, createdByUserId: creatorId ?? "" } });
+  if (!creatorId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const created = await prisma.counselingTicket.create({ data: { ...parsed.data, createdByUserId: creatorId } });
   return NextResponse.json(created, { status: 201 });
 }
-

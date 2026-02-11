@@ -13,7 +13,7 @@ export default function MyBillingPage() {
         <div>Memuat…</div>
       ) : (
         <table className="w-full text-sm border">
-          <thead className="bg-gray-50">
+          <thead className="bg-muted/50">
             <tr>
               <th className="text-left p-2 border-b">Kode</th>
               <th className="text-left p-2 border-b">Tahun Ajaran</th>
@@ -31,7 +31,7 @@ export default function MyBillingPage() {
                 <td className="p-2 border-b">{inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : "-"}</td>
                 <td className="p-2 border-b">{inv.status}</td>
                 <td className="p-2 border-b">{(inv.total / 100).toLocaleString(undefined, { style: "currency", currency: "IDR" })}</td>
-                <td className="p-2 border-b"><a className="text-blue-600 underline" href={`/api/portal/billing/${inv.id}/receipt`} target="_blank" rel="noreferrer">Lihat</a></td>
+                <td className="p-2 border-b"><a className="text-accent underline" href={`/api/portal/billing/${inv.id}/receipt`} target="_blank" rel="noreferrer">Lihat</a></td>
               </tr>
             ))}
             {(data?.items?.length ?? 0) === 0 && (
@@ -45,4 +45,3 @@ export default function MyBillingPage() {
     </div>
   );
 }
-

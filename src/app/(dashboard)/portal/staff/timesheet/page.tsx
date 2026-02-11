@@ -37,18 +37,18 @@ export default function StaffTimesheetPage() {
       <h1 className="text-lg font-semibold">Portal Pegawai: Timesheet</h1>
       <div className="flex gap-2 items-end">
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Mulai</label>
+          <label className="block text-xs text-muted-foreground mb-1">Mulai</label>
           <input type="datetime-local" className="border rounded px-3 py-2" value={range.start.slice(0,16)} onChange={(e)=> setRange(r => ({...r, start: new Date(e.target.value).toISOString()}))} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Selesai</label>
+          <label className="block text-xs text-muted-foreground mb-1">Selesai</label>
           <input type="datetime-local" className="border rounded px-3 py-2" value={range.end.slice(0,16)} onChange={(e)=> setRange(r => ({...r, end: new Date(e.target.value).toISOString()}))} />
         </div>
         <div className="ml-auto text-sm">Total Jam: {totals.hours.toFixed(2)}</div>
       </div>
 
       <table className="w-full text-sm border">
-        <thead className="bg-gray-50">
+        <thead className="bg-muted/50">
           <tr>
             <th className="text-left p-2 border-b">Tanggal</th>
             <th className="text-left p-2 border-b">Status</th>
@@ -68,7 +68,7 @@ export default function StaffTimesheetPage() {
               <td className="p-2 border-b">{hoursBetween(r.checkInAt, r.checkOutAt).toFixed(2)}</td>
               <td className="p-2 border-b">
                 {typeof r.latitude === "number" && typeof r.longitude === "number" ? (
-                  <a className="text-blue-600 underline" href={`https://www.google.com/maps?q=${r.latitude},${r.longitude}`} target="_blank" rel="noreferrer">
+                  <a className="text-accent underline" href={`https://www.google.com/maps?q=${r.latitude},${r.longitude}`} target="_blank" rel="noreferrer">
                     {r.latitude.toFixed(4)}, {r.longitude.toFixed(4)}
                   </a>
                 ) : (
@@ -78,7 +78,7 @@ export default function StaffTimesheetPage() {
             </tr>
           ))}
           {rows.length === 0 && (
-            <tr><td className="p-2" colSpan={5}>Tidak ada data.</td></tr>
+            <tr><td className="p-2" colSpan={6}>Tidak ada data.</td></tr>
           )}
         </tbody>
       </table>

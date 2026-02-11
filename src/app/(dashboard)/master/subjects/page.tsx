@@ -70,15 +70,15 @@ export default function SubjectsPage() {
         className="grid grid-cols-5 gap-2 items-end"
       >
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Kode</label>
+          <label className="block text-xs text-muted-foreground mb-1">Kode</label>
           <input className="border rounded px-3 py-2 w-full" value={code} onChange={(e) => setCode(e.target.value)} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Nama</label>
+          <label className="block text-xs text-muted-foreground mb-1">Nama</label>
           <input className="border rounded px-3 py-2 w-full" value={name} onChange={(e) => setName(e.target.value)} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Tingkat (opsional)</label>
+          <label className="block text-xs text-muted-foreground mb-1">Tingkat (opsional)</label>
           <select className="border rounded px-3 py-2 w-full" value={gradeId} onChange={(e) => setGradeId(e.target.value)}>
             <option value="">(tidak ditentukan)</option>
             {gradeData?.items?.map((g) => (
@@ -89,7 +89,7 @@ export default function SubjectsPage() {
           </select>
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Kurikulum (opsional)</label>
+          <label className="block text-xs text-muted-foreground mb-1">Kurikulum (opsional)</label>
           <select className="border rounded px-3 py-2 w-full" value={curriculumId} onChange={(e) => setCurriculumId(e.target.value)}>
             <option value="">(tidak ditentukan)</option>
             {curData?.items?.map((c) => (
@@ -107,7 +107,7 @@ export default function SubjectsPage() {
         <div>Memuat…</div>
       ) : (
         <table className="w-full text-sm border">
-          <thead className="bg-gray-50">
+          <thead className="bg-muted/50">
             <tr>
               <th className="text-left p-2 border-b">Kode</th>
               <th className="text-left p-2 border-b">Nama</th>

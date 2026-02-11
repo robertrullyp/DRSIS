@@ -1,0 +1,16 @@
+services:
+  mariadb_e2e:
+    image: mariadb:11
+    container_name: sis-mariadb-e2e
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: sis
+      MARIADB_USER: sis
+      MARIADB_PASSWORD: sis
+    ports:
+      - "3307:3306"
+    volumes:
+      - mariadb_e2e_data:/var/lib/mysql
+
+volumes:
+  mariadb_e2e_data:

@@ -40,7 +40,7 @@ export default function StaffLeavesPage() {
         className="grid md:grid-cols-4 gap-3 items-end"
       >
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Tipe</label>
+          <label className="block text-xs text-muted-foreground mb-1">Tipe</label>
           <select className="border rounded px-3 py-2 w-full" value={typeId} onChange={(e) => setTypeId(e.target.value)}>
             {(types?.items ?? []).map((t) => (
               <option key={t.id} value={t.id}>{t.name}</option>
@@ -48,15 +48,15 @@ export default function StaffLeavesPage() {
           </select>
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Mulai</label>
+          <label className="block text-xs text-muted-foreground mb-1">Mulai</label>
           <input type="date" className="border rounded px-3 py-2 w-full" value={start} onChange={(e) => setStart(e.target.value)} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Selesai</label>
+          <label className="block text-xs text-muted-foreground mb-1">Selesai</label>
           <input type="date" className="border rounded px-3 py-2 w-full" value={end} onChange={(e) => setEnd(e.target.value)} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Alasan</label>
+          <label className="block text-xs text-muted-foreground mb-1">Alasan</label>
           <input className="border rounded px-3 py-2 w-full" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="opsional" />
         </div>
         <div className="md:col-span-4">
@@ -65,7 +65,7 @@ export default function StaffLeavesPage() {
       </form>
 
       <table className="w-full text-sm border">
-        <thead className="bg-gray-50">
+        <thead className="bg-muted/50">
           <tr>
             <th className="text-left p-2 border-b">Diajukan</th>
             <th className="text-left p-2 border-b">Tipe</th>

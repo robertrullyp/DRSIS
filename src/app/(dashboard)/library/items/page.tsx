@@ -47,26 +47,26 @@ export default function LibraryItemsPage() {
       <h1 className="text-lg font-semibold">Perpustakaan: Katalog</h1>
       <div className="grid grid-cols-5 gap-2 items-end">
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Cari</label>
+          <label className="block text-xs text-muted-foreground mb-1">Cari</label>
           <Input value={q} onChange={(e) => setQ(e.target.value)} />
         </div>
       </div>
 
       <form onSubmit={(e) => { e.preventDefault(); if (!code || !title) return; create.mutate(); }} className="grid grid-cols-5 gap-2 items-end">
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Kode</label>
+          <label className="block text-xs text-muted-foreground mb-1">Kode</label>
           <Input value={code} onChange={(e) => setCode(e.target.value)} />
         </div>
         <div className="col-span-2">
-          <label className="block text-xs text-gray-600 mb-1">Judul</label>
+          <label className="block text-xs text-muted-foreground mb-1">Judul</label>
           <Input value={title} onChange={(e) => setTitle(e.target.value)} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Penulis</label>
+          <label className="block text-xs text-muted-foreground mb-1">Penulis</label>
           <Input value={author} onChange={(e) => setAuthor(e.target.value)} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Eksemplar</label>
+          <label className="block text-xs text-muted-foreground mb-1">Eksemplar</label>
           <Input type="number" value={copies} onChange={(e) => setCopies(e.target.value)} />
         </div>
         <Button disabled={create.isPending}>Tambah</Button>
@@ -76,7 +76,7 @@ export default function LibraryItemsPage() {
         <div>Memuat…</div>
       ) : (
         <table className="w-full text-sm border">
-          <thead className="bg-gray-50">
+          <thead className="bg-muted/50">
             <tr>
               <th className="text-left p-2 border-b">Kode</th>
               <th className="text-left p-2 border-b">Judul</th>

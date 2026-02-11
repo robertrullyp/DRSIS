@@ -45,19 +45,19 @@ export default function InvoicesPage() {
       <form onSubmit={(e) => { e.preventDefault(); if (!studentId || !ayId) return; create.mutate(); }} className="space-y-3">
         <div className="grid grid-cols-4 gap-2 items-end">
           <div>
-            <label className="block text-xs text-gray-600 mb-1">Siswa</label>
+            <label className="block text-xs text-muted-foreground mb-1">Siswa</label>
             <select className="border rounded px-3 py-2 w-full" value={studentId} onChange={(e) => setStudentId(e.target.value)}>
               {students?.items?.map((s) => (<option key={s.id} value={s.id}>{s.user?.name ?? s.id}</option>))}
             </select>
           </div>
           <div>
-            <label className="block text-xs text-gray-600 mb-1">Tahun Ajaran</label>
+            <label className="block text-xs text-muted-foreground mb-1">Tahun Ajaran</label>
             <select className="border rounded px-3 py-2 w-full" value={ayId} onChange={(e) => setAyId(e.target.value)}>
               {years?.items?.map((y) => (<option key={y.id} value={y.id}>{y.name}</option>))}
             </select>
           </div>
           <div>
-            <label className="block text-xs text-gray-600 mb-1">Jatuh Tempo</label>
+            <label className="block text-xs text-muted-foreground mb-1">Jatuh Tempo</label>
             <Input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
           </div>
           <div>
@@ -79,7 +79,7 @@ export default function InvoicesPage() {
 
       {isLoading ? <div>Memuat…</div> : (
         <table className="w-full text-sm border">
-          <thead className="bg-gray-50"><tr><th className="text-left p-2 border-b">Kode</th><th className="text-left p-2 border-b">Siswa</th><th className="text-left p-2 border-b">Total</th><th className="text-left p-2 border-b">Status</th><th className="text-left p-2 border-b">Aksi</th></tr></thead>
+          <thead className="bg-muted/50"><tr><th className="text-left p-2 border-b">Kode</th><th className="text-left p-2 border-b">Siswa</th><th className="text-left p-2 border-b">Total</th><th className="text-left p-2 border-b">Status</th><th className="text-left p-2 border-b">Aksi</th></tr></thead>
           <tbody>
             {(data?.items ?? []).map((inv) => (
               <tr key={inv.id}>

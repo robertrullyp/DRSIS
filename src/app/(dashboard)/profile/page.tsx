@@ -18,15 +18,15 @@ export default async function ProfilePage() {
       <h1 className="text-xl font-semibold">Profil Saya</h1>
       <div className="grid gap-3 max-w-xl">
         <div className="border rounded p-3">
-          <div className="text-sm text-gray-500">Nama</div>
+          <div className="text-sm text-muted-foreground">Nama</div>
           <div>{user?.name ?? "-"}</div>
         </div>
         <div className="border rounded p-3">
-          <div className="text-sm text-gray-500">Email</div>
+          <div className="text-sm text-muted-foreground">Email</div>
           <div>{user?.email}</div>
         </div>
         <div className="border rounded p-3">
-          <div className="text-sm text-gray-500">Peran</div>
+          <div className="text-sm text-muted-foreground">Peran</div>
           <div>{user?.role?.displayName ?? user?.role?.name ?? "-"}</div>
         </div>
       </div>

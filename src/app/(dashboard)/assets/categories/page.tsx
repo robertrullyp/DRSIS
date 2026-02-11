@@ -41,11 +41,11 @@ export default function AssetCategoriesPage() {
       <h1 className="text-lg font-semibold">Aset: Kategori</h1>
       <form onSubmit={(e) => { e.preventDefault(); if (!name) return; create.mutate(); }} className="grid grid-cols-3 gap-2 items-end">
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Nama</label>
+          <label className="block text-xs text-muted-foreground mb-1">Nama</label>
           <Input value={name} onChange={(e) => setName(e.target.value)} />
         </div>
         <div className="col-span-2">
-          <label className="block text-xs text-gray-600 mb-1">Deskripsi</label>
+          <label className="block text-xs text-muted-foreground mb-1">Deskripsi</label>
           <Input value={description} onChange={(e) => setDescription(e.target.value)} />
         </div>
         <Button disabled={create.isPending}>Tambah</Button>
@@ -54,7 +54,7 @@ export default function AssetCategoriesPage() {
         <div>Memuat…</div>
       ) : (
         <table className="w-full text-sm border">
-          <thead className="bg-gray-50">
+          <thead className="bg-muted/50">
             <tr>
               <th className="text-left p-2 border-b">Nama</th>
               <th className="text-left p-2 border-b">Deskripsi</th>

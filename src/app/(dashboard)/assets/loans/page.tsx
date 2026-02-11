@@ -63,7 +63,7 @@ export default function AssetLoansPage() {
       <h1 className="text-lg font-semibold">Aset: Peminjaman</h1>
       <form onSubmit={(e) => { e.preventDefault(); if (!assetId || !userId) return; borrow.mutate(); }} className="grid grid-cols-4 gap-2 items-end">
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Aset</label>
+          <label className="block text-xs text-muted-foreground mb-1">Aset</label>
           <Select value={assetId} onChange={(e) => setAssetId(e.target.value)}>
             {assets?.items?.map((a) => (
               <option key={a.id} value={a.id}>{a.name}</option>
@@ -71,7 +71,7 @@ export default function AssetLoansPage() {
           </Select>
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Peminjam</label>
+          <label className="block text-xs text-muted-foreground mb-1">Peminjam</label>
           <Select value={userId} onChange={(e) => setUserId(e.target.value)}>
             {users?.items?.map((u) => (
               <option key={u.id} value={u.id}>{u.name ?? u.email}</option>
@@ -79,7 +79,7 @@ export default function AssetLoansPage() {
           </Select>
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Jatuh Tempo (opsional)</label>
+          <label className="block text-xs text-muted-foreground mb-1">Jatuh Tempo (opsional)</label>
           <Input type="date" value={dueAt} onChange={(e) => setDueAt(e.target.value)} />
         </div>
         <Button disabled={borrow.isPending}>Pinjam</Button>
@@ -89,7 +89,7 @@ export default function AssetLoansPage() {
         <div>Memuat…</div>
       ) : (
         <table className="w-full text-sm border">
-          <thead className="bg-gray-50">
+          <thead className="bg-muted/50">
             <tr>
               <th className="text-left p-2 border-b">Aset</th>
               <th className="text-left p-2 border-b">Peminjam</th>

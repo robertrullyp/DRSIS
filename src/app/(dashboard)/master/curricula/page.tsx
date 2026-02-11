@@ -49,15 +49,15 @@ export default function CurriculaPage() {
         className="grid grid-cols-4 gap-2 items-end"
       >
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Nama</label>
+          <label className="block text-xs text-muted-foreground mb-1">Nama</label>
           <input className="border rounded px-3 py-2 w-full" value={name} onChange={(e) => setName(e.target.value)} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Tahun</label>
+          <label className="block text-xs text-muted-foreground mb-1">Tahun</label>
           <input className="border rounded px-3 py-2 w-full" type="number" value={year} onChange={(e) => setYear(e.target.value)} />
         </div>
         <div className="col-span-2">
-          <label className="block text-xs text-gray-600 mb-1">Catatan</label>
+          <label className="block text-xs text-muted-foreground mb-1">Catatan</label>
           <input className="border rounded px-3 py-2 w-full" value={notes} onChange={(e) => setNotes(e.target.value)} />
         </div>
         <button className="rounded-md px-4 py-2 bg-accent text-accent-foreground hover:opacity-90" disabled={create.isPending}>
@@ -68,7 +68,7 @@ export default function CurriculaPage() {
         <div>Memuat…</div>
       ) : (
         <table className="w-full text-sm border">
-          <thead className="bg-gray-50">
+          <thead className="bg-muted/50">
             <tr>
               <th className="text-left p-2 border-b">Nama</th>
               <th className="text-left p-2 border-b">Tahun</th>

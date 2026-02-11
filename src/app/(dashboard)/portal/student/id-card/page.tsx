@@ -4,7 +4,7 @@ export default function StudentIdCardPage() {
   return (
     <div className="space-y-4">
       <h1 className="text-lg font-semibold">Kartu Pelajar</h1>
-      <p className="text-sm text-gray-600">Unduh kartu pelajar Anda dalam format PDF (ukuran kartu CR-80).</p>
+      <p className="text-sm text-muted-foreground">Unduh kartu pelajar Anda dalam format PDF (ukuran kartu CR-80).</p>
       <div>
         <a
           href="/api/portal/student/id-card"
@@ -18,4 +18,3 @@ export default function StudentIdCardPage() {
     </div>
   );
 }
-

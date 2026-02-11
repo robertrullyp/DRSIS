@@ -38,27 +38,27 @@ export default function LeaveTypesPage() {
       <h1 className="text-lg font-semibold">HR: Tipe Cuti/Izin</h1>
       <form onSubmit={(e) => { e.preventDefault(); if (!name) return; create.mutate(); }} className="grid md:grid-cols-6 gap-3 items-end">
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Nama</label>
+          <label className="block text-xs text-muted-foreground mb-1">Nama</label>
           <input className="border rounded px-3 py-2 w-full" value={name} onChange={(e) => setName(e.target.value)} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Deskripsi</label>
+          <label className="block text-xs text-muted-foreground mb-1">Deskripsi</label>
           <input className="border rounded px-3 py-2 w-full" value={desc} onChange={(e) => setDesc(e.target.value)} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Maks Hari/Tahun</label>
+          <label className="block text-xs text-muted-foreground mb-1">Maks Hari/Tahun</label>
           <input className="border rounded px-3 py-2 w-full" type="number" min={0} value={max} onChange={(e) => setMax(e.target.value)} />
         </div>
         <div className="flex items-center gap-2">
-          <label className="text-xs text-gray-600">Aktif</label>
+          <label className="text-xs text-muted-foreground">Aktif</label>
           <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} />
         </div>
         <div className="flex items-center gap-2">
-          <label className="text-xs text-gray-600">Butuh Approval</label>
+          <label className="text-xs text-muted-foreground">Butuh Approval</label>
           <input type="checkbox" checked={req} onChange={(e) => setReq(e.target.checked)} />
         </div>
         <div className="flex items-center gap-2">
-          <label className="text-xs text-gray-600">Hitung Hadir (Dinas/Pelatihan)</label>
+          <label className="text-xs text-muted-foreground">Hitung Hadir (Dinas/Pelatihan)</label>
           <input type="checkbox" checked={present} onChange={(e) => setPresent(e.target.checked)} />
         </div>
         <div className="md:col-span-6">
@@ -70,7 +70,7 @@ export default function LeaveTypesPage() {
         <div>Memuat…</div>
       ) : (
         <table className="w-full text-sm border">
-          <thead className="bg-gray-50">
+          <thead className="bg-muted/50">
             <tr>
               <th className="text-left p-2 border-b">Nama</th>
               <th className="text-left p-2 border-b">Deskripsi</th>

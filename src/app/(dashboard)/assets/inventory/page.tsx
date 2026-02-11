@@ -55,15 +55,15 @@ export default function AssetsInventoryPage() {
       <h1 className="text-lg font-semibold">Aset: Inventaris</h1>
       <form onSubmit={(e) => { e.preventDefault(); if (!code || !name) return; create.mutate(); }} className="grid grid-cols-5 gap-2 items-end">
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Kode</label>
+          <label className="block text-xs text-muted-foreground mb-1">Kode</label>
           <Input value={code} onChange={(e) => setCode(e.target.value)} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Nama</label>
+          <label className="block text-xs text-muted-foreground mb-1">Nama</label>
           <Input value={name} onChange={(e) => setName(e.target.value)} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Kategori</label>
+          <label className="block text-xs text-muted-foreground mb-1">Kategori</label>
           <Select value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
             {cats?.items?.map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
@@ -71,7 +71,7 @@ export default function AssetsInventoryPage() {
           </Select>
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Lokasi</label>
+          <label className="block text-xs text-muted-foreground mb-1">Lokasi</label>
           <Input value={location} onChange={(e) => setLocation(e.target.value)} />
         </div>
         <Button disabled={create.isPending}>Tambah</Button>
@@ -81,7 +81,7 @@ export default function AssetsInventoryPage() {
         <div>Memuat…</div>
       ) : (
         <table className="w-full text-sm border">
-          <thead className="bg-gray-50">
+          <thead className="bg-muted/50">
             <tr>
               <th className="text-left p-2 border-b">Kode</th>
               <th className="text-left p-2 border-b">Nama</th>

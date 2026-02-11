@@ -27,7 +27,7 @@ export default function AssetDepreciationReportPage() {
       <h1 className="text-lg font-semibold">Aset: Laporan Depresiasi</h1>
       <div className="flex gap-2 items-end">
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Bulan</label>
+          <label className="block text-xs text-muted-foreground mb-1">Bulan</label>
           <input type="month" className="border rounded px-3 py-2" value={month} onChange={(e) => setMonth(e.target.value)} />
         </div>
         <button className="rounded-md px-4 py-2 bg-accent text-accent-foreground hover:opacity-90" onClick={load} disabled={loading}>Tampilkan</button>
@@ -37,7 +37,7 @@ export default function AssetDepreciationReportPage() {
       ) : (
         <>
           <table className="w-full text-sm border">
-            <thead className="bg-gray-50">
+            <thead className="bg-muted/50">
               <tr>
                 <th className="text-left p-2 border-b">Kode</th>
                 <th className="text-left p-2 border-b">Nama</th>

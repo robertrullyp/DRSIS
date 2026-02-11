@@ -80,15 +80,15 @@ export default function ClassroomsPage() {
         className="grid grid-cols-5 gap-2 items-end"
       >
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Kode</label>
+          <label className="block text-xs text-muted-foreground mb-1">Kode</label>
           <input className="border rounded px-3 py-2 w-full" value={code} onChange={(e) => setCode(e.target.value)} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Nama</label>
+          <label className="block text-xs text-muted-foreground mb-1">Nama</label>
           <input className="border rounded px-3 py-2 w-full" value={name} onChange={(e) => setName(e.target.value)} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Tingkat</label>
+          <label className="block text-xs text-muted-foreground mb-1">Tingkat</label>
           <select className="border rounded px-3 py-2 w-full" value={gradeId} onChange={(e) => setGradeId(e.target.value)}>
             {gradeData?.items?.map((g) => (
               <option key={g.id} value={g.id}>
@@ -98,7 +98,7 @@ export default function ClassroomsPage() {
           </select>
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Tahun Ajaran</label>
+          <label className="block text-xs text-muted-foreground mb-1">Tahun Ajaran</label>
           <select className="border rounded px-3 py-2 w-full" value={ayId} onChange={(e) => setAyId(e.target.value)}>
             {ayData?.items?.map((x) => (
               <option key={x.id} value={x.id}>
@@ -115,7 +115,7 @@ export default function ClassroomsPage() {
         <div>Memuat…</div>
       ) : (
         <table className="w-full text-sm border">
-          <thead className="bg-gray-50">
+          <thead className="bg-muted/50">
             <tr>
               <th className="text-left p-2 border-b">Kode</th>
               <th className="text-left p-2 border-b">Nama</th>

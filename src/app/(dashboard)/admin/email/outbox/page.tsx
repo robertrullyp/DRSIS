@@ -28,9 +28,13 @@ export default function EmailOutboxPage() {
       <h1 className="text-lg font-semibold">Admin: Email Outbox</h1>
       <div className="flex gap-2 items-end">
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Status</label>
+          <label className="block text-xs text-muted-foreground mb-1">Status</label>
           <select className="border rounded px-3 py-2" value={status} onChange={(e) => setStatus(e.target.value)}>
-            {(["", "PENDING", "SENT", "FAILED", "CANCELLED"]) as string[]}.map
+            {(["", "PENDING", "SENT", "FAILED", "CANCELLED"] as string[]).map((s) => (
+              <option key={s || "all"} value={s}>
+                {s || "ALL"}
+              </option>
+            ))}
           </select>
         </div>
         <button className="ml-auto rounded-md px-4 py-2 bg-accent text-accent-foreground hover:opacity-90" onClick={() => send.mutate()} disabled={send.isPending}>Kirim Pending</button>
@@ -40,7 +44,7 @@ export default function EmailOutboxPage() {
         <div>Memuat…</div>
       ) : (
         <table className="w-full text-sm border">
-          <thead className="bg-gray-50">
+          <thead className="bg-muted/50">
             <tr>
               <th className="text-left p-2 border-b">ID</th>
               <th className="text-left p-2 border-b">To</th>
@@ -81,4 +85,3 @@ export default function EmailOutboxPage() {
     </div>
   );
 }
-

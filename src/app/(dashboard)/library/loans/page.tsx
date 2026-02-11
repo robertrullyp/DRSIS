@@ -84,7 +84,7 @@ export default function LibraryLoansPage() {
       <h1 className="text-lg font-semibold">Perpustakaan: Pinjam/Kembali</h1>
       <form onSubmit={(e) => { e.preventDefault(); if (!memberId || !itemId) return; borrow.mutate(); }} className="grid grid-cols-3 gap-2 items-end">
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Anggota</label>
+          <label className="block text-xs text-muted-foreground mb-1">Anggota</label>
           <Select value={memberId} onChange={(e) => setMemberId(e.target.value)}>
             {members?.items?.map((m) => (
               <option key={m.id} value={m.id}>{memberName(m)}</option>
@@ -92,7 +92,7 @@ export default function LibraryLoansPage() {
           </Select>
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Koleksi</label>
+          <label className="block text-xs text-muted-foreground mb-1">Koleksi</label>
           <Select value={itemId} onChange={(e) => setItemId(e.target.value)}>
             {items?.items?.map((it) => (
               <option key={it.id} value={it.id}>{it.title} ({it.available} tersedia)</option>
@@ -104,7 +104,7 @@ export default function LibraryLoansPage() {
 
       <div className="grid grid-cols-3 gap-2 items-end">
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Barcode</label>
+          <label className="block text-xs text-muted-foreground mb-1">Barcode</label>
           <Input value={barcode} onChange={(e) => setBarcode(e.target.value)} />
         </div>
         <Button variant="outline" onClick={() => borrowByBarcode.mutate()} disabled={borrowByBarcode.isPending || !memberId || !barcode}>Pinjam via Barcode</Button>
@@ -115,7 +115,7 @@ export default function LibraryLoansPage() {
         <div>Memuat…</div>
       ) : (
         <table className="w-full text-sm border">
-          <thead className="bg-gray-50">
+          <thead className="bg-muted/50">
             <tr>
               <th className="text-left p-2 border-b">Anggota</th>
               <th className="text-left p-2 border-b">Koleksi</th>

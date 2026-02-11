@@ -63,15 +63,15 @@ export default function AcademicYearsPage() {
         className="grid grid-cols-4 gap-2 items-end"
       >
         <div className="col-span-1">
-          <label className="block text-xs text-gray-600 mb-1">Nama</label>
+          <label className="block text-xs text-muted-foreground mb-1">Nama</label>
           <input className="border rounded px-3 py-2 w-full" value={name} onChange={(e) => setName(e.target.value)} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Mulai</label>
+          <label className="block text-xs text-muted-foreground mb-1">Mulai</label>
           <input type="date" className="border rounded px-3 py-2 w-full" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Selesai</label>
+          <label className="block text-xs text-muted-foreground mb-1">Selesai</label>
           <input type="date" className="border rounded px-3 py-2 w-full" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
         </div>
         <button className="rounded-md px-4 py-2 bg-accent text-accent-foreground hover:opacity-90" disabled={create.isPending}>
@@ -82,7 +82,7 @@ export default function AcademicYearsPage() {
         <div>Memuat…</div>
       ) : (
         <table className="w-full text-sm border">
-          <thead className="bg-gray-50">
+          <thead className="bg-muted/50">
             <tr>
               <th className="text-left p-2 border-b">Nama</th>
               <th className="text-left p-2 border-b">Mulai</th>

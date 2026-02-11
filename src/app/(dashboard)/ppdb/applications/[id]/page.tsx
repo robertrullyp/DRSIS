@@ -84,27 +84,27 @@ export default function PpdbApplicationDetailPage() {
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <div className="text-xs text-gray-500">Email</div>
+              <div className="text-xs text-muted-foreground">Email</div>
               <div>{data.email}</div>
             </div>
             <div>
-              <div className="text-xs text-gray-500">Telepon</div>
+              <div className="text-xs text-muted-foreground">Telepon</div>
               <div>{data.phone ?? "-"}</div>
             </div>
             <div>
-              <div className="text-xs text-gray-500">Tanggal Lahir</div>
+              <div className="text-xs text-muted-foreground">Tanggal Lahir</div>
               <div>{data.birthDate ? new Date(data.birthDate).toLocaleDateString() : "-"}</div>
             </div>
             <div>
-              <div className="text-xs text-gray-500">Tingkat Dituju</div>
+              <div className="text-xs text-muted-foreground">Tingkat Dituju</div>
               <div>{data.gradeApplied?.name ?? "-"}</div>
             </div>
             <div>
-              <div className="text-xs text-gray-500">Status</div>
+              <div className="text-xs text-muted-foreground">Status</div>
               <div>{data.status}</div>
             </div>
             <div>
-              <div className="text-xs text-gray-500">Skor</div>
+              <div className="text-xs text-muted-foreground">Skor</div>
               <div>{typeof data.score === "number" ? data.score : "-"}</div>
             </div>
           </div>
@@ -120,17 +120,17 @@ export default function PpdbApplicationDetailPage() {
                 ))}
               </ul>
             ) : (
-              <div className="text-sm text-gray-500">Tidak ada dokumen</div>
+              <div className="text-sm text-muted-foreground">Tidak ada dokumen</div>
             )}
           </div>
 
           <div className="grid grid-cols-3 gap-3 items-end">
             <div>
-              <label className="block text-xs text-gray-600 mb-1">Skor</label>
+              <label className="block text-xs text-muted-foreground mb-1">Skor</label>
               <Input type="number" value={score} onChange={(e) => setScore(e.target.value)} />
             </div>
             <div className="col-span-2">
-              <label className="block text-xs text-gray-600 mb-1">Catatan</label>
+              <label className="block text-xs text-muted-foreground mb-1">Catatan</label>
               <Input value={notes} onChange={(e) => setNotes(e.target.value)} />
             </div>
             <div className="col-span-3 space-x-2">

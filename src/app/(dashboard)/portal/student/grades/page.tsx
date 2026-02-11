@@ -23,10 +23,9 @@ export default function MyGradesPage() {
 
   const { data } = useQuery<{ items: Assessment[] }>({
     queryKey: ["my-grades", studentId, ayId],
-    enabled: Boolean(studentId && ayId),
+    enabled: Boolean(studentId),
     queryFn: async () => {
-      const p = new URLSearchParams({ studentId: studentId!, academicYearId: ayId!, pageSize: "500" });
-      const res = await fetch(`/api/assessments?${p}`);
+      const res = await fetch("/api/portal/student/grades");
       if (!res.ok) throw new Error("Failed");
       return (await res.json()) as { items: Assessment[] };
     },
@@ -46,14 +45,14 @@ export default function MyGradesPage() {
   }, [data]);
 
   if (me && !me.student) {
-    return <div className="space-y-2"><h1 className="text-lg font-semibold">Nilai</h1><div className="text-sm text-gray-600">Akun ini tidak terkait dengan siswa.</div></div>;
+    return <div className="space-y-2"><h1 className="text-lg font-semibold">Nilai</h1><div className="text-sm text-muted-foreground">Akun ini tidak terkait dengan siswa.</div></div>;
   }
 
   return (
     <div className="space-y-4">
       <h1 className="text-lg font-semibold">Nilai</h1>
       <table className="w-full text-sm border">
-        <thead className="bg-gray-50">
+        <thead className="bg-muted/50">
           <tr>
             <th className="text-left p-2 border-b">Mata Pelajaran</th>
             <th className="text-left p-2 border-b">Rata-rata</th>
@@ -76,4 +75,3 @@ export default function MyGradesPage() {
     </div>
   );
 }
-

@@ -84,19 +84,19 @@ export default function PpdbApplicationsPage() {
         className="grid grid-cols-5 gap-2 items-end"
       >
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Nama</label>
+          <label className="block text-xs text-muted-foreground mb-1">Nama</label>
           <Input value={fullName} onChange={(e) => setFullName(e.target.value)} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Email</label>
+          <label className="block text-xs text-muted-foreground mb-1">Email</label>
           <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Phone</label>
+          <label className="block text-xs text-muted-foreground mb-1">Phone</label>
           <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Tingkat</label>
+          <label className="block text-xs text-muted-foreground mb-1">Tingkat</label>
           <select className="border rounded px-3 py-2 w-full" value={gradeAppliedId} onChange={(e) => setGradeAppliedId(e.target.value)}>
             <option value="">(tidak ditentukan)</option>
             {grades?.items?.map((g) => (
@@ -109,11 +109,11 @@ export default function PpdbApplicationsPage() {
 
       <div className="flex gap-2 items-end">
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Cari</label>
+          <label className="block text-xs text-muted-foreground mb-1">Cari</label>
           <input className="border rounded px-3 py-2" value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Status</label>
+          <label className="block text-xs text-muted-foreground mb-1">Status</label>
           <select className="border rounded px-3 py-2" value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }}>
             <option value="">(semua)</option>
             {(["PENDING","VERIFIED","ACCEPTED","REJECTED","ENROLLED"] as const).map((s) => (
@@ -121,14 +121,14 @@ export default function PpdbApplicationsPage() {
             ))}
           </select>
         </div>
-        <div className="ml-auto text-sm text-gray-600">Total: {data?.total ?? 0} | Halaman {data?.page ?? page} dari {totalPages}</div>
+        <div className="ml-auto text-sm text-muted-foreground">Total: {data?.total ?? 0} | Halaman {data?.page ?? page} dari {totalPages}</div>
       </div>
 
       {isFetching ? (
         <div>Memuat…</div>
       ) : (
         <table className="w-full text-sm border">
-          <thead className="bg-gray-50">
+          <thead className="bg-muted/50">
             <tr>
               <th className="text-left p-2 border-b">Nama</th>
               <th className="text-left p-2 border-b">Email</th>

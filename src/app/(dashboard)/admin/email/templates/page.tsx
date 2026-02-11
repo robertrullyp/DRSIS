@@ -43,15 +43,15 @@ export default function EmailTemplatesPage() {
       </div>
       <form onSubmit={(e) => { e.preventDefault(); if (!key || !subject || !content) return; create.mutate(); }} className="grid md:grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Key</label>
+          <label className="block text-xs text-muted-foreground mb-1">Key</label>
           <input className="border rounded px-3 py-2 w-full" value={key} onChange={(e) => setKey(e.target.value)} placeholder="mis. leave.approved" />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Subject</label>
+          <label className="block text-xs text-muted-foreground mb-1">Subject</label>
           <input className="border rounded px-3 py-2 w-full" value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Subject email" />
         </div>
         <div className="md:col-span-2">
-          <label className="block text-xs text-gray-600 mb-1">Content</label>
+          <label className="block text-xs text-muted-foreground mb-1">Content</label>
           <textarea className="border rounded px-3 py-2 w-full" rows={4} value={content} onChange={(e) => setContent(e.target.value)} placeholder="Gunakan token: {{name}}, {{startDate}}" />
         </div>
         <div className="md:col-span-2">
@@ -63,19 +63,19 @@ export default function EmailTemplatesPage() {
         <div className="font-medium">Send Test</div>
         <div className="grid md:grid-cols-3 gap-3 items-end">
           <div>
-            <label className="block text-xs text-gray-600 mb-1">Email (to)</label>
+            <label className="block text-xs text-muted-foreground mb-1">Email (to)</label>
             <input className="border rounded px-3 py-2 w-full" placeholder="user@example.com" value={testTo} onChange={(e) => setTestTo(e.target.value)} />
           </div>
           <div>
-            <label className="block text-xs text-gray-600 mb-1">Key Template</label>
+            <label className="block text-xs text-muted-foreground mb-1">Key Template</label>
             <input className="border rounded px-3 py-2 w-full" placeholder="leave.approved" value={testKey} onChange={(e) => setTestKey(e.target.value)} />
           </div>
           <div>
-            <label className="block text-xs text-gray-600 mb-1">Subject</label>
+            <label className="block text-xs text-muted-foreground mb-1">Subject</label>
             <input className="border rounded px-3 py-2 w-full" value={testSubject} onChange={(e) => setTestSubject(e.target.value)} />
           </div>
           <div className="md:col-span-3">
-            <label className="block text-xs text-gray-600 mb-1">Payload JSON</label>
+            <label className="block text-xs text-muted-foreground mb-1">Payload JSON</label>
             <textarea className="border rounded px-3 py-2 w-full" rows={4} value={testPayload} onChange={(e) => setTestPayload(e.target.value)} />
           </div>
           <div className="md:col-span-3">
@@ -85,7 +85,7 @@ export default function EmailTemplatesPage() {
       </div>
 
       <table className="w-full text-sm border">
-        <thead className="bg-gray-50">
+        <thead className="bg-muted/50">
           <tr>
             <th className="text-left p-2 border-b">Key</th>
             <th className="text-left p-2 border-b">Subject</th>

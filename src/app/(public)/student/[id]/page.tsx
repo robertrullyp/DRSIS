@@ -12,7 +12,7 @@ export default async function StudentPublicVerify({ params }: { params: Promise<
       <div className="min-h-[60vh] p-6 flex items-center justify-center">
         <div className="rounded-xl p-6 glass-card text-center">
           <div className="text-xl font-semibold mb-2">Data tidak ditemukan</div>
-          <Link className="text-blue-600 underline" href="/">Kembali</Link>
+          <Link className="text-accent underline" href="/">Kembali</Link>
         </div>
       </div>
     );
@@ -44,11 +44,11 @@ export default async function StudentPublicVerify({ params }: { params: Promise<
             )}
           </div>
           <div className="col-span-2 space-y-1">
-            <div><span className="text-xs text-gray-600">Nama:</span> <span className="font-medium">{name}</span></div>
-            {student.nis ? <div><span className="text-xs text-gray-600">NIS:</span> <span className="font-medium">{student.nis}</span></div> : null}
-            {student.nisn ? <div><span className="text-xs text-gray-600">NISN:</span> <span className="font-medium">{student.nisn}</span></div> : null}
-            {current?.classroom?.name ? <div><span className="text-xs text-gray-600">Kelas:</span> <span className="font-medium">{current.classroom.name}</span></div> : null}
-            {current?.classroom?.academicYear?.name ? <div><span className="text-xs text-gray-600">Tahun Ajaran:</span> <span className="font-medium">{current.classroom.academicYear.name}</span></div> : null}
+            <div><span className="text-xs text-muted-foreground">Nama:</span> <span className="font-medium">{name}</span></div>
+            {student.nis ? <div><span className="text-xs text-muted-foreground">NIS:</span> <span className="font-medium">{student.nis}</span></div> : null}
+            {student.nisn ? <div><span className="text-xs text-muted-foreground">NISN:</span> <span className="font-medium">{student.nisn}</span></div> : null}
+            {current?.classroom?.name ? <div><span className="text-xs text-muted-foreground">Kelas:</span> <span className="font-medium">{current.classroom.name}</span></div> : null}
+            {current?.classroom?.academicYear?.name ? <div><span className="text-xs text-muted-foreground">Tahun Ajaran:</span> <span className="font-medium">{current.classroom.academicYear.name}</span></div> : null}
           </div>
         </div>
       </div>

@@ -26,11 +26,11 @@ export default function TimesheetsPage() {
       <h1 className="text-lg font-semibold">HR: Timesheet</h1>
       <div className="flex gap-2 items-end">
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Mulai</label>
+          <label className="block text-xs text-muted-foreground mb-1">Mulai</label>
           <Input type="date" value={start} onChange={(e) => setStart(e.target.value)} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Selesai</label>
+          <label className="block text-xs text-muted-foreground mb-1">Selesai</label>
           <Input type="date" value={end} onChange={(e) => setEnd(e.target.value)} />
         </div>
       </div>
@@ -39,7 +39,7 @@ export default function TimesheetsPage() {
         <div>Memuat…</div>
       ) : (
         <table className="w-full text-sm border">
-          <thead className="bg-gray-50">
+          <thead className="bg-muted/50">
             <tr>
               <th className="text-left p-2 border-b">Pegawai</th>
               <th className="text-left p-2 border-b">Hari</th>

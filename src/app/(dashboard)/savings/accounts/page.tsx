@@ -25,7 +25,7 @@ export default function SavingsAccountsPage() {
       <h1 className="text-lg font-semibold">Tabungan: Akun</h1>
       <div className="grid grid-cols-3 gap-2 items-end">
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Siswa</label>
+          <label className="block text-xs text-muted-foreground mb-1">Siswa</label>
           <select className="border rounded px-3 py-2 w-full" value={studentId} onChange={(e) => setStudentId(e.target.value)}>
             {students?.items?.map((s) => (<option key={s.id} value={s.id}>{s.user?.name ?? s.id}</option>))}
           </select>
@@ -35,7 +35,7 @@ export default function SavingsAccountsPage() {
 
       {isLoading ? <div>Memuat…</div> : (
         <table className="w-full text-sm border">
-          <thead className="bg-gray-50"><tr><th className="text-left p-2 border-b">Siswa</th><th className="text-left p-2 border-b">Saldo</th><th className="text-left p-2 border-b">Aksi</th></tr></thead>
+          <thead className="bg-muted/50"><tr><th className="text-left p-2 border-b">Siswa</th><th className="text-left p-2 border-b">Saldo</th><th className="text-left p-2 border-b">Aksi</th></tr></thead>
           <tbody>
             {(data?.items ?? []).map((a) => (
               <tr key={a.id}>

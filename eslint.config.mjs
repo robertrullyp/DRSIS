@@ -19,6 +19,7 @@ const eslintConfig = [
       "next-env.d.ts",
       "src/generated/**",
       "openapi/**",
+      ".vscode/**",
     ],
   },
   ...compat.extends("next/core-web-vitals", "next/typescript"),

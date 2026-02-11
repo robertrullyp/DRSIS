@@ -33,13 +33,13 @@ export default function SavingsTransactionsPage() {
       <h1 className="text-lg font-semibold">Tabungan: Transaksi</h1>
       <div className="grid grid-cols-6 gap-2 items-end">
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Akun</label>
+          <label className="block text-xs text-muted-foreground mb-1">Akun</label>
           <select className="border rounded px-3 py-2 w-full" value={accountId} onChange={(e) => setAccountId(e.target.value)}>
             {accounts?.items?.map((a) => (<option key={a.id} value={a.id}>{a.student.user?.name ?? a.id} (Saldo: {a.balance})</option>))}
           </select>
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Jenis</label>
+          <label className="block text-xs text-muted-foreground mb-1">Jenis</label>
           <select className="border rounded px-3 py-2 w-full" value={type} onChange={(e) => setType(e.target.value)}>
             <option>DEPOSIT</option>
             <option>WITHDRAWAL</option>
@@ -47,16 +47,16 @@ export default function SavingsTransactionsPage() {
           </select>
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Nominal</label>
+          <label className="block text-xs text-muted-foreground mb-1">Nominal</label>
           <Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} />
         </div>
         <Button onClick={() => submit.mutate()} disabled={submit.isPending || !accountId || !amount}>Simpan</Button>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Periode Mulai</label>
+          <label className="block text-xs text-muted-foreground mb-1">Periode Mulai</label>
           <Input type="date" value={start} onChange={(e) => setStart(e.target.value)} />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Periode Selesai</label>
+          <label className="block text-xs text-muted-foreground mb-1">Periode Selesai</label>
           <Input type="date" value={end} onChange={(e) => setEnd(e.target.value)} />
         </div>
       </div>
@@ -75,10 +75,10 @@ export default function SavingsTransactionsPage() {
         }}>Buku PDF 30 hari</Button>
       </div>
       {summary && (
-        <div className="text-sm text-gray-700">Saldo awal: {summary.opening} | Masuk: {summary.inflow} | Keluar: {summary.outflow} | Saldo akhir: {summary.closing}</div>
+        <div className="text-sm text-foreground/80">Saldo awal: {summary.opening} | Masuk: {summary.inflow} | Keluar: {summary.outflow} | Saldo akhir: {summary.closing}</div>
       )}
       <table className="w-full text-sm border">
-        <thead className="bg-gray-50"><tr><th className="text-left p-2 border-b">Waktu</th><th className="text-left p-2 border-b">Jenis</th><th className="text-left p-2 border-b">Nominal</th><th className="text-left p-2 border-b">Status</th><th className="text-left p-2 border-b">Aksi</th></tr></thead>
+        <thead className="bg-muted/50"><tr><th className="text-left p-2 border-b">Waktu</th><th className="text-left p-2 border-b">Jenis</th><th className="text-left p-2 border-b">Nominal</th><th className="text-left p-2 border-b">Status</th><th className="text-left p-2 border-b">Aksi</th></tr></thead>
         <tbody>
           {(txnsPeriod?.items ?? txns?.items ?? []).map((t) => (
             <tr key={t.id}>

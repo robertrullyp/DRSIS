@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -30,6 +30,7 @@ type ListResponse = {
 };
 
 export default function HrAttendancePage() {
+  const qc = useQueryClient();
   const [employeeId, setEmployeeId] = useState<string>("");
   const [date, setDate] = useState<string>("");
   const [start, setStart] = useState<string>("");
@@ -111,7 +112,7 @@ export default function HrAttendancePage() {
 
       <div className="grid grid-cols-1 md:grid-cols-6 gap-2 items-end">
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Pegawai (opsional)</label>
+          <label className="block text-xs text-muted-foreground mb-1">Pegawai (opsional)</label>
           <Select
             value={employeeId}
             onChange={(e) => {
@@ -129,7 +130,7 @@ export default function HrAttendancePage() {
         </div>
 
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Tanggal (tepat)</label>
+          <label className="block text-xs text-muted-foreground mb-1">Tanggal (tepat)</label>
           <Input
             type="date"
             value={date}
@@ -146,7 +147,7 @@ export default function HrAttendancePage() {
         </div>
 
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Mulai (range)</label>
+          <label className="block text-xs text-muted-foreground mb-1">Mulai (range)</label>
           <Input
             type="date"
             value={start}
@@ -158,7 +159,7 @@ export default function HrAttendancePage() {
           />
         </div>
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Selesai (range)</label>
+          <label className="block text-xs text-muted-foreground mb-1">Selesai (range)</label>
           <Input
             type="date"
             value={end}
@@ -171,7 +172,7 @@ export default function HrAttendancePage() {
         </div>
 
         <div>
-          <label className="block text-xs text-gray-600 mb-1">Page Size</label>
+          <label className="block text-xs text-muted-foreground mb-1">Page Size</label>
           <Select
             value={pageSize}
             onChange={(e) => {
@@ -203,7 +204,7 @@ export default function HrAttendancePage() {
         </div>
       </div>
 
-      <div className="flex items-center justify-between text-sm text-gray-600">
+      <div className="flex items-center justify-between text-sm text-muted-foreground">
         <div>
           Total: {data?.total ?? 0} | Halaman {data?.page ?? page} dari {totalPages}
         </div>
@@ -230,7 +231,7 @@ export default function HrAttendancePage() {
         <div>Memuat…</div>
       ) : (
         <table className="w-full text-sm border">
-          <thead className="bg-gray-50">
+          <thead className="bg-muted/50">
             <tr>
               <th className="text-left p-2 border-b">Tanggal</th>
               <th className="text-left p-2 border-b">Pegawai</th>
@@ -259,7 +260,14 @@ export default function HrAttendancePage() {
                     className="text-xs px-2 py-1"
                     variant="outline"
                     onClick={async () => {
-                      await fetch(`/api/hr/attendance/${r.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ approve: true }) });
+                      const res = await fetch(`/api/hr/attendance/${r.id}`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ approve: true }),
+                      });
+                      if (res.ok) {
+                        await qc.invalidateQueries({ queryKey: ["hr-attendance"] });
+                      }
                     }}
                   >
                     Approve

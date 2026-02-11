@@ -14,7 +14,7 @@ services:
       - mariadb_data:/var/lib/mysql
 
   minio:
-    image: quay.io/minio/minio:RELEASE.2024-06-13T22-53-53Z
+    image: quay.io/minio/minio:latest
     container_name: sis-minio
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}

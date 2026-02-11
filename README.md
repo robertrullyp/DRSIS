@@ -1,61 +1,92 @@
-# DRSIS — Next.js + Prisma SIS
+# DRSIS — School Information System
 
-Sistem Informasi Sekolah — foundation scaffold per blueprint (Next.js App Router, Prisma/MariaDB/MySQL, NextAuth JWT RBAC, Tailwind, React Query, S3/MinIO, OpenAPI).
+DRSIS adalah Sistem Informasi Sekolah berbasis Next.js App Router, Prisma, NextAuth JWT RBAC, Tailwind v4, React Query, dan integrasi S3/MinIO.
 
-Quick start
-- Prereqs: Node 18+, Docker Desktop
-- Copy env: `cp sis/.env.example sis/.env` and set `NEXTAUTH_SECRET`
-- Start DB + MinIO: `docker compose up -d`
-- Install deps: `cd sis && npm i`
-- Generate Prisma: `npm run db:generate`
-- Create schema: `npm run db:push`
-- Seed roles/admin: `npm run db:seed`
-- Dev server: `npm run dev` then open http://localhost:3000
+## Tech Stack
 
-Default admin (change after first login)
+- Next.js 15 (App Router + Turbopack)
+- TypeScript
+- Prisma + MariaDB
+- NextAuth (Credentials, JWT)
+- Tailwind CSS v4
+- React Query
+- Playwright (E2E smoke tests)
+
+## Quick Start
+
+### Prasyarat
+
+- Node.js 18+
+- Docker (untuk MariaDB + MinIO)
+
+### Setup lokal
+
+```bash
+cp .env.example .env
+npm install
+npm run db:up
+npm run db:generate
+npm run db:push
+npm run db:seed
+npm run dev
+```
+
+Buka `http://localhost:3000`.
+
+### Default admin
+
 - Email: `admin@sis.local`
 - Password: `admin123`
 
-What’s inside (P0 foundation)
-- Auth: NextAuth (Credentials, JWT) with RBAC payload
-- RBAC: Role/Permission models + middleware guard
-- DB: MariaDB/MySQL via Prisma (rich schema)
-- UI: Tailwind (App Router), basic sign-in, providers (Session + React Query)
-- API: Health, Master/Grades (list/create) with Zod validation
-- Storage: MinIO/S3 client + presign API
-- OpenAPI: generator script from Zod registry example
+## Docker Services
 
-Docker services
-- Postgres: `localhost:5432` (db=sis, user=postgres, pass=postgres)
-- MinIO: API `:9000`, Console `:9001` (user/pass: minioadmin)
+- MariaDB: `localhost:3306`
+  - database: `sis`
+  - user: `sis`
+  - password: `sis`
+- MinIO API: `localhost:9000`
+- MinIO Console: `localhost:9001`
+  - user: `minioadmin`
+  - password: `minioadmin`
 
-Useful scripts (in `sis/package.json`)
-- `db:generate` — Prisma client
-- `db:push` — Create DB schema (dev)
-- `db:push` — Migrations (when adding changes)
-- `db:seed` — Seed roles + admin
-- `openapi:gen` — Generate `openapi/openapi.json`
+## Scripts Penting
 
-TODO (milestones)
-- P1: Master Data CRUD pages, Attendance (student/staff), Assessment & Report PDF
-- P2: PPDB, Library flows, Assets, Extracurricular, Counseling
-- P3: Finance (invoicing, payments), Savings (transactions, approvals)
-- P4: Integrations (LMS/CBT), WA/Email workers + webhook, Analytics dashboards
-- P5: Observability (structured logs, metrics), backups, CI/CD, e2e tests
+- `npm run dev` - jalankan development server
+- `npm run build` - build production
+- `npm run start` - jalankan hasil build
+- `npm run lint` - jalankan ESLint
+- `npm run db:up` - nyalakan MariaDB via Docker
+- `npm run db:down` - matikan service Docker
+- `npm run db:generate` - generate Prisma Client
+- `npm run db:push` - sinkronkan schema ke database
+- `npm run db:seed` - seed role, permission, dan admin
+- `npm run openapi:gen` - generate `openapi/openapi.json`
+- `npm run test:e2e` - jalankan Playwright tests
 
-Code pointers
-- Prisma schema: `sis/prisma/schema.prisma`
-- Seed data: `sis/prisma/seed.ts`
-- Auth config: `sis/src/lib/auth.ts` and `sis/middleware.ts`
-- Prisma client: `sis/src/lib/prisma.ts`
-- API examples: `sis/src/app/api/health/route.ts`, `sis/src/app/api/master/grades/route.ts`
-- S3 util: `sis/src/lib/s3.ts`
-- Providers: `sis/src/app/providers.tsx`
-- Sign-in page: `sis/src/app/(auth)/sign-in/page.tsx`
+## Struktur Project
 
-Notes
-- Financial and savings operations must use `prisma.$transaction()` (enforce in service layer when implementing).
-- Add shadcn/ui components and design system when starting the front-end screens.
-- Expand RBAC rules in `sis/src/middleware/rbac.ts` per module routes.
+```text
+.
+├── docs/                     # dokumentasi modul/theming/notifikasi
+├── prisma/                   # schema + seed
+├── public/                   # static assets
+├── src/
+│   ├── app/                  # pages/routes (App Router)
+│   ├── components/           # UI components
+│   ├── lib/                  # helper, auth, prisma, service utils
+│   ├── middleware/           # RBAC helper middleware
+│   ├── server/               # server-side utilities (contoh: OpenAPI generator)
+│   └── types/                # shared types
+├── tests/                    # Playwright tests
+├── middleware.ts             # Next.js middleware entry
+├── next.config.ts            # Next.js config
+├── docker-compose.yml        # MariaDB + MinIO
+├── TODO.md                   # milestone pengembangan
+└── package.json              # scripts & dependencies
+```
 
+## Dokumentasi Tambahan
 
+- Theming: `docs/THEMING.md`
+- Notifications: `docs/NOTIFICATIONS.md`
+- Roadmap: `TODO.md`

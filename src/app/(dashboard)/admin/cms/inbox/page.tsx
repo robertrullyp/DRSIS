@@ -2,6 +2,15 @@
 
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  DataTable,
+  DataTableCell,
+  DataTableEmptyRow,
+  DataTableHead,
+  DataTableHeaderCell,
+  DataTablePagination,
+  DataTableRow,
+} from "@/components/ui/data-table";
 
 type InboxItem = {
   id: string;
@@ -34,15 +43,17 @@ export default function AdminCmsInboxPage() {
   const [q, setQ] = useState("");
   const [isRead, setIsRead] = useState<"" | "true" | "false">("");
   const [isResolved, setIsResolved] = useState<"" | "true" | "false">("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const queryString = useMemo(() => {
-    const params = new URLSearchParams({ page: "1", pageSize: "100" });
+    const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
     if (q.trim().length > 0) params.set("q", q.trim());
     if (isRead) params.set("isRead", isRead);
     if (isResolved) params.set("isResolved", isResolved);
     return params.toString();
-  }, [q, isRead, isResolved]);
+  }, [page, pageSize, q, isRead, isResolved]);
 
   const inboxQuery = useQuery<InboxListResponse>({
     queryKey: ["admin-cms-inbox", queryString],
@@ -73,6 +84,11 @@ export default function AdminCmsInboxPage() {
   });
 
   const rows = inboxQuery.data?.items ?? [];
+  const total = inboxQuery.data?.total ?? 0;
+  const currentPage = inboxQuery.data?.page ?? page;
+  const currentPageSize = inboxQuery.data?.pageSize ?? pageSize;
+  const hasPrev = currentPage > 1;
+  const hasNext = currentPage * currentPageSize < total;
 
   return (
     <div className="space-y-4">
@@ -98,12 +114,22 @@ export default function AdminCmsInboxPage() {
             className="w-full rounded-md border px-2 py-1.5 text-sm"
             placeholder="nama/email/subjek/pesan..."
             value={q}
-            onChange={(event) => setQ(event.target.value)}
+            onChange={(event) => {
+              setQ(event.target.value);
+              setPage(1);
+            }}
           />
         </div>
         <div className="flex items-center gap-2">
           <label className="text-xs text-muted-foreground">Read</label>
-          <select className="rounded-md border px-2 py-1.5 text-sm" value={isRead} onChange={(event) => setIsRead(event.target.value as typeof isRead)}>
+          <select
+            className="rounded-md border px-2 py-1.5 text-sm"
+            value={isRead}
+            onChange={(event) => {
+              setIsRead(event.target.value as typeof isRead);
+              setPage(1);
+            }}
+          >
             <option value="">Semua</option>
             <option value="false">Unread</option>
             <option value="true">Read</option>
@@ -114,93 +140,118 @@ export default function AdminCmsInboxPage() {
           <select
             className="rounded-md border px-2 py-1.5 text-sm"
             value={isResolved}
-            onChange={(event) => setIsResolved(event.target.value as typeof isResolved)}
+            onChange={(event) => {
+              setIsResolved(event.target.value as typeof isResolved);
+              setPage(1);
+            }}
           >
             <option value="">Semua</option>
             <option value="false">Open</option>
             <option value="true">Resolved</option>
           </select>
         </div>
+        <div className="flex items-center gap-2">
+          <label className="text-xs text-muted-foreground">Page size</label>
+          <select
+            className="rounded-md border px-2 py-1.5 text-sm"
+            value={pageSize}
+            onChange={(event) => {
+              setPageSize(Number(event.target.value));
+              setPage(1);
+            }}
+          >
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+            <option value={50}>50</option>
+          </select>
+        </div>
       </div>
+
+      <DataTablePagination
+        page={currentPage}
+        pageSize={currentPageSize}
+        total={total}
+        visibleCount={rows.length}
+        itemLabel="pesan"
+        hasPrev={hasPrev}
+        hasNext={hasNext}
+        onPageChange={(nextPage) => setPage(Math.max(1, nextPage))}
+        onPageSizeChange={(nextPageSize) => {
+          setPageSize(nextPageSize);
+          setPage(1);
+        }}
+      />
 
       {inboxQuery.isLoading ? (
         <div>Memuat inbox...</div>
       ) : (
         <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-          <div className="overflow-auto rounded-md border">
-            <table className="w-full min-w-[860px] text-sm">
-              <thead className="bg-muted/50">
-                <tr>
-                  <th className="border-b p-2 text-left">Pengirim</th>
-                  <th className="border-b p-2 text-left">Subjek</th>
-                  <th className="border-b p-2 text-left">Status</th>
-                  <th className="border-b p-2 text-left">Masuk</th>
-                  <th className="border-b p-2 text-left">Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((item) => (
-                  <tr key={item.id} className={selectedId === item.id ? "bg-muted/40" : ""}>
-                    <td className="border-b p-2">
+          <DataTable minWidthClassName="min-w-[860px]">
+            <DataTableHead>
+              <DataTableRow>
+                <DataTableHeaderCell>Pengirim</DataTableHeaderCell>
+                <DataTableHeaderCell>Subjek</DataTableHeaderCell>
+                <DataTableHeaderCell>Status</DataTableHeaderCell>
+                <DataTableHeaderCell>Masuk</DataTableHeaderCell>
+                <DataTableHeaderCell>Aksi</DataTableHeaderCell>
+              </DataTableRow>
+            </DataTableHead>
+            <tbody>
+              {rows.map((item) => (
+                <DataTableRow key={item.id} className={selectedId === item.id ? "bg-muted/40" : ""}>
+                  <DataTableCell>
+                    <button
+                      type="button"
+                      className="text-left"
+                      onClick={() => {
+                        setSelectedId(item.id);
+                        if (!item.isRead) {
+                          patchMutation.mutate({ id: item.id, payload: { isRead: true } });
+                        }
+                      }}
+                    >
+                      <div className="font-medium">{item.name}</div>
+                      <div className="text-xs text-muted-foreground">{item.email || item.phone || "Tanpa kontak"}</div>
+                    </button>
+                  </DataTableCell>
+                  <DataTableCell>
+                    <div className="line-clamp-2 font-medium">{item.subject || "(Tanpa subjek)"}</div>
+                    <div className="line-clamp-2 text-xs text-muted-foreground">{item.message}</div>
+                  </DataTableCell>
+                  <DataTableCell>
+                    <div className="flex flex-wrap gap-1">
+                      <span className={`rounded border px-2 py-0.5 text-xs ${item.isRead ? "" : "border-amber-500 text-amber-700"}`}>
+                        {item.isRead ? "Read" : "Unread"}
+                      </span>
+                      <span className={`rounded border px-2 py-0.5 text-xs ${item.isResolved ? "border-emerald-500 text-emerald-700" : ""}`}>
+                        {item.isResolved ? "Resolved" : "Open"}
+                      </span>
+                    </div>
+                  </DataTableCell>
+                  <DataTableCell>{new Date(item.createdAt).toLocaleString()}</DataTableCell>
+                  <DataTableCell>
+                    <div className="flex flex-wrap gap-2">
                       <button
                         type="button"
-                        className="text-left"
-                        onClick={() => {
-                          setSelectedId(item.id);
-                          if (!item.isRead) {
-                            patchMutation.mutate({ id: item.id, payload: { isRead: true } });
-                          }
-                        }}
+                        className="rounded border px-2 py-1 text-xs hover:bg-muted/70"
+                        onClick={() => patchMutation.mutate({ id: item.id, payload: { isRead: true } })}
                       >
-                        <div className="font-medium">{item.name}</div>
-                        <div className="text-xs text-muted-foreground">{item.email || item.phone || "Tanpa kontak"}</div>
+                        Mark Read
                       </button>
-                    </td>
-                    <td className="border-b p-2">
-                      <div className="line-clamp-2 font-medium">{item.subject || "(Tanpa subjek)"}</div>
-                      <div className="line-clamp-2 text-xs text-muted-foreground">{item.message}</div>
-                    </td>
-                    <td className="border-b p-2">
-                      <div className="flex flex-wrap gap-1">
-                        <span className={`rounded border px-2 py-0.5 text-xs ${item.isRead ? "" : "border-amber-500 text-amber-700"}`}>
-                          {item.isRead ? "Read" : "Unread"}
-                        </span>
-                        <span className={`rounded border px-2 py-0.5 text-xs ${item.isResolved ? "border-emerald-500 text-emerald-700" : ""}`}>
-                          {item.isResolved ? "Resolved" : "Open"}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="border-b p-2">{new Date(item.createdAt).toLocaleString()}</td>
-                    <td className="border-b p-2">
-                      <div className="flex flex-wrap gap-2">
-                        <button
-                          type="button"
-                          className="rounded border px-2 py-1 text-xs hover:bg-muted/70"
-                          onClick={() => patchMutation.mutate({ id: item.id, payload: { isRead: true } })}
-                        >
-                          Mark Read
-                        </button>
-                        <button
-                          type="button"
-                          className="rounded border px-2 py-1 text-xs hover:bg-muted/70"
-                          onClick={() => patchMutation.mutate({ id: item.id, payload: { isResolved: !item.isResolved, isRead: true } })}
-                        >
-                          {item.isResolved ? "Reopen" : "Resolve"}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {rows.length === 0 ? (
-                  <tr>
-                    <td className="p-3 text-muted-foreground" colSpan={5}>
-                      Belum ada pesan kontak masuk.
-                    </td>
-                  </tr>
-                ) : null}
-              </tbody>
-            </table>
-          </div>
+                      <button
+                        type="button"
+                        className="rounded border px-2 py-1 text-xs hover:bg-muted/70"
+                        onClick={() => patchMutation.mutate({ id: item.id, payload: { isResolved: !item.isResolved, isRead: true } })}
+                      >
+                        {item.isResolved ? "Reopen" : "Resolve"}
+                      </button>
+                    </div>
+                  </DataTableCell>
+                </DataTableRow>
+              ))}
+              {rows.length === 0 ? <DataTableEmptyRow message="Belum ada pesan kontak masuk." colSpan={5} /> : null}
+            </tbody>
+          </DataTable>
 
           <section className="space-y-3 rounded-md border p-3">
             <h2 className="text-sm font-semibold">Detail Pesan</h2>

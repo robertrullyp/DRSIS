@@ -3,6 +3,15 @@
 import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
+import {
+  DataTable,
+  DataTableCell,
+  DataTableEmptyRow,
+  DataTableHead,
+  DataTableHeaderCell,
+  DataTablePagination,
+  DataTableRow,
+} from "@/components/ui/data-table";
 
 type CmsPostItem = {
   id: string;
@@ -13,6 +22,9 @@ type CmsPostItem = {
   excerpt: string | null;
   publishedAt: string | null;
   updatedAt: string;
+  createdBy: string | null;
+  updatedBy: string | null;
+  publishedBy: string | null;
 };
 
 type CmsPostResponse = {
@@ -29,6 +41,8 @@ export default function AdminCmsPostsPage() {
   const [status, setStatus] = useState<"" | "DRAFT" | "REVIEW" | "PUBLISHED" | "ARCHIVED">("");
   const [type, setType] = useState<"" | "NEWS" | "ARTICLE" | "ANNOUNCEMENT">("");
   const [q, setQ] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [bulkAction, setBulkAction] = useState<BulkAction>("");
   const [bulkMessage, setBulkMessage] = useState<string | null>(null);
@@ -36,12 +50,12 @@ export default function AdminCmsPostsPage() {
   const [isApplyingBulk, setApplyingBulk] = useState(false);
 
   const queryString = useMemo(() => {
-    const params = new URLSearchParams({ page: "1", pageSize: "100" });
+    const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
     if (status) params.set("status", status);
     if (type) params.set("type", type);
     if (q.trim()) params.set("q", q.trim());
     return params.toString();
-  }, [status, type, q]);
+  }, [page, pageSize, status, type, q]);
 
   const postsQuery = useQuery<CmsPostResponse>({
     queryKey: ["admin-cms-posts", queryString],
@@ -77,6 +91,11 @@ export default function AdminCmsPostsPage() {
   });
 
   const rows = postsQuery.data?.items ?? [];
+  const total = postsQuery.data?.total ?? 0;
+  const currentPage = postsQuery.data?.page ?? page;
+  const currentPageSize = postsQuery.data?.pageSize ?? pageSize;
+  const hasPrev = currentPage > 1;
+  const hasNext = currentPage * currentPageSize < total;
   const selectedSet = new Set(selectedIds);
   const allSelected = rows.length > 0 && rows.every((item) => selectedSet.has(item.id));
 
@@ -153,13 +172,23 @@ export default function AdminCmsPostsPage() {
           <input
             className="w-full rounded-md border px-2 py-1.5 text-sm"
             value={q}
-            onChange={(event) => setQ(event.target.value)}
+            onChange={(event) => {
+              setQ(event.target.value);
+              setPage(1);
+            }}
             placeholder="Judul, slug, excerpt..."
           />
         </label>
         <label className="space-y-1">
           <span className="text-xs text-muted-foreground">Status</span>
-          <select className="w-full rounded-md border px-2 py-1.5 text-sm" value={status} onChange={(event) => setStatus(event.target.value as typeof status)}>
+          <select
+            className="w-full rounded-md border px-2 py-1.5 text-sm"
+            value={status}
+            onChange={(event) => {
+              setStatus(event.target.value as typeof status);
+              setPage(1);
+            }}
+          >
             <option value="">Semua</option>
             <option value="DRAFT">DRAFT</option>
             <option value="REVIEW">REVIEW</option>
@@ -169,7 +198,14 @@ export default function AdminCmsPostsPage() {
         </label>
         <label className="space-y-1">
           <span className="text-xs text-muted-foreground">Tipe</span>
-          <select className="w-full rounded-md border px-2 py-1.5 text-sm" value={type} onChange={(event) => setType(event.target.value as typeof type)}>
+          <select
+            className="w-full rounded-md border px-2 py-1.5 text-sm"
+            value={type}
+            onChange={(event) => {
+              setType(event.target.value as typeof type);
+              setPage(1);
+            }}
+          >
             <option value="">Semua</option>
             <option value="NEWS">NEWS</option>
             <option value="ARTICLE">ARTICLE</option>
@@ -183,11 +219,28 @@ export default function AdminCmsPostsPage() {
             setQ("");
             setStatus("");
             setType("");
+            setPage(1);
+            setPageSize(20);
           }}
         >
           Reset
         </button>
       </div>
+
+      <DataTablePagination
+        page={currentPage}
+        pageSize={currentPageSize}
+        total={total}
+        visibleCount={rows.length}
+        itemLabel="post"
+        hasPrev={hasPrev}
+        hasNext={hasNext}
+        onPageChange={(nextPage) => setPage(Math.max(1, nextPage))}
+        onPageSizeChange={(nextPageSize) => {
+          setPageSize(nextPageSize);
+          setPage(1);
+        }}
+      />
 
       <div className="flex flex-wrap items-center gap-2 rounded-lg border p-3">
         <select
@@ -218,73 +271,73 @@ export default function AdminCmsPostsPage() {
       {postsQuery.isLoading ? (
         <div>Memuat data...</div>
       ) : (
-        <div className="overflow-auto">
-          <table className="w-full min-w-[1040px] border text-sm">
-            <thead className="bg-muted/50">
-              <tr>
-                <th className="border-b p-2 text-left">
-                  <input type="checkbox" checked={allSelected} onChange={toggleAll} aria-label="Pilih semua post" />
-                </th>
-                <th className="border-b p-2 text-left">Judul</th>
-                <th className="border-b p-2 text-left">Slug</th>
-                <th className="border-b p-2 text-left">Tipe</th>
-                <th className="border-b p-2 text-left">Status</th>
-                <th className="border-b p-2 text-left">Publish</th>
-                <th className="border-b p-2 text-left">Updated</th>
-                <th className="border-b p-2 text-left">Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((item) => (
-                <tr key={item.id}>
-                  <td className="border-b p-2">
-                    <input
-                      type="checkbox"
-                      checked={selectedSet.has(item.id)}
-                      onChange={() => toggleSelected(item.id)}
-                      aria-label={`Pilih post ${item.title}`}
-                    />
-                  </td>
-                  <td className="border-b p-2 font-medium">{item.title}</td>
-                  <td className="border-b p-2">/{item.slug}</td>
-                  <td className="border-b p-2">{item.type}</td>
-                  <td className="border-b p-2">{item.status}</td>
-                  <td className="border-b p-2">{item.publishedAt ? new Date(item.publishedAt).toLocaleString() : "-"}</td>
-                  <td className="border-b p-2">{new Date(item.updatedAt).toLocaleString()}</td>
-                  <td className="border-b p-2">
-                    <div className="flex flex-wrap gap-2">
-                      <Link href={`/admin/cms/posts/${item.id}/edit`} className="rounded border px-2 py-1 text-xs hover:bg-muted/70">
-                        Edit
-                      </Link>
-                      <Link href={`/berita/${item.slug}`} target="_blank" className="rounded border px-2 py-1 text-xs hover:bg-muted/70">
-                        View
-                      </Link>
-                      {item.status === "PUBLISHED" ? (
-                        <button type="button" className="rounded border px-2 py-1 text-xs hover:bg-muted/70" onClick={() => unpublishMutation.mutate(item.id)}>
-                          Unpublish
-                        </button>
-                      ) : (
-                        <button type="button" className="rounded border px-2 py-1 text-xs hover:bg-muted/70" onClick={() => publishMutation.mutate(item.id)}>
-                          Publish
-                        </button>
-                      )}
-                      <button type="button" className="rounded border border-red-500 px-2 py-1 text-xs text-red-600" onClick={() => deleteMutation.mutate(item.id)}>
-                        Hapus
+        <DataTable minWidthClassName="min-w-[1220px]">
+          <DataTableHead>
+            <DataTableRow>
+              <DataTableHeaderCell>
+                <input type="checkbox" checked={allSelected} onChange={toggleAll} aria-label="Pilih semua post" />
+              </DataTableHeaderCell>
+              <DataTableHeaderCell>Judul</DataTableHeaderCell>
+              <DataTableHeaderCell>Slug</DataTableHeaderCell>
+              <DataTableHeaderCell>Tipe</DataTableHeaderCell>
+              <DataTableHeaderCell>Status</DataTableHeaderCell>
+              <DataTableHeaderCell>Publish</DataTableHeaderCell>
+              <DataTableHeaderCell>Audit</DataTableHeaderCell>
+              <DataTableHeaderCell>Updated</DataTableHeaderCell>
+              <DataTableHeaderCell>Aksi</DataTableHeaderCell>
+            </DataTableRow>
+          </DataTableHead>
+          <tbody>
+            {rows.map((item) => (
+              <DataTableRow key={item.id}>
+                <DataTableCell>
+                  <input
+                    type="checkbox"
+                    checked={selectedSet.has(item.id)}
+                    onChange={() => toggleSelected(item.id)}
+                    aria-label={`Pilih post ${item.title}`}
+                  />
+                </DataTableCell>
+                <DataTableCell className="font-medium">{item.title}</DataTableCell>
+                <DataTableCell>/{item.slug}</DataTableCell>
+                <DataTableCell>{item.type}</DataTableCell>
+                <DataTableCell>{item.status}</DataTableCell>
+                <DataTableCell>{item.publishedAt ? new Date(item.publishedAt).toLocaleString() : "-"}</DataTableCell>
+                <DataTableCell>
+                  <div className="space-y-0.5 text-xs">
+                    <p className="text-muted-foreground">C: {item.createdBy || "-"}</p>
+                    <p className="text-muted-foreground">U: {item.updatedBy || "-"}</p>
+                    <p className="text-muted-foreground">P: {item.publishedBy || "-"}</p>
+                  </div>
+                </DataTableCell>
+                <DataTableCell>{new Date(item.updatedAt).toLocaleString()}</DataTableCell>
+                <DataTableCell>
+                  <div className="flex flex-wrap gap-2">
+                    <Link href={`/admin/cms/posts/${item.id}/edit`} className="rounded border px-2 py-1 text-xs hover:bg-muted/70">
+                      Edit
+                    </Link>
+                    <Link href={`/berita/${item.slug}`} target="_blank" className="rounded border px-2 py-1 text-xs hover:bg-muted/70">
+                      View
+                    </Link>
+                    {item.status === "PUBLISHED" ? (
+                      <button type="button" className="rounded border px-2 py-1 text-xs hover:bg-muted/70" onClick={() => unpublishMutation.mutate(item.id)}>
+                        Unpublish
                       </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {rows.length === 0 ? (
-                <tr>
-                  <td className="p-3 text-muted-foreground" colSpan={8}>
-                    Belum ada post.
-                  </td>
-                </tr>
-              ) : null}
-            </tbody>
-          </table>
-        </div>
+                    ) : (
+                      <button type="button" className="rounded border px-2 py-1 text-xs hover:bg-muted/70" onClick={() => publishMutation.mutate(item.id)}>
+                        Publish
+                      </button>
+                    )}
+                    <button type="button" className="rounded border border-red-500 px-2 py-1 text-xs text-red-600" onClick={() => deleteMutation.mutate(item.id)}>
+                      Hapus
+                    </button>
+                  </div>
+                </DataTableCell>
+              </DataTableRow>
+            ))}
+            {rows.length === 0 ? <DataTableEmptyRow message="Belum ada post." colSpan={9} /> : null}
+          </tbody>
+        </DataTable>
       )}
     </div>
   );

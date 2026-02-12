@@ -48,9 +48,9 @@ export default async function Home() {
       badge: "Tracking",
     },
     {
-      href: "/ppdb/announcement",
-      title: "Pengumuman PPDB",
-      description: "Akses daftar hasil seleksi berdasarkan tingkat dan nama.",
+      href: "/pengumuman",
+      title: "Pengumuman Sekolah",
+      description: "Akses pengumuman resmi sekolah yang dikelola via CMS.",
       tone: "var(--accent)",
       badge: "Public",
     },

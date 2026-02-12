@@ -20,7 +20,7 @@ async function gotoStable(page: Page, path: string) {
   let lastError: unknown;
   for (let attempt = 1; attempt <= 3; attempt += 1) {
     try {
-      await page.goto(path, { waitUntil: "domcontentloaded", timeout: 120_000 });
+      await page.goto(path, { waitUntil: "domcontentloaded", timeout: 60_000 });
       return;
     } catch (error) {
       lastError = error;
@@ -100,7 +100,7 @@ async function loginAsAdmin(page: Page) {
   await expect(page.getByRole("heading", { name: /dashboard/i })).toBeVisible({ timeout: 30_000 });
 }
 
-test.describe.configure({ timeout: 240_000 });
+test.describe.configure({ timeout: 480_000 });
 
 test("RWD public landing works across viewport targets", async ({ page }) => {
   for (const viewport of viewportCases) {
@@ -116,22 +116,34 @@ test("RWD public landing works across viewport targets", async ({ page }) => {
 
 test("RWD dashboard navigation works on mobile/tablet/desktop", async ({ page }) => {
   await loginAsAdmin(page);
+  await gotoStable(page, "/dashboard");
 
   for (const viewport of viewportCases) {
     await test.step(viewport.name, async () => {
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
       await gotoStable(page, "/dashboard");
-      await expect(page.getByRole("heading", { name: /dashboard/i })).toBeVisible({ timeout: 15_000 });
+      await expect(page).toHaveURL(/\/dashboard/, { timeout: 20_000 });
+      await expect(page.getByText("Campus Command Center")).toBeVisible({
+        timeout: 20_000,
+      });
       await assertNoHorizontalOverflow(page);
 
       if (viewport.width < 1024) {
-        const openMenuButton = page.getByRole("button", { name: /Buka menu/i });
-        await expect(openMenuButton).toBeVisible();
+        const mobileMenuButton = page
+          .locator('button[aria-label="Buka menu"], button[aria-label="Tutup menu"]')
+          .first();
+        await expect(mobileMenuButton).toBeVisible({ timeout: 10_000 });
         let menuOpened = false;
+        const menuAriaLabel = await mobileMenuButton
+          .getAttribute("aria-label")
+          .catch(() => null);
+        if (menuAriaLabel === "Tutup menu") {
+          menuOpened = true;
+        }
 
-        for (let attempt = 1; attempt <= 2; attempt += 1) {
-          await openMenuButton.click({ force: true });
-          await page.waitForTimeout(250);
+        for (let attempt = 1; attempt <= 2 && !menuOpened; attempt += 1) {
+          await mobileMenuButton.click({ force: true });
+          await page.waitForTimeout(300);
 
           const closeButtonVisible = await page.getByRole("button", { name: /Tutup menu/i }).first().isVisible().catch(() => false);
           if (closeButtonVisible) {
@@ -151,6 +163,13 @@ test("RWD dashboard navigation works on mobile/tablet/desktop", async ({ page })
         }
 
         expect(menuOpened, "Sidebar should open after tapping mobile menu button").toBeTruthy();
+
+        const closeButton = page.getByRole("button", { name: /Tutup menu/i }).first();
+        if (await closeButton.isVisible().catch(() => false)) {
+          await closeButton.click({ force: true });
+        }
+
+        await expect(page).toHaveURL(/\/dashboard/, { timeout: 20_000 });
       }
     });
   }

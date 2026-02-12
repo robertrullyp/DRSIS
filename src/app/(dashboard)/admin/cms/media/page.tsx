@@ -11,6 +11,8 @@ type CmsMediaDetail = {
   size: number;
   width: number | null;
   height: number | null;
+  blurhash: string | null;
+  thumbUrl: string | null;
   alt: string | null;
   title: string | null;
   key: string;
@@ -20,10 +22,12 @@ type CmsMediaDetail = {
 
 export default function AdminCmsMediaPage() {
   const queryClient = useQueryClient();
-  const [module, setModule] = useState<"posts" | "galleries" | "pages">("posts");
+  const [module, setModule] = useState<"posts" | "galleries" | "pages" | "events">("posts");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [alt, setAlt] = useState("");
   const [title, setTitle] = useState("");
+  const [blurhash, setBlurhash] = useState("");
+  const [thumbUrl, setThumbUrl] = useState("");
   const [message, setMessage] = useState<string | null>(null);
 
   const detailQuery = useQuery<CmsMediaDetail>({
@@ -40,6 +44,8 @@ export default function AdminCmsMediaPage() {
     if (!detailQuery.data) return;
     setAlt(detailQuery.data.alt || "");
     setTitle(detailQuery.data.title || "");
+    setBlurhash(detailQuery.data.blurhash || "");
+    setThumbUrl(detailQuery.data.thumbUrl || "");
   }, [detailQuery.data]);
 
   const updateMutation = useMutation({
@@ -48,7 +54,12 @@ export default function AdminCmsMediaPage() {
       const res = await fetch(`/api/admin/cms/media/${selectedId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ alt: alt || null, title: title || null }),
+        body: JSON.stringify({
+          alt: alt || null,
+          title: title || null,
+          blurhash: blurhash || null,
+          thumbUrl: thumbUrl || null,
+        }),
       });
       if (!res.ok) throw new Error("Gagal memperbarui metadata media");
     },
@@ -71,7 +82,7 @@ export default function AdminCmsMediaPage() {
 
       <div className="flex flex-wrap items-center gap-2 rounded-lg border p-3 text-xs">
         <span className="text-muted-foreground">Modul:</span>
-        {(["posts", "galleries", "pages"] as const).map((item) => (
+        {(["posts", "galleries", "pages", "events"] as const).map((item) => (
           <button
             key={item}
             type="button"
@@ -99,6 +110,14 @@ export default function AdminCmsMediaPage() {
             <div>
               <label className="mb-1 block text-xs text-muted-foreground">Alt Text</label>
               <input className="w-full rounded-md border px-3 py-2 text-sm" value={alt} onChange={(event) => setAlt(event.target.value)} />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs text-muted-foreground">Blurhash (opsional)</label>
+              <input className="w-full rounded-md border px-3 py-2 text-sm" value={blurhash} onChange={(event) => setBlurhash(event.target.value)} />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs text-muted-foreground">Thumb URL (opsional)</label>
+              <input className="w-full rounded-md border px-3 py-2 text-sm" value={thumbUrl} onChange={(event) => setThumbUrl(event.target.value)} />
             </div>
           </div>
           <div className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-2">

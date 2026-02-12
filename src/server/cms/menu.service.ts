@@ -13,8 +13,34 @@ type CmsMenuTreeItem = {
   children: CmsMenuTreeItem[];
 };
 
+type CmsMenuTreeAccessItem = {
+  id: string;
+  label: string;
+  type: "INTERNAL" | "EXTERNAL" | "PAGE" | "CATEGORY" | "TAG";
+  href: string;
+  order: number;
+  visibility: "PUBLIC" | "AUTH_ONLY" | "ROLE_ONLY";
+  roleNames: string[];
+  children: CmsMenuTreeAccessItem[];
+};
+
+export type CmsMenuAudience = {
+  isAuthenticated: boolean;
+  roles: string[];
+};
+
 function normalizeHref(raw: string | null | undefined) {
   return (raw ?? "").trim();
+}
+
+function splitRoleNames(raw: string | null | undefined): string[] {
+  if (!raw) return [];
+  return [...new Set(raw.split(",").map((item) => item.trim()).filter(Boolean))];
+}
+
+function joinRoleNames(roleNames: string[] | undefined) {
+  if (!roleNames || roleNames.length === 0) return null;
+  return [...new Set(roleNames.map((item) => item.trim()).filter(Boolean))].join(",");
 }
 
 function isPublished(item: {
@@ -44,8 +70,32 @@ function resolveMenuHref(item: {
   return href;
 }
 
+function canSeeByVisibility(item: Pick<CmsMenuTreeAccessItem, "visibility" | "roleNames">, audience: CmsMenuAudience) {
+  if (item.visibility === "PUBLIC") return true;
+  if (item.visibility === "AUTH_ONLY") return audience.isAuthenticated;
+  if (!audience.isAuthenticated || item.roleNames.length === 0) return false;
+  return item.roleNames.some((role) => audience.roles.includes(role));
+}
+
+function filterMenuTreeByAudience(items: CmsMenuTreeAccessItem[], audience: CmsMenuAudience): CmsMenuTreeItem[] {
+  return items
+    .filter((item) => canSeeByVisibility(item, audience))
+    .map((item) => ({
+      ...item,
+      children: filterMenuTreeByAudience(item.children, audience),
+    }))
+    .map((item) => ({
+      id: item.id,
+      label: item.label,
+      type: item.type,
+      href: item.href,
+      order: item.order,
+      children: item.children,
+    }));
+}
+
 export async function listCmsMenus() {
-  return prisma.cmsMenu.findMany({
+  const menus = await prisma.cmsMenu.findMany({
     include: {
       items: {
         include: {
@@ -56,6 +106,14 @@ export async function listCmsMenus() {
     },
     orderBy: { name: "asc" },
   });
+
+  return menus.map((menu) => ({
+    ...menu,
+    items: menu.items.map((item) => ({
+      ...item,
+      roleNames: splitRoleNames(item.roleNames),
+    })),
+  }));
 }
 
 export async function replaceCmsMenuItems(menuId: string, input: CmsMenuReplaceInput) {
@@ -74,6 +132,8 @@ export async function replaceCmsMenuItems(menuId: string, input: CmsMenuReplaceI
           menuId,
           label: root.label,
           type: root.type,
+          visibility: root.visibility ?? "PUBLIC",
+          roleNames: joinRoleNames(root.roleNames),
           href: root.href,
           pageId: root.pageId,
           order: root.order ?? i + 1,
@@ -90,6 +150,8 @@ export async function replaceCmsMenuItems(menuId: string, input: CmsMenuReplaceI
             parentId: rootItem.id,
             label: child.label,
             type: child.type,
+            visibility: child.visibility ?? "PUBLIC",
+            roleNames: joinRoleNames(child.roleNames),
             href: child.href,
             pageId: child.pageId,
             order: child.order ?? j + 1,
@@ -111,7 +173,7 @@ export async function replaceCmsMenuItems(menuId: string, input: CmsMenuReplaceI
   });
 }
 
-async function getPublicCmsMenuUncached(name: string): Promise<CmsMenuTreeItem[]> {
+async function getPublicCmsMenuUncached(name: string): Promise<CmsMenuTreeAccessItem[]> {
   const menu = await prisma.cmsMenu.findUnique({
     where: { name },
     include: {
@@ -127,7 +189,7 @@ async function getPublicCmsMenuUncached(name: string): Promise<CmsMenuTreeItem[]
 
   const rootItems = menu.items.filter((item) => item.parentId === null);
 
-  const buildItem = (itemId: string): CmsMenuTreeItem | null => {
+  const buildItem = (itemId: string): CmsMenuTreeAccessItem | null => {
     const item = menu.items.find((entry) => entry.id === itemId);
     if (!item) return null;
 
@@ -142,7 +204,7 @@ async function getPublicCmsMenuUncached(name: string): Promise<CmsMenuTreeItem[]
     const children = menu.items
       .filter((entry) => entry.parentId === item.id)
       .map((entry) => buildItem(entry.id))
-      .filter((entry): entry is CmsMenuTreeItem => Boolean(entry));
+      .filter((entry): entry is CmsMenuTreeAccessItem => Boolean(entry));
 
     return {
       id: item.id,
@@ -150,13 +212,15 @@ async function getPublicCmsMenuUncached(name: string): Promise<CmsMenuTreeItem[]
       type: item.type,
       href,
       order: item.order,
+      visibility: item.visibility,
+      roleNames: splitRoleNames(item.roleNames),
       children,
     };
   };
 
   return rootItems
     .map((item) => buildItem(item.id))
-    .filter((item): item is CmsMenuTreeItem => Boolean(item))
+    .filter((item): item is CmsMenuTreeAccessItem => Boolean(item))
     .sort((a, b) => a.order - b.order);
 }
 
@@ -169,6 +233,15 @@ const getPublicCmsMenuCached = unstable_cache(
   }
 );
 
-export async function getPublicCmsMenu(name: string): Promise<CmsMenuTreeItem[]> {
-  return getPublicCmsMenuCached(name);
+export async function getPublicCmsMenu(
+  name: string,
+  audience: CmsMenuAudience = { isAuthenticated: false, roles: [] }
+): Promise<CmsMenuTreeItem[]> {
+  const items = await getPublicCmsMenuCached(name);
+  const normalizedAudience: CmsMenuAudience = {
+    isAuthenticated: Boolean(audience.isAuthenticated),
+    roles: Array.isArray(audience.roles) ? audience.roles : [],
+  };
+
+  return filterMenuTreeByAudience(items, normalizedAudience);
 }

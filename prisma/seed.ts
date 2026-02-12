@@ -352,10 +352,11 @@ async function main() {
         { menuId: mainMenu.id, label: "Beranda", type: "INTERNAL", href: "/", order: 1, isActive: true },
         { menuId: mainMenu.id, label: "Profil Sekolah", type: "PAGE", pageId: profilePage.id, order: 2, isActive: true },
         { menuId: mainMenu.id, label: "Berita", type: "INTERNAL", href: "/berita", order: 3, isActive: true },
-        { menuId: mainMenu.id, label: "Agenda", type: "INTERNAL", href: "/agenda", order: 4, isActive: true },
-        { menuId: mainMenu.id, label: "Galeri", type: "INTERNAL", href: "/galeri", order: 5, isActive: true },
-        { menuId: mainMenu.id, label: "Kontak", type: "INTERNAL", href: "/kontak", order: 6, isActive: true },
-        { menuId: mainMenu.id, label: "PPDB", type: "INTERNAL", href: "/ppdb/announcement", order: 7, isActive: true },
+        { menuId: mainMenu.id, label: "Pengumuman", type: "INTERNAL", href: "/pengumuman", order: 4, isActive: true },
+        { menuId: mainMenu.id, label: "Agenda", type: "INTERNAL", href: "/agenda", order: 5, isActive: true },
+        { menuId: mainMenu.id, label: "Galeri", type: "INTERNAL", href: "/galeri", order: 6, isActive: true },
+        { menuId: mainMenu.id, label: "Kontak", type: "INTERNAL", href: "/kontak", order: 7, isActive: true },
+        { menuId: mainMenu.id, label: "PPDB", type: "INTERNAL", href: "/ppdb/announcement", order: 8, isActive: true },
       ],
     });
   }
@@ -373,6 +374,25 @@ async function main() {
         label: "Agenda",
         type: "INTERNAL",
         href: "/agenda",
+        order: nextOrder + 1,
+        isActive: true,
+      },
+    });
+  }
+
+  const announcementMenuItem = await prisma.cmsMenuItem.findFirst({
+    where: { menuId: mainMenu.id, href: "/pengumuman", parentId: null },
+    select: { id: true },
+  });
+
+  if (!announcementMenuItem) {
+    const nextOrder = await prisma.cmsMenuItem.count({ where: { menuId: mainMenu.id, parentId: null } });
+    await prisma.cmsMenuItem.create({
+      data: {
+        menuId: mainMenu.id,
+        label: "Pengumuman",
+        type: "INTERNAL",
+        href: "/pengumuman",
         order: nextOrder + 1,
         isActive: true,
       },
@@ -406,6 +426,29 @@ async function main() {
       ],
     });
   }
+
+  await prisma.financeAccount.createMany({
+    data: [
+      { code: "1000", name: "Kas", type: "ASSET", category: "Current Asset" },
+      { code: "1100", name: "Bank", type: "ASSET", category: "Current Asset" },
+      { code: "4100", name: "Pendapatan Operasional", type: "INCOME", category: "Revenue" },
+      { code: "5100", name: "Biaya Operasional", type: "EXPENSE", category: "Expense" },
+      { code: "1200", name: "Transfer Antar Rekening", type: "ASSET", category: "Transfer" },
+    ],
+    skipDuplicates: true,
+  });
+
+  await prisma.cashBankAccount.upsert({
+    where: { code: "CASH-OPS" },
+    update: {},
+    create: {
+      code: "CASH-OPS",
+      name: "Kas Operasional",
+      type: "CASH",
+      openingBalance: 0,
+      balance: 0,
+    },
+  });
 
   console.log("Seed complete. Admin credentials:");
   console.log({ email: adminUser.email, password: adminPass });

@@ -1,0 +1,11 @@
+-- AlterTable
+ALTER TABLE `cms_media` ADD COLUMN `blurhash` VARCHAR(191) NULL,
+    ADD COLUMN `thumbUrl` VARCHAR(191) NULL;
+
+-- AlterTable
+ALTER TABLE `cms_menu_item` ADD COLUMN `roleNames` VARCHAR(191) NULL,
+    ADD COLUMN `visibility` ENUM('PUBLIC', 'AUTH_ONLY', 'ROLE_ONLY') NOT NULL DEFAULT 'PUBLIC';
+
+-- AlterTable
+ALTER TABLE `cms_page` ADD COLUMN `blocks` JSON NULL,
+    ADD COLUMN `template` ENUM('DEFAULT', 'PROFILE', 'CONTACT', 'LANDING') NOT NULL DEFAULT 'DEFAULT';

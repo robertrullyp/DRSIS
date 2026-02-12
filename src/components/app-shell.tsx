@@ -80,6 +80,15 @@ const nav: NavItem[] = [
     children: [
       { label: "Aturan Biaya", href: "/finance/fee-rules" },
       { label: "Tagihan", href: "/finance/invoices" },
+      { label: "Beasiswa", href: "/finance/scholarships" },
+      { label: "Laporan", href: "/finance/reports" },
+      { label: "Tools", href: "/finance/tools" },
+      { label: "Operasional: COA", href: "/finance/operational/accounts" },
+      { label: "Operasional: Kas/Bank", href: "/finance/operational/cash-bank" },
+      { label: "Operasional: Anggaran", href: "/finance/operational/budgets" },
+      { label: "Operasional: Transaksi", href: "/finance/operational/transactions" },
+      { label: "Operasional: Lock Periode", href: "/finance/operational/period-locks" },
+      { label: "Operasional: Laporan", href: "/finance/operational/reports" },
     ],
   },
   {

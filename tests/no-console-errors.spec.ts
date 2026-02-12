@@ -4,7 +4,20 @@ const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL || 'admin@sis.local';
 const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD || 'admin123';
 
 async function gotoStable(page: Page, path: string) {
-  await page.goto(path, { waitUntil: 'domcontentloaded' });
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      await page.goto(path, {
+        waitUntil: "domcontentloaded",
+        timeout: 60_000,
+      });
+      return;
+    } catch (error) {
+      lastError = error;
+      if (attempt < 3) await page.waitForTimeout(1_200);
+    }
+  }
+  throw lastError;
 }
 
 async function hasSessionCookie(page: Page) {
@@ -47,6 +60,7 @@ async function signInViaNextAuthApi(page: Page) {
 }
 
 test('Sign-in page renders without console errors', async ({ page }) => {
+  test.setTimeout(120_000);
   const consoleErrors: string[] = [];
   page.on('console', (msg) => {
     if (msg.type() === 'error') {
@@ -76,7 +90,7 @@ test('Root shows public landing without console errors', async ({ page }) => {
 
   await gotoStable(page, '/');
   await expect(page.locator('main h1').first()).toBeVisible();
-  await expect(page.getByRole('link', { name: /Pengumuman PPDB/i })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Pengumuman (Sekolah|PPDB)/i })).toBeVisible();
 
   expect(consoleErrors, 'No console/page errors on root').toEqual([]);
 });

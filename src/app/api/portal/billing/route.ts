@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { prisma } from "@/lib/prisma";
 import { resolvePortalStudentContext } from "@/server/portal/student-context";
+import { summarizeInvoice } from "@/server/finance/invoice-balance";
 
 export async function GET(req: NextRequest) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
@@ -17,9 +18,18 @@ export async function GET(req: NextRequest) {
   if (status) where.status = status;
   const items = await prisma.invoice.findMany({
     where,
-    include: { items: true, payments: true, academicYear: true },
+    include: {
+      items: true,
+      discounts: true,
+      payments: { include: { refunds: true } },
+      academicYear: true,
+    },
     orderBy: { createdAt: "desc" },
     take: 200,
   });
-  return NextResponse.json({ items });
+  const hydrated = items.map((invoice) => ({
+    ...invoice,
+    balance: summarizeInvoice(invoice),
+  }));
+  return NextResponse.json({ items: hydrated });
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import React from "react";
 import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
+import { summarizeInvoice } from "@/server/finance/invoice-balance";
 
 export const runtime = "nodejs";
 
@@ -9,10 +10,18 @@ const styles = StyleSheet.create({ page: { padding: 24, fontSize: 12 }, title: {
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const inv = await prisma.invoice.findUnique({ where: { id }, include: { items: true, payments: true, student: { include: { user: true } }, academicYear: true } });
+  const inv = await prisma.invoice.findUnique({
+    where: { id },
+    include: {
+      items: true,
+      discounts: true,
+      payments: { include: { refunds: true } },
+      student: { include: { user: true } },
+      academicYear: true,
+    },
+  });
   if (!inv) return NextResponse.json({ error: "not found" }, { status: 404 });
-  const paid = inv.payments.reduce((a, b) => a + (b.amount || 0), 0);
-  const due = Math.max(0, inv.total - paid);
+  const balance = summarizeInvoice(inv);
 
   const Doc = (
     <Document>
@@ -45,9 +54,39 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
           )}
         </View>
         <View style={{ marginTop: 8 }}>
-          <Text>Total: {inv.total}</Text>
-          <Text>Terbayar: {paid}</Text>
-          <Text>Sisa: {due}</Text>
+          <Text style={{ fontWeight: 700 }}>Diskon</Text>
+          {inv.discounts.length === 0 ? (
+            <Text>Tidak ada diskon</Text>
+          ) : (
+            inv.discounts.map((d) => (
+              <View key={d.id} style={styles.row}>
+                <Text style={[styles.cell, { flexBasis: "70%" }]}>{d.name}</Text>
+                <Text style={[styles.cell, { flexBasis: "30%" }]}>{d.amount}</Text>
+              </View>
+            ))
+          )}
+        </View>
+        <View style={{ marginTop: 8 }}>
+          <Text style={{ fontWeight: 700 }}>Refund</Text>
+          {inv.payments.flatMap((p) => p.refunds).length === 0 ? (
+            <Text>Tidak ada refund</Text>
+          ) : (
+            inv.payments.flatMap((p) => p.refunds).map((r) => (
+              <View key={r.id} style={styles.row}>
+                <Text style={[styles.cell, { flexBasis: "70%" }]}>{r.reason || "Refund"}</Text>
+                <Text style={[styles.cell, { flexBasis: "30%" }]}>{r.amount}</Text>
+              </View>
+            ))
+          )}
+        </View>
+        <View style={{ marginTop: 8 }}>
+          <Text>Total Kotor: {balance.grossTotal}</Text>
+          <Text>Total Diskon: {balance.discountTotal}</Text>
+          <Text>Total Tagihan: {balance.netTotal}</Text>
+          <Text>Total Pembayaran: {balance.paymentTotal}</Text>
+          <Text>Total Refund: {balance.refundTotal}</Text>
+          <Text>Terbayar Bersih: {balance.paidNet}</Text>
+          <Text>Sisa: {balance.due}</Text>
         </View>
       </Page>
     </Document>

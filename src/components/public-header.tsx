@@ -1,11 +1,16 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { getPublicCmsMenu } from "@/server/cms/menu.service";
 
 export default async function PublicHeader() {
+  const session = await getServerSession(authOptions);
+  const roles = Array.isArray(session?.user?.roles) ? session.user.roles : [];
+
   const [profile, menuItems] = await Promise.all([
     prisma.schoolProfile.findFirst(),
-    getPublicCmsMenu("main"),
+    getPublicCmsMenu("main", { isAuthenticated: Boolean(session?.user), roles }),
   ]);
 
   return (

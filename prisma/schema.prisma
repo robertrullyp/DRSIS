@@ -526,6 +526,120 @@ model Cashbook {
   @@map("buku_kas")
 }
 
+model FinanceAccount {
+  id        String             @id @default(cuid())
+  code      String             @unique
+  name      String
+  type      FinanceAccountType
+  category  String?
+  parentId  String?
+  isActive  Boolean            @default(true)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  parent   FinanceAccount?  @relation("FinanceAccountTree", fields: [parentId], references: [id])
+  children FinanceAccount[] @relation("FinanceAccountTree")
+  txns     OperationalTxn[]
+  budgets  FinanceBudget[]
+
+  @@index([type, isActive])
+  @@index([parentId])
+  @@map("keu_akun")
+}
+
+model CashBankAccount {
+  id             String       @id @default(cuid())
+  code           String       @unique
+  name           String
+  type           CashBankType
+  bankName       String?
+  accountNumber  String?
+  ownerName      String?
+  openingBalance Int          @default(0)
+  balance        Int          @default(0)
+  isActive       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  txns     OperationalTxn[]
+  budgets  FinanceBudget[]
+
+  @@index([type, isActive])
+  @@map("keu_rekening_kas_bank")
+}
+
+model OperationalTxn {
+  id                String             @id @default(cuid())
+  txnDate           DateTime           @default(now())
+  kind              OperationalTxnKind
+  amount            Int
+  description       String?
+  referenceNo       String?
+  proofUrl          String?
+  accountId         String
+  cashBankAccountId String
+  transferPairId    String?
+  approvalStatus    ApprovalStatus     @default(PENDING)
+  createdBy         String?
+  checkedBy         String?
+  checkedAt         DateTime?
+  approvedBy        String?
+  approvedAt        DateTime?
+  rejectedBy        String?
+  rejectedAt        DateTime?
+  rejectedReason    String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  account         FinanceAccount  @relation(fields: [accountId], references: [id])
+  cashBankAccount CashBankAccount @relation(fields: [cashBankAccountId], references: [id])
+  transferPair    OperationalTxn? @relation("OperationalTxnPair", fields: [transferPairId], references: [id])
+  pairedWith      OperationalTxn[] @relation("OperationalTxnPair")
+
+  @@index([txnDate, kind])
+  @@index([approvalStatus, txnDate])
+  @@index([accountId, txnDate])
+  @@index([cashBankAccountId, txnDate])
+  @@index([transferPairId])
+  @@map("keu_transaksi_operasional")
+}
+
+model FinancePeriodLock {
+  id        String   @id @default(cuid())
+  startDate DateTime
+  endDate   DateTime
+  reason    String?
+  lockedBy  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([startDate, endDate])
+  @@map("keu_lock_periode")
+}
+
+model FinanceBudget {
+  id                String           @id @default(cuid())
+  periodStart       DateTime
+  periodEnd         DateTime
+  kind              FinanceBudgetKind
+  amount            Int
+  notes             String?
+  accountId         String
+  cashBankAccountId String?
+  createdBy         String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  account         FinanceAccount   @relation(fields: [accountId], references: [id])
+  cashBankAccount CashBankAccount? @relation(fields: [cashBankAccountId], references: [id])
+
+  @@index([periodStart, periodEnd])
+  @@index([kind, periodStart, periodEnd])
+  @@index([accountId, kind, periodStart])
+  @@index([cashBankAccountId, kind, periodStart])
+  @@map("keu_anggaran")
+}
+
 model Scholarship {
   id        String    @id @default(cuid())
   studentId String
@@ -994,6 +1108,19 @@ enum CmsMenuItemType {
   TAG
 }
 
+enum CmsMenuVisibility {
+  PUBLIC
+  AUTH_ONLY
+  ROLE_ONLY
+}
+
+enum CmsPageTemplate {
+  DEFAULT
+  PROFILE
+  CONTACT
+  LANDING
+}
+
 model CmsMenu {
   id          String       @id @default(cuid())
   name        String       @unique
@@ -1011,6 +1138,8 @@ model CmsPage {
   slug        String       @unique
   content     String       @db.LongText
   excerpt     String?
+  template    CmsPageTemplate @default(DEFAULT)
+  blocks      Json?
   status      CmsStatus    @default(DRAFT)
   publishedAt DateTime?
   createdBy   String?
@@ -1031,6 +1160,8 @@ model CmsMenuItem {
   parentId  String?
   label     String
   type      CmsMenuItemType @default(INTERNAL)
+  visibility CmsMenuVisibility @default(PUBLIC)
+  roleNames String?
   href      String?
   pageId    String?
   order     Int             @default(0)
@@ -1083,6 +1214,8 @@ model CmsMedia {
   size      Int
   width     Int?
   height    Int?
+  blurhash  String?
+  thumbUrl  String?
   alt       String?
   title     String?
   module    String?
@@ -1297,6 +1430,26 @@ enum SavingsTxnType {
   ADJUSTMENT @map("penyesuaian")
 }
 
+enum FinanceAccountType {
+  ASSET
+  LIABILITY
+  EQUITY
+  INCOME
+  EXPENSE
+}
+
+enum CashBankType {
+  CASH
+  BANK
+}
+
+enum OperationalTxnKind {
+  INCOME
+  EXPENSE
+  TRANSFER_IN
+  TRANSFER_OUT
+}
+
 enum WaStatus {
   PENDING   @map("menunggu")
   SENT      @map("terkirim")
@@ -1310,4 +1463,9 @@ enum ApprovalStatus {
   APPROVED  @map("disetujui")
   REJECTED  @map("ditolak")
   CANCELLED @map("dibatalkan")
+}
+
+enum FinanceBudgetKind {
+  INCOME
+  EXPENSE
 }

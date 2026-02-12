@@ -10,6 +10,11 @@ type BillingItem = {
   status: string;
   dueDate?: string | null;
   academicYear: { name: string };
+  balance?: {
+    netTotal: number;
+    due: number;
+    discountTotal: number;
+  };
 };
 
 export default function MyBillingPage() {
@@ -39,7 +44,8 @@ export default function MyBillingPage() {
               <th className="border-b p-2 text-left">Tahun Ajaran</th>
               <th className="border-b p-2 text-left">Jatuh Tempo</th>
               <th className="border-b p-2 text-left">Status</th>
-              <th className="border-b p-2 text-left">Total</th>
+              <th className="border-b p-2 text-left">Tagihan Bersih</th>
+              <th className="border-b p-2 text-left">Sisa</th>
               <th className="border-b p-2 text-left">Kuitansi</th>
             </tr>
           </thead>
@@ -50,7 +56,18 @@ export default function MyBillingPage() {
                 <td className="border-b p-2">{invoice.academicYear?.name}</td>
                 <td className="border-b p-2">{invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : "-"}</td>
                 <td className="border-b p-2">{invoice.status}</td>
-                <td className="border-b p-2">{(invoice.total / 100).toLocaleString(undefined, { style: "currency", currency: "IDR" })}</td>
+                <td className="border-b p-2">
+                  {(invoice.balance?.netTotal ?? invoice.total).toLocaleString(undefined, {
+                    style: "currency",
+                    currency: "IDR",
+                  })}
+                </td>
+                <td className="border-b p-2">
+                  {(invoice.balance?.due ?? invoice.total).toLocaleString(undefined, {
+                    style: "currency",
+                    currency: "IDR",
+                  })}
+                </td>
                 <td className="border-b p-2">
                   <a className="text-accent underline" href={childScopedUrl(`/api/portal/billing/${invoice.id}/receipt`)} target="_blank" rel="noreferrer">Lihat</a>
                 </td>
@@ -58,7 +75,7 @@ export default function MyBillingPage() {
             ))}
             {(data?.items?.length ?? 0) === 0 && (
               <tr>
-                <td className="p-2" colSpan={6}>Tidak ada tagihan.</td>
+                <td className="p-2" colSpan={7}>Tidak ada tagihan.</td>
               </tr>
             )}
           </tbody>

@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { getPublicCmsMenu } from "@/server/cms/menu.service";
 
 export async function GET(req: NextRequest) {
@@ -7,6 +9,12 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "name required" }, { status: 400 });
   }
 
-  const items = await getPublicCmsMenu(name);
+  const session = await getServerSession(authOptions);
+  const roles = Array.isArray(session?.user?.roles) ? session.user.roles : [];
+
+  const items = await getPublicCmsMenu(name, {
+    isAuthenticated: Boolean(session?.user),
+    roles,
+  });
   return NextResponse.json({ items });
 }

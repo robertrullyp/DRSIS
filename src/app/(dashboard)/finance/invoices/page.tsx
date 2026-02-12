@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
@@ -7,7 +8,24 @@ import { Button } from "@/components/ui/button";
 
 type Student = { id: string; user: { name?: string | null } };
 type AY = { id: string; name: string };
-type Invoice = { id: string; code: string; total: number; status: string; student: { user: { name?: string | null } }; items: { id: string; name: string; amount: number }[] };
+type Invoice = {
+  id: string;
+  code: string;
+  total: number;
+  status: string;
+  student: { user: { name?: string | null } };
+  items: { id: string; name: string; amount: number }[];
+  balance: {
+    grossTotal: number;
+    discountTotal: number;
+    netTotal: number;
+    paymentTotal: number;
+    refundTotal: number;
+    paidNet: number;
+    due: number;
+    overpaid: number;
+  };
+};
 
 export default function InvoicesPage() {
   const qc = useQueryClient();
@@ -79,13 +97,23 @@ export default function InvoicesPage() {
 
       {isLoading ? <div>Memuat…</div> : (
         <table className="w-full text-sm border">
-          <thead className="bg-muted/50"><tr><th className="text-left p-2 border-b">Kode</th><th className="text-left p-2 border-b">Siswa</th><th className="text-left p-2 border-b">Total</th><th className="text-left p-2 border-b">Status</th><th className="text-left p-2 border-b">Aksi</th></tr></thead>
+          <thead className="bg-muted/50">
+            <tr>
+              <th className="text-left p-2 border-b">Kode</th>
+              <th className="text-left p-2 border-b">Siswa</th>
+              <th className="text-left p-2 border-b">Tagihan Bersih</th>
+              <th className="text-left p-2 border-b">Sisa</th>
+              <th className="text-left p-2 border-b">Status</th>
+              <th className="text-left p-2 border-b">Aksi</th>
+            </tr>
+          </thead>
           <tbody>
             {(data?.items ?? []).map((inv) => (
               <tr key={inv.id}>
                 <td className="p-2 border-b">{inv.code}</td>
                 <td className="p-2 border-b">{inv.student.user?.name ?? '-'}</td>
-                <td className="p-2 border-b">{inv.total}</td>
+                <td className="p-2 border-b">{inv.balance?.netTotal ?? inv.total}</td>
+                <td className="p-2 border-b">{inv.balance?.due ?? inv.total}</td>
                 <td className="p-2 border-b">{inv.status}</td>
                 <td className="p-2 border-b space-x-2">
                   <Button variant="outline" onClick={() => window.open(`/api/finance/invoices/${inv.id}/receipt`, '_blank')}>Kuitansi</Button>
@@ -94,6 +122,12 @@ export default function InvoicesPage() {
                     if (!amt) return;
                     pay.mutate({ id: inv.id, amount: Number(amt), method: 'CASH' });
                   }}>Bayar</Button>
+                  <Link
+                    href={`/finance/invoices/${inv.id}`}
+                    className="inline-flex items-center rounded-md border border-border px-3 py-2 text-sm hover:bg-muted/80"
+                  >
+                    Detail
+                  </Link>
                 </td>
               </tr>
             ))}
@@ -103,4 +137,3 @@ export default function InvoicesPage() {
     </div>
   );
 }
-

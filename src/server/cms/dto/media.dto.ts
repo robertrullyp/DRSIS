@@ -27,11 +27,15 @@ export const cmsMediaCreateSchema = z.object({
   module: cmsMediaModuleSchema,
   alt: z.string().max(255).optional(),
   title: z.string().max(255).optional(),
+  blurhash: z.string().max(255).optional(),
+  thumbUrl: z.string().url().max(1000).optional(),
 });
 
 export const cmsMediaUpdateSchema = z.object({
   alt: z.string().max(255).nullable().optional(),
   title: z.string().max(255).nullable().optional(),
+  blurhash: z.string().max(255).nullable().optional(),
+  thumbUrl: z.string().url().max(1000).nullable().optional(),
 });
 
 export type CmsMediaListQueryInput = z.infer<typeof cmsMediaListQuerySchema>;

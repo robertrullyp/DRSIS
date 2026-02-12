@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPublishedCmsEventBySlug } from "@/server/cms/event.service";
+import { toAbsoluteUrl } from "@/lib/site-url";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -15,16 +16,27 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const description = event.description || event.title;
-  const imageUrl = event.coverMedia?.id ? `/api/public/cms/media/${event.coverMedia.id}` : undefined;
+  const canonicalPath = `/agenda/${slug}`;
+  const imageUrl = event.coverMedia?.id ? `/api/public/cms/media/${event.coverMedia.id}` : "/og-default.svg";
 
   return {
     title: event.title,
     description,
+    alternates: {
+      canonical: canonicalPath,
+    },
     openGraph: {
       title: event.title,
       description,
       type: "website",
-      images: imageUrl ? [{ url: imageUrl }] : undefined,
+      url: canonicalPath,
+      images: [{ url: toAbsoluteUrl(imageUrl) }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: event.title,
+      description,
+      images: [toAbsoluteUrl(imageUrl)],
     },
   };
 }
@@ -38,8 +50,9 @@ export default async function PublicAgendaDetailPage({ params }: Props) {
   const { slug } = await params;
   const event = await getPublishedCmsEventBySlug(slug);
   if (!event) notFound();
+  const canonicalPath = `/agenda/${event.slug}`;
 
-  const jsonLd = {
+  const eventJsonLd = {
     "@context": "https://schema.org",
     "@type": "Event",
     name: event.title,
@@ -54,16 +67,42 @@ export default async function PublicAgendaDetailPage({ params }: Props) {
           name: event.location,
         }
       : undefined,
-    image: event.coverMedia?.id ? [`/api/public/cms/media/${event.coverMedia.id}`] : undefined,
+    image: [toAbsoluteUrl(event.coverMedia?.id ? `/api/public/cms/media/${event.coverMedia.id}` : "/og-default.svg")],
     organizer: {
       "@type": "Organization",
       name: "Sekolah",
     },
   };
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Beranda", item: toAbsoluteUrl("/") },
+      { "@type": "ListItem", position: 2, name: "Agenda", item: toAbsoluteUrl("/agenda") },
+      { "@type": "ListItem", position: 3, name: event.title, item: toAbsoluteUrl(canonicalPath) },
+    ],
+  };
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
       <article className="neo-card space-y-4 p-6 sm:p-8">
+        <nav aria-label="Breadcrumb" className="text-xs text-muted-foreground">
+          <ol className="flex flex-wrap items-center gap-1.5">
+            <li>
+              <Link href="/" className="hover:underline">
+                Beranda
+              </Link>
+            </li>
+            <li>/</li>
+            <li>
+              <Link href="/agenda" className="hover:underline">
+                Agenda
+              </Link>
+            </li>
+            <li>/</li>
+            <li className="text-foreground">{event.title}</li>
+          </ol>
+        </nav>
         <Link href="/agenda" className="inline-flex rounded border px-2.5 py-1 text-xs text-muted-foreground hover:bg-muted/70">
           Kembali ke daftar agenda
         </Link>
@@ -97,7 +136,8 @@ export default async function PublicAgendaDetailPage({ params }: Props) {
         )}
       </article>
 
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(eventJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
     </main>
   );
 }

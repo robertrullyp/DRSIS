@@ -30,4 +30,7 @@ fi
 npx prisma generate >/dev/null
 npm run db:seed >/dev/null
 
-exec npm run dev -- -p 3000
+# Run against a production build to avoid dev-mode compilation flakiness/timeouts.
+npm run build >/dev/null
+
+exec npm run start -- -p 3000

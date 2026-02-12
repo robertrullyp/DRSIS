@@ -1,11 +1,16 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { getPublicCmsMenu } from "@/server/cms/menu.service";
 
 export default async function PublicFooter() {
+  const session = await getServerSession(authOptions);
+  const roles = Array.isArray(session?.user?.roles) ? session.user.roles : [];
+
   const [profile, footerLinks] = await Promise.all([
     prisma.schoolProfile.findFirst(),
-    getPublicCmsMenu("footer"),
+    getPublicCmsMenu("footer", { isAuthenticated: Boolean(session?.user), roles }),
   ]);
   const year = new Date().getFullYear();
   return (

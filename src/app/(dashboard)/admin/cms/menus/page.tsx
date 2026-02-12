@@ -16,6 +16,8 @@ type CmsMenuItem = {
   parentId: string | null;
   label: string;
   type: "INTERNAL" | "EXTERNAL" | "PAGE" | "CATEGORY" | "TAG";
+  visibility: "PUBLIC" | "AUTH_ONLY" | "ROLE_ONLY";
+  roleNames: string[];
   href: string | null;
   pageId: string | null;
   order: number;
@@ -32,6 +34,8 @@ type CmsMenu = {
 type CmsMenuPayload = {
   label: string;
   type: "INTERNAL" | "EXTERNAL" | "PAGE" | "CATEGORY" | "TAG";
+  visibility?: "PUBLIC" | "AUTH_ONLY" | "ROLE_ONLY";
+  roleNames?: string[];
   href?: string;
   pageId?: string;
   order?: number;
@@ -51,6 +55,8 @@ function toMenuPayload(items: CmsMenuItem[]) {
       .map((child) => ({
         label: child.label,
         type: child.type,
+        visibility: child.visibility,
+        roleNames: child.roleNames,
         href: child.href || undefined,
         pageId: child.pageId || undefined,
         order: child.order,
@@ -60,6 +66,8 @@ function toMenuPayload(items: CmsMenuItem[]) {
     return {
       label: root.label,
       type: root.type,
+      visibility: root.visibility,
+      roleNames: root.roleNames,
       href: root.href || undefined,
       pageId: root.pageId || undefined,
       order: root.order,
@@ -179,7 +187,7 @@ export default function AdminCmsMenusPage() {
           />
           {error ? <div className="text-sm text-red-600">{error}</div> : null}
           <p className="text-xs text-muted-foreground">
-            Format item: `label`, `type`, `href` atau `pageId`, `order`, `isActive`, `children`.
+            Format item: `label`, `type`, `visibility`, `roleNames`, `href` atau `pageId`, `order`, `isActive`, `children`.
           </p>
         </div>
 

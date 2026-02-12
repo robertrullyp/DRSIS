@@ -127,6 +127,8 @@ export async function createCmsMedia(input: CmsMediaCreateInput, userId: string)
         size: input.size,
         width: input.width,
         height: input.height,
+        blurhash: input.blurhash,
+        thumbUrl: input.thumbUrl,
         alt: input.alt,
         title: input.title,
         module: expectedModule,
@@ -155,6 +157,8 @@ export async function updateCmsMedia(id: string, input: CmsMediaUpdateInput) {
     data: {
       alt: input.alt === undefined ? undefined : input.alt,
       title: input.title === undefined ? undefined : input.title,
+      blurhash: input.blurhash === undefined ? undefined : input.blurhash,
+      thumbUrl: input.thumbUrl === undefined ? undefined : input.thumbUrl,
     },
   });
 }

@@ -1,11 +1,14 @@
 import { z } from "zod";
 
 export const cmsMenuItemTypeSchema = z.enum(["INTERNAL", "EXTERNAL", "PAGE", "CATEGORY", "TAG"]);
+export const cmsMenuVisibilitySchema = z.enum(["PUBLIC", "AUTH_ONLY", "ROLE_ONLY"]);
 
 const cmsMenuItemLeafSchema = z.object({
   id: z.string().optional(),
   label: z.string().min(1),
   type: cmsMenuItemTypeSchema,
+  visibility: cmsMenuVisibilitySchema.optional(),
+  roleNames: z.array(z.string().min(1)).max(20).optional(),
   href: z.string().optional(),
   pageId: z.string().optional(),
   order: z.coerce.number().int().optional(),

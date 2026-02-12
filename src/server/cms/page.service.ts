@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@/generated/prisma";
 import { unstable_cache } from "next/cache";
 import { CMS_CACHE_TAGS } from "@/server/cms/cache-tags";
 import type { CmsPageCreateInput, CmsPageListQueryInput, CmsPageUpdateInput } from "@/server/cms/dto/page.dto";
@@ -89,6 +90,8 @@ export async function createCmsPage(input: CmsPageCreateInput, userId: string) {
       slug,
       content: input.content,
       excerpt: input.excerpt,
+      template: input.template ?? "DEFAULT",
+      blocks: input.blocks as Prisma.InputJsonValue | undefined,
       status,
       createdBy: userId,
       updatedBy: userId,
@@ -122,6 +125,8 @@ export async function updateCmsPage(id: string, input: CmsPageUpdateInput, userI
       slug: nextSlug,
       content: input.content,
       excerpt: input.excerpt,
+      template: input.template,
+      blocks: input.blocks as Prisma.InputJsonValue | undefined,
       status: nextStatus,
       updatedBy: userId,
       publishedAt: shouldPublishNow ? new Date() : shouldUnpublish ? null : undefined,

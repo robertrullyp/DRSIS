@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { s3, S3_BUCKET } from "@/lib/s3";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { getSiteUrl } from "@/lib/site-url";
 
 const space = Space_Grotesk({
   variable: "--font-space",
@@ -43,6 +44,7 @@ export async function generateMetadata(): Promise<Metadata> {
     }
   }
   return {
+    metadataBase: new URL(getSiteUrl()),
     title,
     description,
     icons: {

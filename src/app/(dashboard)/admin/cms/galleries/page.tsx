@@ -3,6 +3,15 @@
 import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
+import {
+  DataTable,
+  DataTableCell,
+  DataTableEmptyRow,
+  DataTableHead,
+  DataTableHeaderCell,
+  DataTablePagination,
+  DataTableRow,
+} from "@/components/ui/data-table";
 
 type CmsGalleryItem = {
   id: string;
@@ -11,6 +20,9 @@ type CmsGalleryItem = {
   status: "DRAFT" | "REVIEW" | "PUBLISHED" | "ARCHIVED";
   publishedAt: string | null;
   updatedAt: string;
+  createdBy: string | null;
+  updatedBy: string | null;
+  publishedBy: string | null;
   items: Array<{ id: string }>;
 };
 
@@ -27,16 +39,18 @@ export default function AdminCmsGalleriesPage() {
   const queryClient = useQueryClient();
   const [status, setStatus] = useState<"" | "DRAFT" | "REVIEW" | "PUBLISHED" | "ARCHIVED">("");
   const [q, setQ] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [bulkAction, setBulkAction] = useState<BulkAction>("");
   const [isApplyingBulk, setApplyingBulk] = useState(false);
 
   const queryString = useMemo(() => {
-    const params = new URLSearchParams({ page: "1", pageSize: "100" });
+    const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
     if (status) params.set("status", status);
     if (q.trim()) params.set("q", q.trim());
     return params.toString();
-  }, [status, q]);
+  }, [page, pageSize, status, q]);
 
   const galleriesQuery = useQuery<CmsGalleryResponse>({
     queryKey: ["admin-cms-galleries", queryString],
@@ -72,6 +86,11 @@ export default function AdminCmsGalleriesPage() {
   });
 
   const rows = galleriesQuery.data?.items ?? [];
+  const total = galleriesQuery.data?.total ?? 0;
+  const currentPage = galleriesQuery.data?.page ?? page;
+  const currentPageSize = galleriesQuery.data?.pageSize ?? pageSize;
+  const hasPrev = currentPage > 1;
+  const hasNext = currentPage * currentPageSize < total;
   const selectedSet = new Set(selectedIds);
   const allSelected = rows.length > 0 && rows.every((item) => selectedSet.has(item.id));
 
@@ -130,11 +149,25 @@ export default function AdminCmsGalleriesPage() {
       <div className="grid gap-2 rounded-lg border p-3 sm:grid-cols-3">
         <label className="space-y-1 sm:col-span-2">
           <span className="text-xs text-muted-foreground">Cari</span>
-          <input className="w-full rounded-md border px-2 py-1.5 text-sm" value={q} onChange={(event) => setQ(event.target.value)} />
+          <input
+            className="w-full rounded-md border px-2 py-1.5 text-sm"
+            value={q}
+            onChange={(event) => {
+              setQ(event.target.value);
+              setPage(1);
+            }}
+          />
         </label>
         <label className="space-y-1">
           <span className="text-xs text-muted-foreground">Filter status</span>
-          <select className="w-full rounded-md border px-2 py-1.5 text-sm" value={status} onChange={(event) => setStatus(event.target.value as typeof status)}>
+          <select
+            className="w-full rounded-md border px-2 py-1.5 text-sm"
+            value={status}
+            onChange={(event) => {
+              setStatus(event.target.value as typeof status);
+              setPage(1);
+            }}
+          >
             <option value="">Semua</option>
             <option value="DRAFT">DRAFT</option>
             <option value="REVIEW">REVIEW</option>
@@ -143,6 +176,21 @@ export default function AdminCmsGalleriesPage() {
           </select>
         </label>
       </div>
+
+      <DataTablePagination
+        page={currentPage}
+        pageSize={currentPageSize}
+        total={total}
+        visibleCount={rows.length}
+        itemLabel="galeri"
+        hasPrev={hasPrev}
+        hasNext={hasNext}
+        onPageChange={(nextPage) => setPage(Math.max(1, nextPage))}
+        onPageSizeChange={(nextPageSize) => {
+          setPageSize(nextPageSize);
+          setPage(1);
+        }}
+      />
 
       <div className="flex flex-wrap items-center gap-2 rounded-lg border p-3">
         <select className="rounded-md border px-2 py-1.5 text-sm" value={bulkAction} onChange={(event) => setBulkAction(event.target.value as BulkAction)}>
@@ -164,77 +212,73 @@ export default function AdminCmsGalleriesPage() {
       {galleriesQuery.isLoading ? (
         <div>Memuat data...</div>
       ) : (
-        <div className="overflow-auto">
-          <table className="w-full min-w-[1040px] border text-sm">
-            <thead className="bg-muted/50">
-              <tr>
-                <th className="border-b p-2 text-left">
-                  <input type="checkbox" checked={allSelected} onChange={toggleAll} aria-label="Pilih semua galeri" />
-                </th>
-                <th className="border-b p-2 text-left">Judul</th>
-                <th className="border-b p-2 text-left">Slug</th>
-                <th className="border-b p-2 text-left">Status</th>
-                <th className="border-b p-2 text-left">Items</th>
-                <th className="border-b p-2 text-left">Publish</th>
-                <th className="border-b p-2 text-left">Updated</th>
-                <th className="border-b p-2 text-left">Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((item) => (
-                <tr key={item.id}>
-                  <td className="border-b p-2">
-                    <input
-                      type="checkbox"
-                      checked={selectedSet.has(item.id)}
-                      onChange={() => toggleSelected(item.id)}
-                      aria-label={`Pilih galeri ${item.title}`}
-                    />
-                  </td>
-                  <td className="border-b p-2 font-medium">{item.title}</td>
-                  <td className="border-b p-2">/{item.slug}</td>
-                  <td className="border-b p-2">{item.status}</td>
-                  <td className="border-b p-2">{item.items.length}</td>
-                  <td className="border-b p-2">{item.publishedAt ? new Date(item.publishedAt).toLocaleString() : "-"}</td>
-                  <td className="border-b p-2">{new Date(item.updatedAt).toLocaleString()}</td>
-                  <td className="border-b p-2">
-                    <div className="flex flex-wrap gap-2">
-                      <Link href={`/admin/cms/galleries/${item.id}/edit`} className="rounded border px-2 py-1 text-xs hover:bg-muted/70">
-                        Edit
-                      </Link>
-                      <Link href={`/galeri/${item.slug}`} target="_blank" className="rounded border px-2 py-1 text-xs hover:bg-muted/70">
-                        View
-                      </Link>
-                      {item.status === "PUBLISHED" ? (
-                        <button type="button" className="rounded border px-2 py-1 text-xs hover:bg-muted/70" onClick={() => unpublishMutation.mutate(item.id)}>
-                          Unpublish
-                        </button>
-                      ) : (
-                        <button type="button" className="rounded border px-2 py-1 text-xs hover:bg-muted/70" onClick={() => publishMutation.mutate(item.id)}>
-                          Publish
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        className="rounded border border-red-500 px-2 py-1 text-xs text-red-600"
-                        onClick={() => deleteMutation.mutate(item.id)}
-                      >
-                        Hapus
+        <DataTable minWidthClassName="min-w-[1220px]">
+          <DataTableHead>
+            <DataTableRow>
+              <DataTableHeaderCell>
+                <input type="checkbox" checked={allSelected} onChange={toggleAll} aria-label="Pilih semua galeri" />
+              </DataTableHeaderCell>
+              <DataTableHeaderCell>Judul</DataTableHeaderCell>
+              <DataTableHeaderCell>Slug</DataTableHeaderCell>
+              <DataTableHeaderCell>Status</DataTableHeaderCell>
+              <DataTableHeaderCell>Items</DataTableHeaderCell>
+              <DataTableHeaderCell>Publish</DataTableHeaderCell>
+              <DataTableHeaderCell>Audit</DataTableHeaderCell>
+              <DataTableHeaderCell>Updated</DataTableHeaderCell>
+              <DataTableHeaderCell>Aksi</DataTableHeaderCell>
+            </DataTableRow>
+          </DataTableHead>
+          <tbody>
+            {rows.map((item) => (
+              <DataTableRow key={item.id}>
+                <DataTableCell>
+                  <input
+                    type="checkbox"
+                    checked={selectedSet.has(item.id)}
+                    onChange={() => toggleSelected(item.id)}
+                    aria-label={`Pilih galeri ${item.title}`}
+                  />
+                </DataTableCell>
+                <DataTableCell className="font-medium">{item.title}</DataTableCell>
+                <DataTableCell>/{item.slug}</DataTableCell>
+                <DataTableCell>{item.status}</DataTableCell>
+                <DataTableCell>{item.items.length}</DataTableCell>
+                <DataTableCell>{item.publishedAt ? new Date(item.publishedAt).toLocaleString() : "-"}</DataTableCell>
+                <DataTableCell>
+                  <div className="space-y-0.5 text-xs">
+                    <p className="text-muted-foreground">C: {item.createdBy || "-"}</p>
+                    <p className="text-muted-foreground">U: {item.updatedBy || "-"}</p>
+                    <p className="text-muted-foreground">P: {item.publishedBy || "-"}</p>
+                  </div>
+                </DataTableCell>
+                <DataTableCell>{new Date(item.updatedAt).toLocaleString()}</DataTableCell>
+                <DataTableCell>
+                  <div className="flex flex-wrap gap-2">
+                    <Link href={`/admin/cms/galleries/${item.id}/edit`} className="rounded border px-2 py-1 text-xs hover:bg-muted/70">
+                      Edit
+                    </Link>
+                    <Link href={`/galeri/${item.slug}`} target="_blank" className="rounded border px-2 py-1 text-xs hover:bg-muted/70">
+                      View
+                    </Link>
+                    {item.status === "PUBLISHED" ? (
+                      <button type="button" className="rounded border px-2 py-1 text-xs hover:bg-muted/70" onClick={() => unpublishMutation.mutate(item.id)}>
+                        Unpublish
                       </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {rows.length === 0 ? (
-                <tr>
-                  <td className="p-3 text-muted-foreground" colSpan={8}>
-                    Belum ada galeri.
-                  </td>
-                </tr>
-              ) : null}
-            </tbody>
-          </table>
-        </div>
+                    ) : (
+                      <button type="button" className="rounded border px-2 py-1 text-xs hover:bg-muted/70" onClick={() => publishMutation.mutate(item.id)}>
+                        Publish
+                      </button>
+                    )}
+                    <button type="button" className="rounded border border-red-500 px-2 py-1 text-xs text-red-600" onClick={() => deleteMutation.mutate(item.id)}>
+                      Hapus
+                    </button>
+                  </div>
+                </DataTableCell>
+              </DataTableRow>
+            ))}
+            {rows.length === 0 ? <DataTableEmptyRow message="Belum ada galeri." colSpan={9} /> : null}
+          </tbody>
+        </DataTable>
       )}
     </div>
   );

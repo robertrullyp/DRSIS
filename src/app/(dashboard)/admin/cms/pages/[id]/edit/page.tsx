@@ -9,6 +9,8 @@ type CmsPageItem = {
   title: string;
   slug: string;
   excerpt: string | null;
+  template: "DEFAULT" | "PROFILE" | "CONTACT" | "LANDING";
+  blocks: unknown;
   content: string;
   status: "DRAFT" | "REVIEW" | "PUBLISHED" | "ARCHIVED";
 };
@@ -31,6 +33,8 @@ export default function AdminCmsEditPage() {
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [excerpt, setExcerpt] = useState("");
+  const [template, setTemplate] = useState<"DEFAULT" | "PROFILE" | "CONTACT" | "LANDING">("DEFAULT");
+  const [blocksJson, setBlocksJson] = useState("");
   const [content, setContent] = useState("");
   const [status, setStatus] = useState<"DRAFT" | "REVIEW" | "PUBLISHED" | "ARCHIVED">("DRAFT");
   const [isSubmitting, setSubmitting] = useState(false);
@@ -41,19 +45,50 @@ export default function AdminCmsEditPage() {
     setTitle(pageQuery.data.title);
     setSlug(pageQuery.data.slug);
     setExcerpt(pageQuery.data.excerpt || "");
+    setTemplate(pageQuery.data.template);
+    setBlocksJson(pageQuery.data.blocks ? JSON.stringify(pageQuery.data.blocks, null, 2) : "");
     setContent(pageQuery.data.content);
     setStatus(pageQuery.data.status);
   }, [pageQuery.data]);
+
+  function parseBlocks() {
+    if (!blocksJson.trim()) return undefined;
+    try {
+      const parsed = JSON.parse(blocksJson);
+      if (!Array.isArray(parsed)) {
+        setError("Blocks harus berupa array JSON.");
+        return null;
+      }
+      return parsed;
+    } catch {
+      setError("Blocks JSON tidak valid.");
+      return null;
+    }
+  }
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSubmitting(true);
     setError(null);
 
+    const blocks = parseBlocks();
+    if (blocks === null) {
+      setSubmitting(false);
+      return;
+    }
+
     const res = await fetch(`/api/admin/cms/pages/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, slug: slug || undefined, excerpt: excerpt || undefined, content, status }),
+      body: JSON.stringify({
+        title,
+        slug: slug || undefined,
+        excerpt: excerpt || undefined,
+        template,
+        blocks,
+        content,
+        status,
+      }),
     });
 
     setSubmitting(false);
@@ -87,6 +122,25 @@ export default function AdminCmsEditPage() {
         <div>
           <label className="mb-1 block text-xs text-muted-foreground">Excerpt</label>
           <textarea className="w-full rounded-md border px-3 py-2" rows={2} value={excerpt} onChange={(event) => setExcerpt(event.target.value)} />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs text-muted-foreground">Template</label>
+          <select className="w-full rounded-md border px-3 py-2" value={template} onChange={(event) => setTemplate(event.target.value as typeof template)}>
+            <option value="DEFAULT">DEFAULT</option>
+            <option value="PROFILE">PROFILE</option>
+            <option value="CONTACT">CONTACT</option>
+            <option value="LANDING">LANDING</option>
+          </select>
+        </div>
+        <div>
+          <label className="mb-1 block text-xs text-muted-foreground">Blocks JSON (opsional)</label>
+          <textarea
+            className="w-full rounded-md border px-3 py-2 font-mono text-xs"
+            rows={5}
+            value={blocksJson}
+            onChange={(event) => setBlocksJson(event.target.value)}
+            placeholder='[{"type":"hero","title":"Profil Sekolah","body":"..."}]'
+          />
         </div>
         <div>
           <label className="mb-1 block text-xs text-muted-foreground">Konten (Markdown)</label>

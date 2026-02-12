@@ -9,6 +9,7 @@ import type {
   CmsPublicEventListQueryInput,
 } from "@/server/cms/dto/event.dto";
 import { CmsServiceError } from "@/server/cms/page.service";
+import { writeAuditEvent } from "@/server/audit";
 
 function slugify(input: string) {
   return input
@@ -129,6 +130,19 @@ export async function createCmsEvent(input: CmsEventCreateInput, userId: string)
     },
   });
 
+  await writeAuditEvent(prisma, {
+    actorId: userId,
+    type: "cms.event.create",
+    entity: "CmsEvent",
+    entityId: created.id,
+    meta: {
+      slug: created.slug,
+      status: created.status,
+      startAt: created.startAt,
+      endAt: created.endAt,
+    },
+  });
+
   return getCmsEventById(created.id);
 }
 
@@ -174,6 +188,18 @@ export async function updateCmsEvent(id: string, input: CmsEventUpdateInput, use
     },
   });
 
+  await writeAuditEvent(prisma, {
+    actorId: userId,
+    type: "cms.event.update",
+    entity: "CmsEvent",
+    entityId: id,
+    meta: {
+      slug: nextSlug,
+      status: nextStatus,
+      prevStatus: existing.status,
+    },
+  });
+
   return getCmsEventById(id);
 }
 
@@ -187,6 +213,13 @@ export async function deleteCmsEvent(id: string, userId: string) {
       status: "ARCHIVED",
       updatedBy: userId,
     },
+  });
+
+  await writeAuditEvent(prisma, {
+    actorId: userId,
+    type: "cms.event.delete",
+    entity: "CmsEvent",
+    entityId: id,
   });
 
   return { ok: true };
@@ -205,6 +238,13 @@ export async function publishCmsEvent(id: string, userId: string) {
     },
   });
 
+  await writeAuditEvent(prisma, {
+    actorId: userId,
+    type: "cms.event.publish",
+    entity: "CmsEvent",
+    entityId: id,
+  });
+
   return getCmsEventById(id);
 }
 
@@ -219,6 +259,13 @@ export async function unpublishCmsEvent(id: string, userId: string) {
       publishedBy: null,
       updatedBy: userId,
     },
+  });
+
+  await writeAuditEvent(prisma, {
+    actorId: userId,
+    type: "cms.event.unpublish",
+    entity: "CmsEvent",
+    entityId: id,
   });
 
   return getCmsEventById(id);

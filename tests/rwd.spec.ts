@@ -123,9 +123,7 @@ test("RWD dashboard navigation works on mobile/tablet/desktop", async ({ page })
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
       await gotoStable(page, "/dashboard");
       await expect(page).toHaveURL(/\/dashboard/, { timeout: 20_000 });
-      await expect(page.getByText("Campus Command Center")).toBeVisible({
-        timeout: 20_000,
-      });
+      await expect(page.getByRole("heading", { name: /dashboard/i })).toBeVisible({ timeout: 20_000 });
       await assertNoHorizontalOverflow(page);
 
       if (viewport.width < 1024) {

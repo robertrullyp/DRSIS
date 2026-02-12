@@ -33,7 +33,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   try {
     const { id } = await params;
-    const updated = await updateCmsMedia(id, parsed.data);
+    const updated = await updateCmsMedia(id, parsed.data, auth.context.userId);
     revalidateCmsPublicContent();
     return NextResponse.json(updated);
   } catch (error) {

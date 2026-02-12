@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import type { CmsPublicSettingsInput } from "@/server/cms/dto/settings.dto";
+import { writeAuditEvent } from "@/server/audit";
 
 export const CMS_PUBLIC_SETTINGS_KEY = "cms.public.settings";
 
@@ -45,9 +46,9 @@ export async function getCmsPublicSettings() {
   }
 }
 
-export async function updateCmsPublicSettings(input: CmsPublicSettingsInput) {
+export async function updateCmsPublicSettings(input: CmsPublicSettingsInput, userId: string) {
   const value = JSON.stringify(input);
-  return prisma.cmsSetting.upsert({
+  const updated = await prisma.cmsSetting.upsert({
     where: { key: CMS_PUBLIC_SETTINGS_KEY },
     update: {
       value,
@@ -59,4 +60,14 @@ export async function updateCmsPublicSettings(input: CmsPublicSettingsInput) {
       description: "Public CMS settings (home hero, contact, CTA).",
     },
   });
+
+  await writeAuditEvent(prisma, {
+    actorId: userId,
+    type: "cms.settings.update",
+    entity: "CmsSetting",
+    entityId: updated.id,
+    meta: { key: CMS_PUBLIC_SETTINGS_KEY },
+  });
+
+  return updated;
 }

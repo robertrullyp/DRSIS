@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
 import { prisma } from "@/lib/prisma";
+import { writeAuditEvent } from "@/server/audit";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
   const { memberId, barcode } = body as { memberId?: string; barcode?: string };
   if (!memberId || !barcode) return NextResponse.json({ error: "memberId and barcode required" }, { status: 400 });
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  const actorId = token?.sub as string | undefined;
+  if (!actorId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const bc = await prisma.libBarcode.findUnique({ where: { barcode } });
   if (!bc) return NextResponse.json({ error: "barcode not found" }, { status: 404 });
   // Reuse create flow via transaction similar to POST /loans
@@ -23,6 +28,12 @@ export async function POST(req: NextRequest) {
     await tx.libItem.update({ where: { id: bc.itemId }, data: { available: (item.available ?? 0) - 1 } });
     return created;
   });
+  await writeAuditEvent(prisma, {
+    actorId,
+    type: "library.loan.create",
+    entity: "LibLoan",
+    entityId: loan.id,
+    meta: { source: "barcode", barcode, itemId: loan.itemId, memberId: loan.memberId, dueAt: loan.dueAt?.toISOString() ?? null },
+  });
   return NextResponse.json(loan, { status: 201 });
 }
-

@@ -1,0 +1,31 @@
+name: Cron Tick
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: cron-tick
+  cancel-in-progress: true
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call /api/admin/cron/tick
+        env:
+          CRON_TICK_URL: ${{ secrets.CRON_TICK_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_TICK_URL" ] || [ -z "$CRON_SECRET" ]; then
+            echo "CRON_TICK_URL/CRON_SECRET is not configured. Skipping."
+            exit 0
+          fi
+
+          echo "POST $CRON_TICK_URL"
+          curl -fsSL \
+            -X POST \
+            -H "x-cron-key: $CRON_SECRET" \
+            "$CRON_TICK_URL"
+

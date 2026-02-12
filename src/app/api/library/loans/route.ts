@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
 import { prisma } from "@/lib/prisma";
 import { paginationSchema } from "@/lib/validation";
 import { libLoanCreateSchema } from "@/lib/schemas/library";
+import { writeAuditEvent } from "@/server/audit";
 
 function addDays(d: Date, days: number) {
   const r = new Date(d);
@@ -29,6 +31,9 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const parsed = libLoanCreateSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.format() }, { status: 400 });
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  const actorId = token?.sub as string | undefined;
+  if (!actorId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { itemId, memberId } = parsed.data;
   const item = await prisma.libItem.findUnique({ where: { id: itemId } });
   if (!item) return NextResponse.json({ error: "item not found" }, { status: 404 });
@@ -44,6 +49,13 @@ export async function POST(req: NextRequest) {
     const created = await tx.libLoan.create({ data: { itemId, memberId, borrowedAt: now, dueAt: due } });
     await tx.libItem.update({ where: { id: itemId }, data: { available: (item.available ?? 0) - 1 } });
     return created;
+  });
+  await writeAuditEvent(prisma, {
+    actorId,
+    type: "library.loan.create",
+    entity: "LibLoan",
+    entityId: loan.id,
+    meta: { itemId: loan.itemId, memberId: loan.memberId, dueAt: loan.dueAt?.toISOString() ?? null },
   });
   return NextResponse.json(loan, { status: 201 });
 }

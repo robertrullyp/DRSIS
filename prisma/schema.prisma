@@ -962,6 +962,66 @@ model LmsScore {
   @@map("lms_skor")
 }
 
+// =====================
+// Integrations (Dapodik)
+// =====================
+
+enum DapodikSyncBatchStatus {
+  PENDING
+  RUNNING
+  SUCCESS
+  FAILED
+}
+
+model DapodikSyncBatch {
+  id            String                @id @default(cuid())
+  kind          String
+  status        DapodikSyncBatchStatus @default(PENDING)
+  attempts      Int                   @default(0)
+  maxAttempts   Int                   @default(5)
+  nextAttemptAt DateTime?
+  requestedBy   String?
+  startedAt     DateTime?
+  finishedAt    DateTime?
+  errorMessage  String?               @db.LongText
+  metaJson      String?               @db.LongText
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+  stagingRows   DapodikStagingRow[]
+
+  @@index([status, nextAttemptAt])
+  @@map("dapodik_sync_batch")
+}
+
+enum DapodikStagingStatus {
+  NEW
+  MATCHED
+  CONFLICT
+  REJECTED
+}
+
+model DapodikStagingRow {
+  id              String              @id @default(cuid())
+  batchId         String
+  entityType      String
+  externalId      String
+  status          DapodikStagingStatus @default(NEW)
+  dataJson        String              @db.LongText
+  matchedLocalType String?
+  matchedLocalId  String?
+  conflictJson    String?             @db.LongText
+  notes           String?             @db.LongText
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  batch           DapodikSyncBatch    @relation(fields: [batchId], references: [id], onDelete: Cascade)
+
+  @@unique([batchId, entityType, externalId])
+  @@index([entityType, status])
+  @@index([batchId, entityType])
+  @@map("dapodik_staging")
+}
+
 model EventLog {
   id        String   @id @default(cuid())
   type      String

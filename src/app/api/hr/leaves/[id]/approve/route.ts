@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getToken } from "next-auth/jwt";
 import { queueWa, queueEmail } from "@/lib/notify";
+import { writeAuditEvent } from "@/server/audit";
 
 function dateOnlyUTC(d: Date) { return new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); }
 
@@ -32,7 +33,22 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   }
 
   // Update status
-  await prisma.leaveRequest.update({ where: { id }, data: { status: "APPROVED", decidedById: userId, decidedAt: new Date() } });
+  const decidedAt = new Date();
+  await prisma.leaveRequest.update({ where: { id }, data: { status: "APPROVED", decidedById: userId, decidedAt } });
+  await writeAuditEvent(prisma, {
+    actorId: userId,
+    type: "hr.leave.approve",
+    entity: "LeaveRequest",
+    entityId: id,
+    meta: {
+      employeeId: lr.employeeId,
+      typeId: lr.typeId,
+      startDate: lr.startDate.toISOString(),
+      endDate: lr.endDate.toISOString(),
+      days: lr.days,
+      decidedAt: decidedAt.toISOString(),
+    },
+  });
 
   // Upsert staff attendance as LEAVE for the date range
   const start = dateOnlyUTC(new Date(lr.startDate));

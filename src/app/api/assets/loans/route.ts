@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
 import { prisma } from "@/lib/prisma";
 import { paginationSchema } from "@/lib/validation";
 import { assetLoanCreateSchema } from "@/lib/schemas/assets";
+import { writeAuditEvent } from "@/server/audit";
 
 export async function GET(req: NextRequest) {
   const parse = paginationSchema.safeParse(Object.fromEntries(req.nextUrl.searchParams));
@@ -25,8 +27,17 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const parsed = assetLoanCreateSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.format() }, { status: 400 });
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  const actorId = token?.sub as string | undefined;
+  if (!actorId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const { assetId, borrowerUserId, dueAt } = parsed.data;
   const loan = await prisma.assetLoan.create({ data: { assetId, borrowerUserId, dueAt: dueAt ?? null } });
+  await writeAuditEvent(prisma, {
+    actorId,
+    type: "asset.loan.create",
+    entity: "AssetLoan",
+    entityId: loan.id,
+    meta: { assetId: loan.assetId, borrowerUserId: loan.borrowerUserId, dueAt: loan.dueAt?.toISOString() ?? null },
+  });
   return NextResponse.json(loan, { status: 201 });
 }
-

@@ -46,6 +46,9 @@ export default defineConfig({
       DATABASE_URL: e2eDatabaseUrl,
       E2E_DATABASE_URL: e2eDatabaseUrl,
       NEXTAUTH_URL: 'http://localhost:3000',
+      // Enable mock Dapodik sync so E2E can validate queue + staging without external dependencies.
+      DAPODIK_SYNC_ENABLED: 'true',
+      DAPODIK_SYNC_MODE: 'mock',
     },
   },
 });

@@ -2,6 +2,7 @@ import type { Prisma } from "@/generated/prisma";
 import { prisma } from "@/lib/prisma";
 import type { CmsContactCreateInput, CmsInboxExportQueryInput, CmsInboxListQueryInput, CmsInboxUpdateInput } from "@/server/cms/dto/contact.dto";
 import { CmsServiceError } from "@/server/cms/page.service";
+import { writeAuditEvent } from "@/server/audit";
 
 type ContactMeta = {
   ip?: string | null;
@@ -189,7 +190,7 @@ export async function getCmsInboxMessageById(id: string) {
   return mapMessage(item);
 }
 
-export async function updateCmsInboxMessage(id: string, input: CmsInboxUpdateInput) {
+export async function updateCmsInboxMessage(id: string, input: CmsInboxUpdateInput, userId: string) {
   await getCmsInboxMessageById(id);
 
   const updated = await prisma.cmsContactMessage.update({
@@ -198,6 +199,13 @@ export async function updateCmsInboxMessage(id: string, input: CmsInboxUpdateInp
       isRead: input.isRead,
       isResolved: input.isResolved,
     },
+  });
+
+  await writeAuditEvent(prisma, {
+    actorId: userId,
+    type: "cms.inbox.update",
+    entity: "CmsContactMessage",
+    entityId: id,
   });
 
   return mapMessage(updated);

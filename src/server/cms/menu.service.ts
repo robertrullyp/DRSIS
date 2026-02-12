@@ -3,6 +3,7 @@ import { unstable_cache } from "next/cache";
 import { CMS_CACHE_TAGS } from "@/server/cms/cache-tags";
 import type { CmsMenuReplaceInput } from "@/server/cms/dto/menu.dto";
 import { CmsServiceError } from "@/server/cms/page.service";
+import { writeAuditEvent } from "@/server/audit";
 
 type CmsMenuTreeItem = {
   id: string;
@@ -116,7 +117,7 @@ export async function listCmsMenus() {
   }));
 }
 
-export async function replaceCmsMenuItems(menuId: string, input: CmsMenuReplaceInput) {
+export async function replaceCmsMenuItems(menuId: string, input: CmsMenuReplaceInput, userId: string) {
   const menu = await prisma.cmsMenu.findUnique({ where: { id: menuId } });
   if (!menu) {
     throw new CmsServiceError(404, "NOT_FOUND", "Menu not found");
@@ -160,6 +161,17 @@ export async function replaceCmsMenuItems(menuId: string, input: CmsMenuReplaceI
         });
       }
     }
+
+    await writeAuditEvent(tx, {
+      actorId: userId,
+      type: "cms.menu.replace",
+      entity: "CmsMenu",
+      entityId: menuId,
+      meta: {
+        name: menu.name,
+        itemCount: input.items.length,
+      },
+    });
 
     return tx.cmsMenu.findUnique({
       where: { id: menuId },

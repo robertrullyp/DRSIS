@@ -60,7 +60,11 @@ const nav: NavItem[] = [
     children: [
       { label: "Users & Roles", href: "/admin/users" },
       { label: "Roles & Permissions", href: "/admin/roles" },
+      { label: "Audit Log", href: "/admin/audit", adminOnly: true },
+      { label: "Analitik", href: "/admin/analytics", adminOnly: true },
       { label: "Devtools", href: "/admin/devtools", adminOnly: true },
+      { label: "LMS/CBT Links", href: "/admin/lms/links", adminOnly: true },
+      { label: "Integrasi Dapodik", href: "/admin/dapodik", adminOnly: true },
       { label: "CMS Posts", href: "/admin/cms/posts", cmsAccess: true },
       { label: "CMS Events", href: "/admin/cms/events", cmsAccess: true },
       { label: "CMS Pages", href: "/admin/cms/pages", cmsAccess: true },

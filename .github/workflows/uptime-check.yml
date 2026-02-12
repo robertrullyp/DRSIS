@@ -1,0 +1,31 @@
+name: Uptime Check
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: uptime-check
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping health endpoints
+        env:
+          UPTIME_BASE_URL: ${{ secrets.UPTIME_BASE_URL }}
+        run: |
+          if [ -z "$UPTIME_BASE_URL" ]; then
+            echo "UPTIME_BASE_URL is not configured. Skipping."
+            exit 0
+          fi
+
+          base="${UPTIME_BASE_URL%/}"
+          for path in "/api/health" "/api/health/ready"; do
+            url="${base}${path}"
+            echo "GET ${url}"
+            curl -fsSL --max-time 20 "${url}" > /dev/null
+          done
+

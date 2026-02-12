@@ -1,5 +1,4 @@
 import type { NextConfig } from "next";
-import path from "path";
 
 const nextConfig: NextConfig = {
   eslint: {
@@ -10,11 +9,11 @@ const nextConfig: NextConfig = {
   },
   // Clarify monorepo/workspace boundaries to silence root inference warnings
   turbopack: {
-    // Align with workspace root to avoid root inference warnings
-    root: path.join(__dirname, ".."),
+    // Align with repo root (this directory) to avoid root inference warnings.
+    root: __dirname,
   },
-  // For Node.js output tracing in monorepos, set the same workspace root
-  outputFileTracingRoot: path.join(__dirname, ".."),
+  // For Node.js output tracing, keep tracing root within this repo.
+  outputFileTracingRoot: __dirname,
 };
 
 export default nextConfig;

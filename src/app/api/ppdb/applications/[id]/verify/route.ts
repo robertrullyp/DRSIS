@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ppdbVerifySchema } from "@/lib/schemas/ppdb";
 import { getToken } from "next-auth/jwt";
+import { writeAuditEvent } from "@/server/audit";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -19,6 +20,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       verifiedAt: verified ? new Date() : null,
       verifiedById: verified ? verifierId : null,
     },
+  });
+  await writeAuditEvent(prisma, {
+    actorId: verifierId,
+    type: "ppdb.application.verify",
+    entity: "AdmissionApplication",
+    entityId: id,
+    meta: { verified, status: updated.status, verifiedAt: updated.verifiedAt?.toISOString() ?? null },
   });
   return NextResponse.json(updated);
 }

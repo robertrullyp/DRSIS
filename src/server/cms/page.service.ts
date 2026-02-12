@@ -3,6 +3,7 @@ import type { Prisma } from "@/generated/prisma";
 import { unstable_cache } from "next/cache";
 import { CMS_CACHE_TAGS } from "@/server/cms/cache-tags";
 import type { CmsPageCreateInput, CmsPageListQueryInput, CmsPageUpdateInput } from "@/server/cms/dto/page.dto";
+import { writeAuditEvent } from "@/server/audit";
 
 type CmsServiceErrorCode = "NOT_FOUND" | "SLUG_EXISTS";
 
@@ -84,7 +85,7 @@ export async function createCmsPage(input: CmsPageCreateInput, userId: string) {
   const status = input.status ?? "DRAFT";
   const publish = status === "PUBLISHED";
 
-  return prisma.cmsPage.create({
+  const created = await prisma.cmsPage.create({
     data: {
       title: input.title,
       slug,
@@ -99,6 +100,16 @@ export async function createCmsPage(input: CmsPageCreateInput, userId: string) {
       publishedBy: publish ? userId : null,
     },
   });
+
+  await writeAuditEvent(prisma, {
+    actorId: userId,
+    type: "cms.page.create",
+    entity: "CmsPage",
+    entityId: created.id,
+    meta: { slug: created.slug, status: created.status, template: created.template },
+  });
+
+  return created;
 }
 
 export async function updateCmsPage(id: string, input: CmsPageUpdateInput, userId: string) {
@@ -118,7 +129,7 @@ export async function updateCmsPage(id: string, input: CmsPageUpdateInput, userI
   const shouldPublishNow = nextStatus === "PUBLISHED" && !existing.publishedAt;
   const shouldUnpublish = nextStatus !== "PUBLISHED";
 
-  return prisma.cmsPage.update({
+  const updated = await prisma.cmsPage.update({
     where: { id },
     data: {
       title: input.title,
@@ -133,11 +144,26 @@ export async function updateCmsPage(id: string, input: CmsPageUpdateInput, userI
       publishedBy: shouldPublishNow ? userId : shouldUnpublish ? null : undefined,
     },
   });
+
+  await writeAuditEvent(prisma, {
+    actorId: userId,
+    type: "cms.page.update",
+    entity: "CmsPage",
+    entityId: id,
+    meta: {
+      slug: nextSlug,
+      status: nextStatus,
+      prevStatus: existing.status,
+      template: input.template ?? existing.template,
+    },
+  });
+
+  return updated;
 }
 
 export async function deleteCmsPage(id: string, userId: string) {
   await getCmsPageById(id);
-  return prisma.cmsPage.update({
+  const deleted = await prisma.cmsPage.update({
     where: { id },
     data: {
       deletedAt: new Date(),
@@ -145,11 +171,20 @@ export async function deleteCmsPage(id: string, userId: string) {
       status: "ARCHIVED",
     },
   });
+
+  await writeAuditEvent(prisma, {
+    actorId: userId,
+    type: "cms.page.delete",
+    entity: "CmsPage",
+    entityId: id,
+  });
+
+  return deleted;
 }
 
 export async function publishCmsPage(id: string, userId: string) {
   await getCmsPageById(id);
-  return prisma.cmsPage.update({
+  const published = await prisma.cmsPage.update({
     where: { id },
     data: {
       status: "PUBLISHED",
@@ -158,11 +193,20 @@ export async function publishCmsPage(id: string, userId: string) {
       updatedBy: userId,
     },
   });
+
+  await writeAuditEvent(prisma, {
+    actorId: userId,
+    type: "cms.page.publish",
+    entity: "CmsPage",
+    entityId: id,
+  });
+
+  return published;
 }
 
 export async function unpublishCmsPage(id: string, userId: string) {
   await getCmsPageById(id);
-  return prisma.cmsPage.update({
+  const unpublished = await prisma.cmsPage.update({
     where: { id },
     data: {
       status: "DRAFT",
@@ -171,6 +215,15 @@ export async function unpublishCmsPage(id: string, userId: string) {
       updatedBy: userId,
     },
   });
+
+  await writeAuditEvent(prisma, {
+    actorId: userId,
+    type: "cms.page.unpublish",
+    entity: "CmsPage",
+    entityId: id,
+  });
+
+  return unpublished;
 }
 
 async function getPublishedCmsPageBySlugUncached(slug: string) {

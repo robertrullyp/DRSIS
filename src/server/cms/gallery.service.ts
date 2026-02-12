@@ -11,6 +11,7 @@ import type {
   CmsPublicGalleryListQueryInput,
 } from "@/server/cms/dto/gallery.dto";
 import { CmsServiceError } from "@/server/cms/page.service";
+import { writeAuditEvent } from "@/server/audit";
 
 function slugify(input: string) {
   return input
@@ -166,6 +167,14 @@ export async function createCmsGallery(input: CmsGalleryCreateInput, userId: str
     },
   });
 
+  await writeAuditEvent(prisma, {
+    actorId: userId,
+    type: "cms.gallery.create",
+    entity: "CmsGallery",
+    entityId: created.id,
+    meta: { slug: created.slug, status: created.status },
+  });
+
   return getCmsGalleryById(created.id);
 }
 
@@ -204,6 +213,14 @@ export async function updateCmsGallery(id: string, input: CmsGalleryUpdateInput,
     },
   });
 
+  await writeAuditEvent(prisma, {
+    actorId: userId,
+    type: "cms.gallery.update",
+    entity: "CmsGallery",
+    entityId: id,
+    meta: { slug: nextSlug, status: nextStatus, prevStatus: existing.status },
+  });
+
   return getCmsGalleryById(id);
 }
 
@@ -217,6 +234,13 @@ export async function deleteCmsGallery(id: string, userId: string) {
       status: "ARCHIVED",
       updatedBy: userId,
     },
+  });
+
+  await writeAuditEvent(prisma, {
+    actorId: userId,
+    type: "cms.gallery.delete",
+    entity: "CmsGallery",
+    entityId: id,
   });
 
   return { ok: true };
@@ -235,6 +259,13 @@ export async function publishCmsGallery(id: string, userId: string) {
     },
   });
 
+  await writeAuditEvent(prisma, {
+    actorId: userId,
+    type: "cms.gallery.publish",
+    entity: "CmsGallery",
+    entityId: id,
+  });
+
   return getCmsGalleryById(id);
 }
 
@@ -249,6 +280,13 @@ export async function unpublishCmsGallery(id: string, userId: string) {
       publishedBy: null,
       updatedBy: userId,
     },
+  });
+
+  await writeAuditEvent(prisma, {
+    actorId: userId,
+    type: "cms.gallery.unpublish",
+    entity: "CmsGallery",
+    entityId: id,
   });
 
   return getCmsGalleryById(id);
@@ -278,6 +316,14 @@ export async function setCmsGalleryItems(id: string, input: CmsGallerySetItemsIn
     await tx.cmsGallery.update({
       where: { id },
       data: { updatedBy: userId },
+    });
+
+    await writeAuditEvent(tx, {
+      actorId: userId,
+      type: "cms.gallery.items.replace",
+      entity: "CmsGallery",
+      entityId: id,
+      meta: { itemCount: normalizedItems.length },
     });
   });
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getToken } from "next-auth/jwt";
 import { queueWa, queueEmail } from "@/lib/notify";
+import { writeAuditEvent } from "@/server/audit";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
@@ -10,7 +11,22 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const { id } = await params;
   const lr = await prisma.leaveRequest.findUnique({ where: { id } });
   if (!lr) return NextResponse.json({ error: "not found" }, { status: 404 });
-  await prisma.leaveRequest.update({ where: { id }, data: { status: "REJECTED", decidedById: userId, decidedAt: new Date() } });
+  const decidedAt = new Date();
+  await prisma.leaveRequest.update({ where: { id }, data: { status: "REJECTED", decidedById: userId, decidedAt } });
+  await writeAuditEvent(prisma, {
+    actorId: userId,
+    type: "hr.leave.reject",
+    entity: "LeaveRequest",
+    entityId: id,
+    meta: {
+      employeeId: lr.employeeId,
+      typeId: lr.typeId,
+      startDate: lr.startDate.toISOString(),
+      endDate: lr.endDate.toISOString(),
+      days: lr.days,
+      decidedAt: decidedAt.toISOString(),
+    },
+  });
   const emp = await prisma.employee.findUnique({ where: { id: lr.employeeId }, include: { user: true } });
   const payload = { startDate: lr.startDate, endDate: lr.endDate, days: lr.days } as any;
   await queueWa(emp?.user?.phone ?? null, "leave.rejected", payload);

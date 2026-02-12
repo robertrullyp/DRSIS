@@ -17,7 +17,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
   try {
     const { id } = await params;
-    const item = await replaceCmsMenuItems(id, parsed.data);
+    const item = await replaceCmsMenuItems(id, parsed.data, auth.context.userId);
     revalidateCmsMenu();
     return NextResponse.json(item);
   } catch (error) {

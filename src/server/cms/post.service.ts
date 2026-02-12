@@ -9,6 +9,7 @@ import type {
   CmsPublicPostListQueryInput,
 } from "@/server/cms/dto/post.dto";
 import { CmsServiceError } from "@/server/cms/page.service";
+import { writeAuditEvent } from "@/server/audit";
 
 function slugify(input: string) {
   return input
@@ -156,6 +157,17 @@ export async function createCmsPost(input: CmsPostCreateInput, userId: string) {
   });
 
   await replacePostTaxonomy(created.id, categoryIds, tagIds);
+  await writeAuditEvent(prisma, {
+    actorId: userId,
+    type: "cms.post.create",
+    entity: "CmsPost",
+    entityId: created.id,
+    meta: {
+      slug: created.slug,
+      status: created.status,
+      postType: created.type,
+    },
+  });
   return getCmsPostById(created.id);
 }
 
@@ -193,6 +205,18 @@ export async function updateCmsPost(id: string, input: CmsPostUpdateInput, userI
   });
 
   await replacePostTaxonomy(id, normalizeIds(input.categoryIds), normalizeIds(input.tagIds));
+  await writeAuditEvent(prisma, {
+    actorId: userId,
+    type: "cms.post.update",
+    entity: "CmsPost",
+    entityId: id,
+    meta: {
+      slug: nextSlug,
+      status: nextStatus,
+      prevStatus: existing.status,
+      postType: input.type ?? existing.type,
+    },
+  });
   return getCmsPostById(id);
 }
 
@@ -208,6 +232,12 @@ export async function deleteCmsPost(id: string, userId: string) {
     },
   });
 
+  await writeAuditEvent(prisma, {
+    actorId: userId,
+    type: "cms.post.delete",
+    entity: "CmsPost",
+    entityId: id,
+  });
   return { ok: true };
 }
 
@@ -224,6 +254,12 @@ export async function publishCmsPost(id: string, userId: string) {
     },
   });
 
+  await writeAuditEvent(prisma, {
+    actorId: userId,
+    type: "cms.post.publish",
+    entity: "CmsPost",
+    entityId: id,
+  });
   return getCmsPostById(id);
 }
 
@@ -240,6 +276,12 @@ export async function unpublishCmsPost(id: string, userId: string) {
     },
   });
 
+  await writeAuditEvent(prisma, {
+    actorId: userId,
+    type: "cms.post.unpublish",
+    entity: "CmsPost",
+    entityId: id,
+  });
   return getCmsPostById(id);
 }
 

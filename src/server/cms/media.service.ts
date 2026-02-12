@@ -9,6 +9,7 @@ import type {
   CmsMediaUpdateInput,
 } from "@/server/cms/dto/media.dto";
 import { CmsServiceError } from "@/server/cms/page.service";
+import { writeAuditEvent } from "@/server/audit";
 
 const MEDIA_READ_EXPIRES_SECONDS = 600;
 const MEDIA_UPLOAD_EXPIRES_SECONDS = 300;
@@ -118,7 +119,7 @@ export async function createCmsMedia(input: CmsMediaCreateInput, userId: string)
   }
 
   try {
-    return await prisma.cmsMedia.create({
+    const created = await prisma.cmsMedia.create({
       data: {
         key: input.key,
         filename: normalizeFilename(input.filename),
@@ -135,6 +136,16 @@ export async function createCmsMedia(input: CmsMediaCreateInput, userId: string)
         createdBy: userId,
       },
     });
+
+    await writeAuditEvent(prisma, {
+      actorId: userId,
+      type: "cms.media.create",
+      entity: "CmsMedia",
+      entityId: created.id,
+      meta: { key: created.key, module: created.module },
+    });
+
+    return created;
   } catch {
     throw new CmsServiceError(409, "SLUG_EXISTS", "Media key already registered");
   }
@@ -150,9 +161,9 @@ export async function getCmsMediaById(id: string) {
   };
 }
 
-export async function updateCmsMedia(id: string, input: CmsMediaUpdateInput) {
+export async function updateCmsMedia(id: string, input: CmsMediaUpdateInput, userId: string) {
   await getCmsMediaById(id);
-  return prisma.cmsMedia.update({
+  const updated = await prisma.cmsMedia.update({
     where: { id },
     data: {
       alt: input.alt === undefined ? undefined : input.alt,
@@ -161,6 +172,15 @@ export async function updateCmsMedia(id: string, input: CmsMediaUpdateInput) {
       thumbUrl: input.thumbUrl === undefined ? undefined : input.thumbUrl,
     },
   });
+
+  await writeAuditEvent(prisma, {
+    actorId: userId,
+    type: "cms.media.update",
+    entity: "CmsMedia",
+    entityId: id,
+  });
+
+  return updated;
 }
 
 export async function getCmsMediaSignedReadUrl(id: string) {

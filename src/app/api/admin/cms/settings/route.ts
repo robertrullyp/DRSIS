@@ -21,6 +21,6 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ error: parsed.error.format() }, { status: 400 });
   }
 
-  await updateCmsPublicSettings(parsed.data);
+  await updateCmsPublicSettings(parsed.data, auth.context.userId);
   return NextResponse.json({ ok: true });
 }

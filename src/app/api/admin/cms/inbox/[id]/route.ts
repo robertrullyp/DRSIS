@@ -32,7 +32,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   try {
     const { id } = await params;
-    const updated = await updateCmsInboxMessage(id, parsed.data);
+    const updated = await updateCmsInboxMessage(id, parsed.data, auth.context.userId);
     return NextResponse.json(updated);
   } catch (error) {
     if (error instanceof CmsServiceError) {

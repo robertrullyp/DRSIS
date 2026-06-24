@@ -1,78 +1,107 @@
 # Backup & Restore
 
-Dokumen ini menjelaskan strategi backup untuk DRSIS (MariaDB + storage S3/MinIO + secrets).
+Dokumen ini menjelaskan strategi backup untuk DRSIS. Database utama adalah PostgreSQL. MariaDB hanya dipertahankan sebagai legacy compatibility jika perlu membaca instalasi lama.
 
 ## 1) Komponen Yang Perlu Dibackup
 
-- Database MariaDB (semua tabel aplikasi).
-- Object storage (bucket S3/MinIO):
-  - PDF raport, kuitansi, upload PPDB, CMS media, dll (semua object key yang dipakai aplikasi).
+- Database PostgreSQL utama.
+- Object storage S3/MinIO:
+  - PDF raport, kuitansi, upload PPDB, CMS media, dan object lain yang dipakai aplikasi.
 - Secrets & konfigurasi:
-  - `.env` di server (minimal: `DATABASE_URL`, `NEXTAUTH_SECRET`, kredensial S3/MinIO, `CRON_SECRET`).
-  - Secrets CI/CD (GitHub Actions): `CRON_SECRET`, `CRON_TICK_URL`, `UPTIME_BASE_URL`, dll.
+  - `.env` di server: `DATABASE_URL`, `NEXTAUTH_SECRET`, kredensial S3/MinIO, `CRON_SECRET`, SMTP/WA credential jika ada.
+  - Secrets CI/CD: `CRON_SECRET`, `CRON_TICK_URL`, `UPTIME_BASE_URL`, dan secret provider eksternal.
 
-## 2) Backup Database (MariaDB)
+## 2) Backup Database PostgreSQL
 
-### Opsi A: mysqldump (umum)
-
-Rekomendasi: gunakan user dengan hak akses read + lock (atau full, tergantung kebijakan).
-
-Contoh (ganti HOST/USER/DBNAME):
+Rekomendasi awal: `pg_dump` custom format agar restore lebih fleksibel.
 
 ```bash
-export MYSQL_PWD='PASSWORD_KAMU'
-mysqldump \
-  --single-transaction \
-  --quick \
-  --routines --triggers --events \
-  -h 127.0.0.1 -u root sis \
-  > backup_sis_$(date +%F_%H%M).sql
-unset MYSQL_PWD
+export PGPASSWORD='sis'
+pg_dump \
+  --format=custom \
+  --no-owner \
+  --no-privileges \
+  --host=127.0.0.1 \
+  --port=5432 \
+  --username=sis \
+  --dbname=sis \
+  --file=backup_drsis_$(date +%F_%H%M).dump
+unset PGPASSWORD
 ```
 
-### Restore
+Untuk SQL biasa:
 
 ```bash
-export MYSQL_PWD='PASSWORD_KAMU'
-mysql -h 127.0.0.1 -u root sis < backup_sis_YYYY-MM-DD_HHMM.sql
-unset MYSQL_PWD
+export PGPASSWORD='sis'
+pg_dump \
+  --host=127.0.0.1 \
+  --port=5432 \
+  --username=sis \
+  --dbname=sis \
+  > backup_drsis_$(date +%F_%H%M).sql
+unset PGPASSWORD
 ```
 
-Catatan:
-- Untuk backup besar, pertimbangkan kompresi: `gzip backup.sql`.
-- Pastikan timezone/charset sesuai (default MariaDB biasanya OK).
+## 3) Restore PostgreSQL
 
-## 3) Backup Object Storage (S3/MinIO)
-
-### MinIO (mc)
+Restore custom dump ke database kosong:
 
 ```bash
-# install mc: https://min.io/docs/minio/linux/reference/minio-mc.html
+export PGPASSWORD='sis'
+pg_restore \
+  --clean \
+  --if-exists \
+  --no-owner \
+  --host=127.0.0.1 \
+  --port=5432 \
+  --username=sis \
+  --dbname=sis \
+  backup_drsis_YYYY-MM-DD_HHMM.dump
+unset PGPASSWORD
+```
+
+Restore SQL biasa:
+
+```bash
+export PGPASSWORD='sis'
+psql \
+  --host=127.0.0.1 \
+  --port=5432 \
+  --username=sis \
+  --dbname=sis \
+  < backup_drsis_YYYY-MM-DD_HHMM.sql
+unset PGPASSWORD
+```
+
+## 4) Backup Object Storage
+
+### MinIO
+
+```bash
 mc alias set local http://127.0.0.1:9000 minioadmin minioadmin
-
-# contoh bucket: sis-bucket (sesuaikan dengan S3_BUCKET)
-mc mirror --overwrite local/sis-bucket ./backup/minio/sis-bucket
+mc mirror --overwrite local/sis-uploads ./backup/minio/sis-uploads
 ```
 
-### S3 (awscli)
+### S3
 
 ```bash
-# install & configure awscli terlebih dulu
 aws s3 sync s3://YOUR_BUCKET ./backup/s3/YOUR_BUCKET
 ```
 
-## 4) Backup Secrets/Config
+## 5) Secrets/Config
 
-- Backup `.env` di host produksi (simpan aman, terenkripsi).
-- Jangan commit `.env` ke repo.
-- Jika pakai GitHub Actions:
-  - catat list secrets yang dipakai workflow:
-    - `CRON_TICK_URL`, `CRON_SECRET` (cron tick)
-    - `UPTIME_BASE_URL` (uptime check)
+- Backup `.env` produksi ke tempat terenkripsi.
+- Jangan commit `.env`.
+- Catat daftar secrets CI/CD setiap release.
+- Rotasi credential S3/SMTP/WA/PostgreSQL sesuai kebijakan sekolah.
 
-## 5) Frekuensi & Retensi (rekomendasi awal)
+## 6) Frekuensi & Retensi
 
-- DB: harian (retensi 14-30 hari) + mingguan (retensi 3-6 bulan).
-- Storage: harian/mingguan tergantung volume (atau gunakan versioning/lifecycle di S3).
+- PostgreSQL: harian dengan retensi 14-30 hari, mingguan dengan retensi 3-6 bulan.
+- Object storage: harian/mingguan sesuai volume upload.
 - Uji restore minimal 1x/bulan di staging.
+- Simpan minimal satu backup offsite.
 
+## 7) Legacy MariaDB
+
+Jika ada instalasi lama berbasis MariaDB, backup tetap dapat dilakukan dengan `mysqldump` sebelum migrasi manual. Runtime utama DRSIS setelah perombakan ini tidak memakai MariaDB.

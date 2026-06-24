@@ -17,12 +17,20 @@ function withConnectTimeout(url: string) {
   return `${url}${url.includes('?') ? '&' : '?'}connect_timeout=5`;
 }
 
+function shouldStartLocalE2ePostgres(url: string) {
+  return url.includes('127.0.0.1:5433') || url.includes('localhost:5433');
+}
+
 async function ensureDb() {
   const selected = withConnectTimeout(
     process.env.E2E_DATABASE_URL ||
       process.env.DATABASE_URL ||
-      'mysql://sis:sis@127.0.0.1:3306/sis'
+      'postgresql://sis:sis@127.0.0.1:5433/sis?schema=public'
   );
+
+  if (shouldStartLocalE2ePostgres(selected)) {
+    run('docker compose -f docker-compose.e2e.yml up -d postgres_e2e');
+  }
 
   let ready = false;
   for (let attempt = 1; attempt <= 20; attempt += 1) {
@@ -39,8 +47,8 @@ async function ensureDb() {
 
   if (!ready) {
     throw new Error(
-      `[global-setup] Could not connect to E2E MariaDB (${selected}). ` +
-        'Set E2E_DATABASE_URL (or DATABASE_URL) to a reachable MySQL/MariaDB instance.'
+      `[global-setup] Could not connect to E2E PostgreSQL (${selected}). ` +
+        'Set E2E_DATABASE_URL (or DATABASE_URL) to a reachable PostgreSQL instance.'
     );
   }
 

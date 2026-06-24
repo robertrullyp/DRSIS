@@ -65,11 +65,19 @@ Tambahkan/atur di `.env`:
 DAPODIK_SYNC_ENABLED=true
 DAPODIK_SYNC_MODE=mock   # disabled|mock|real
 DAPODIK_SYNC_MAX_ATTEMPTS=5
+DAPODIK_BASE_URL=
+DAPODIK_CLIENT_ID=
+DAPODIK_CLIENT_SECRET=
 ```
+
+Status endpoint:
+
+- `GET /api/admin/dapodik/status`
+- Membaca mode, enabled flag, max attempts, dan kesiapan konfigurasi official tanpa membocorkan secret.
 
 ## Next Implementasi (Real Connector)
 
-Tahap berikutnya (sesuai TODO P4):
+Tahap berikutnya (sesuai TODO P5):
 
 1. Discovery & kepatuhan integrasi resmi (scope API, SSO SDS, prasyarat registrasi).
 2. Desain mapping domain + staging + rekonsiliasi (`NEW/MATCHED/CONFLICT/REJECTED`).

@@ -11,21 +11,22 @@ jobs:
   lint-type-build:
     runs-on: ubuntu-latest
     services:
-      mariadb:
-        image: mariadb:11
+      postgres:
+        image: postgres:16
         env:
-          MARIADB_ROOT_PASSWORD: root
-          MARIADB_DATABASE: sis
+          POSTGRES_DB: sis
+          POSTGRES_USER: sis
+          POSTGRES_PASSWORD: sis
         ports:
-          - 3306:3306
+          - 5432:5432
         options: >-
-          --health-cmd="mariadb-admin ping -h 127.0.0.1 -uroot -proot"
+          --health-cmd="pg_isready -h 127.0.0.1 -U sis -d sis"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=10
     env:
-      DATABASE_URL: mysql://root:root@127.0.0.1:3306/sis
-      E2E_DATABASE_URL: mysql://root:root@127.0.0.1:3306/sis
+      DATABASE_URL: postgresql://sis:sis@127.0.0.1:5432/sis?schema=public
+      E2E_DATABASE_URL: postgresql://sis:sis@127.0.0.1:5432/sis?schema=public
       NEXTAUTH_SECRET: ci-nextauth-secret
       NEXTAUTH_URL: http://localhost:3000
       NEXT_PUBLIC_SITE_URL: http://localhost:3000
@@ -60,21 +61,22 @@ jobs:
     runs-on: ubuntu-latest
     needs: lint-type-build
     services:
-      mariadb:
-        image: mariadb:11
+      postgres:
+        image: postgres:16
         env:
-          MARIADB_ROOT_PASSWORD: root
-          MARIADB_DATABASE: sis
+          POSTGRES_DB: sis
+          POSTGRES_USER: sis
+          POSTGRES_PASSWORD: sis
         ports:
-          - 3306:3306
+          - 5432:5432
         options: >-
-          --health-cmd="mariadb-admin ping -h 127.0.0.1 -uroot -proot"
+          --health-cmd="pg_isready -h 127.0.0.1 -U sis -d sis"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=10
     env:
-      DATABASE_URL: mysql://root:root@127.0.0.1:3306/sis
-      E2E_DATABASE_URL: mysql://root:root@127.0.0.1:3306/sis
+      DATABASE_URL: postgresql://sis:sis@127.0.0.1:5432/sis?schema=public
+      E2E_DATABASE_URL: postgresql://sis:sis@127.0.0.1:5432/sis?schema=public
       NEXTAUTH_SECRET: ci-nextauth-secret
       NEXTAUTH_URL: http://localhost:3000
       NEXT_PUBLIC_SITE_URL: http://localhost:3000

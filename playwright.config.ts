@@ -9,12 +9,14 @@ function withConnectTimeout(url: string) {
   return `${url}${url.includes('?') ? '&' : '?'}connect_timeout=5`;
 }
 
-const defaultE2eDatabaseUrl = process.env.DATABASE_URL || 'mysql://sis:sis@127.0.0.1:3306/sis';
+const defaultE2eDatabaseUrl =
+  process.env.DATABASE_URL || 'postgresql://sis:sis@127.0.0.1:5433/sis?schema=public';
 const e2eDatabaseUrl = withConnectTimeout(process.env.E2E_DATABASE_URL || defaultE2eDatabaseUrl);
 process.env.E2E_DATABASE_URL = e2eDatabaseUrl;
 
 export default defineConfig({
   testDir: './tests',
+  globalSetup: './tests/global-setup.ts',
   /* Run tests in files in parallel */
   fullyParallel: false,
   timeout: 60_000,
@@ -26,7 +28,7 @@ export default defineConfig({
   reporter: 'list',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: 'http://127.0.0.1:3000',
     trace: 'on-first-retry',
     headless: true,
     navigationTimeout: 45_000,
@@ -38,14 +40,14 @@ export default defineConfig({
   /* Start dev server before running tests */
   webServer: {
     command: 'bash tests/e2e-webserver.sh',
-    url: 'http://localhost:3000',
+    url: 'http://127.0.0.1:3000',
     timeout: 240_000,
-    reuseExistingServer: false,
+    reuseExistingServer: !process.env.CI,
     env: {
       ...process.env,
       DATABASE_URL: e2eDatabaseUrl,
       E2E_DATABASE_URL: e2eDatabaseUrl,
-      NEXTAUTH_URL: 'http://localhost:3000',
+      NEXTAUTH_URL: 'http://127.0.0.1:3000',
       // Enable mock Dapodik sync so E2E can validate queue + staging without external dependencies.
       DAPODIK_SYNC_ENABLED: 'true',
       DAPODIK_SYNC_MODE: 'mock',

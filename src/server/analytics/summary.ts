@@ -17,7 +17,7 @@ export type AnalyticsSummary = {
   finance: { openOrPartialInvoices: number; overdueInvoices: number; outstandingAmount: number };
   financeOperationalMtd: { income: number; expense: number; transferIn: number; transferOut: number; net: number };
   notifications: { waPending: number; emailPending: number };
-  system: { auditEventsLast24h: number; dapodikQueuePending: number };
+  system: { auditEventsLast24h: number; analyticsEventsLast24h: number; dapodikQueuePending: number };
 };
 
 function toStatusMap(rows: Array<{ status: string; _count: { status: number } }>) {
@@ -72,6 +72,7 @@ export async function getAnalyticsSummary(): Promise<AnalyticsSummary> {
     waPending,
     emailPending,
     auditEventsLast24h,
+    analyticsEventsLast24h,
     dapodikQueuePending,
   ] = await Promise.all([
     prisma.user.count(),
@@ -105,6 +106,7 @@ export async function getAnalyticsSummary(): Promise<AnalyticsSummary> {
     prisma.waOutbox.count({ where: { status: "PENDING" } }),
     prisma.emailOutbox.count({ where: { status: "PENDING" } }),
     prisma.auditEvent.count({ where: { occurredAt: { gte: last24h } } }),
+    prisma.analyticsEvent.count({ where: { occurredAt: { gte: last24h } } }),
     prisma.dapodikSyncBatch.count({ where: { status: "PENDING" } }),
   ]);
 
@@ -146,6 +148,6 @@ export async function getAnalyticsSummary(): Promise<AnalyticsSummary> {
     },
     financeOperationalMtd: financeOperationalMtdWithNet,
     notifications: { waPending, emailPending },
-    system: { auditEventsLast24h, dapodikQueuePending },
+    system: { auditEventsLast24h, analyticsEventsLast24h, dapodikQueuePending },
   };
 }

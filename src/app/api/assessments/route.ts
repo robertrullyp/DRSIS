@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { assessmentCreateSchema, assessmentQuerySchema } from "@/lib/schemas/assessment";
-import { getToken } from "next-auth/jwt";
+import { requireApiPermission } from "@/server/api/auth";
 
 export async function GET(req: NextRequest) {
   const parse = assessmentQuerySchema.safeParse(Object.fromEntries(req.nextUrl.searchParams));
@@ -26,11 +26,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-  const perms = (token as any)?.permissions as string[] | undefined;
-  const roles = (token as any)?.roles as string[] | undefined;
-  const allowed = Boolean(perms?.includes("assessment.manage") || roles?.includes("admin"));
-  if (!allowed) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const auth = await requireApiPermission(req, ["assessment.manage"]);
+  if (!auth.ok) return auth.response;
+
   const body = await req.json();
   const parsed = assessmentCreateSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.format() }, { status: 400 });

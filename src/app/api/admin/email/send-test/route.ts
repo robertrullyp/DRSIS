@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { queueEmail } from "@/lib/notify";
+import { requireApiPermission } from "@/server/api/auth";
 
 export async function POST(req: NextRequest) {
+  const auth = await requireApiPermission(req, ["notification.manage"]);
+  if (!auth.ok) return auth.response;
+
   const body = await req.json().catch(() => ({}));
   const to = String(body?.to || "").trim();
   const key = String(body?.key || "").trim();
@@ -14,4 +18,3 @@ export async function POST(req: NextRequest) {
   const out = await queueEmail(to, key, payload, subject);
   return NextResponse.json({ queued: Boolean(out), id: out?.id });
 }
-

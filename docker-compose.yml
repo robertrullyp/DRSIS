@@ -1,17 +1,31 @@
 version: "3.9"
 services:
-  mariadb:
+  postgres:
+    image: postgres:16
+    container_name: sis-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-sis}
+      POSTGRES_USER: ${POSTGRES_USER:-sis}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sis}
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  mariadb_legacy:
     image: mariadb:11
-    container_name: sis-mariadb
+    container_name: sis-mariadb-legacy
+    profiles:
+      - legacy-mariadb
     environment:
       MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:-root}
       MARIADB_DATABASE: ${MARIADB_DATABASE:-sis}
       MARIADB_USER: ${MARIADB_USER:-sis}
       MARIADB_PASSWORD: ${MARIADB_PASSWORD:-sis}
     ports:
-      - "3306:3306"
+      - "${MARIADB_PORT:-3306}:3306"
     volumes:
-      - mariadb_data:/var/lib/mysql
+      - mariadb_legacy_data:/var/lib/mysql
 
   minio:
     image: quay.io/minio/minio:latest
@@ -37,5 +51,6 @@ services:
        echo 'MinIO bucket ensured'"
 
 volumes:
-  mariadb_data:
+  postgres_data:
+  mariadb_legacy_data:
   minio_data:

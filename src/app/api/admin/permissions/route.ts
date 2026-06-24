@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireApiPermission } from "@/server/api/auth";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const auth = await requireApiPermission(req, ["identity.manage"]);
+  if (!auth.ok) return auth.response;
+
   const items = await prisma.permission.findMany({ orderBy: { name: "asc" } });
   return NextResponse.json({ items });
 }
-

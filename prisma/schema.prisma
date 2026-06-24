@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -31,28 +31,32 @@ model SchoolProfile {
 
   @@map("profil_sekolah")
 }
-model User {
-  id              String              @id @default(cuid())
-  email           String              @unique
-  name            String?
-  phone           String?             @unique
-  status          UserStatus          @default(ACTIVE)
-  passwordHash    String?
-  roleId          String?
-  createdAt       DateTime            @default(now())
-  updatedAt       DateTime            @updatedAt
-  assetLoans      AssetLoan[]
-  counselSessions CounselingSession[] @relation("TicketCounselor")
-  createdTickets  CounselingTicket[]  @relation("TicketCreator")
-  teacher         Teacher?
-  events          EventLog[]
-  employee        Employee?
-  guardianLinks   StudentGuardian[]   @relation("GuardianUserLinks")
-  role            Role?               @relation("SingleUserRole", fields: [roleId], references: [id])
-  libMembership   LibMember?
-  student         Student?
 
-  @@index([roleId], map: "pengguna_roleId_fkey")
+model User {
+  id                   String              @id @default(cuid())
+  email                String              @unique
+  name                 String?
+  phone                String?             @unique
+  status               UserStatus          @default(ACTIVE)
+  passwordHash         String?
+  roleId               String?
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  assetLoans           AssetLoan[]
+  counselSessions      CounselingSession[] @relation("TicketCounselor")
+  createdTickets       CounselingTicket[]  @relation("TicketCreator")
+  teacher              Teacher?
+  events               EventLog[]
+  analyticsEvents      AnalyticsEvent[]    @relation("AnalyticsEventActor")
+  notifications        NotificationInbox[] @relation("NotificationRecipient")
+  notificationsCreated NotificationInbox[] @relation("NotificationCreatedBy")
+  employee             Employee?
+  guardianLinks        StudentGuardian[]   @relation("GuardianUserLinks")
+  role                 Role?               @relation("SingleUserRole", fields: [roleId], references: [id])
+  libMembership        LibMember?
+  student              Student?
+
+  @@index([roleId], map: "pengguna_roleId_idx")
   @@map("pengguna")
 }
 
@@ -83,7 +87,7 @@ model RolePermission {
   role         Role       @relation(fields: [roleId], references: [id])
 
   @@id([roleId, permissionId])
-  @@index([permissionId], map: "peran_hak_akses_permissionId_fkey")
+  @@index([permissionId], map: "peran_hak_akses_permissionId_idx")
   @@map("peran_hak_akses")
 }
 
@@ -129,6 +133,7 @@ model Student {
   savings          SavingsAccount?
   invoices         Invoice[]
   examAttempts     ExamAttempt[]
+  notifications    NotificationInbox[]
 
   @@map("siswa")
 }
@@ -145,7 +150,7 @@ model StudentGuardian {
   student        Student              @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, guardianUserId])
-  @@index([guardianUserId], map: "relasi_wali_siswa_guardianUserId_fkey")
+  @@index([guardianUserId], map: "relasi_wali_siswa_guardianUserId_idx")
   @@map("relasi_wali_siswa")
 }
 
@@ -188,7 +193,7 @@ model Semester {
   reportCards    ReportCard[]
   academicYear   AcademicYear @relation(fields: [academicYearId], references: [id])
 
-  @@index([academicYearId], map: "semester_academicYearId_fkey")
+  @@index([academicYearId], map: "semester_academicYearId_idx")
   @@map("semester")
 }
 
@@ -221,9 +226,9 @@ model Classroom {
   reportCards       ReportCard[]
   exams             Exam[]
 
-  @@index([academicYearId], map: "kelas_academicYearId_fkey")
-  @@index([gradeId], map: "kelas_gradeId_fkey")
-  @@index([homeroomTeacherId], map: "kelas_homeroomTeacherId_fkey")
+  @@index([academicYearId], map: "kelas_academicYearId_idx")
+  @@index([gradeId], map: "kelas_gradeId_idx")
+  @@index([homeroomTeacherId], map: "kelas_homeroomTeacherId_idx")
   @@map("kelas")
 }
 
@@ -240,8 +245,8 @@ model Subject {
   assessments  Assessment[]
   exams        Exam[]
 
-  @@index([curriculumId], map: "mata_pelajaran_curriculumId_fkey")
-  @@index([gradeId], map: "mata_pelajaran_gradeId_fkey")
+  @@index([curriculumId], map: "mata_pelajaran_curriculumId_idx")
+  @@index([gradeId], map: "mata_pelajaran_gradeId_idx")
   @@map("mata_pelajaran")
 }
 
@@ -267,8 +272,8 @@ model Enrollment {
   student        Student      @relation(fields: [studentId], references: [id])
 
   @@unique([studentId, academicYearId])
-  @@index([academicYearId], map: "pendaftaran_kelas_academicYearId_fkey")
-  @@index([classroomId], map: "pendaftaran_kelas_classroomId_fkey")
+  @@index([academicYearId], map: "pendaftaran_kelas_academicYearId_idx")
+  @@index([classroomId], map: "pendaftaran_kelas_classroomId_idx")
   @@map("pendaftaran_kelas")
 }
 
@@ -285,9 +290,9 @@ model Schedule {
   subject     Subject             @relation(fields: [subjectId], references: [id])
   teacher     Teacher             @relation(fields: [teacherId], references: [id])
 
-  @@index([classroomId], map: "jadwal_classroomId_fkey")
-  @@index([subjectId], map: "jadwal_subjectId_fkey")
-  @@index([teacherId], map: "jadwal_teacherId_fkey")
+  @@index([classroomId], map: "jadwal_classroomId_idx")
+  @@index([subjectId], map: "jadwal_subjectId_idx")
+  @@index([teacherId], map: "jadwal_teacherId_idx")
   @@map("jadwal")
 }
 
@@ -307,9 +312,9 @@ model StudentAttendance {
   student      Student                 @relation(fields: [studentId], references: [id])
 
   @@unique([studentId, date, scheduleId])
-  @@index([classroomId], map: "absensi_siswa_classroomId_fkey")
-  @@index([recordedById], map: "absensi_siswa_recordedById_fkey")
-  @@index([scheduleId], map: "absensi_siswa_scheduleId_fkey")
+  @@index([classroomId], map: "absensi_siswa_classroomId_idx")
+  @@index([recordedById], map: "absensi_siswa_recordedById_idx")
+  @@index([scheduleId], map: "absensi_siswa_scheduleId_idx")
   @@map("absensi_siswa")
 }
 
@@ -340,8 +345,8 @@ model StaffAttendance {
   employee   Employee              @relation(fields: [employeeId], references: [id])
   shift      StaffShift?           @relation(fields: [shiftId], references: [id])
 
-  @@index([employeeId], map: "absensi_pegawai_employeeId_fkey")
-  @@index([shiftId], map: "absensi_pegawai_shiftId_fkey")
+  @@index([employeeId], map: "absensi_pegawai_employeeId_idx")
+  @@index([shiftId], map: "absensi_pegawai_shiftId_idx")
   @@map("absensi_pegawai")
 }
 
@@ -360,10 +365,10 @@ model Assessment {
   student        Student      @relation(fields: [studentId], references: [id])
   subject        Subject      @relation(fields: [subjectId], references: [id])
 
-  @@index([academicYearId], map: "penilaian_academicYearId_fkey")
-  @@index([classroomId], map: "penilaian_classroomId_fkey")
-  @@index([studentId], map: "penilaian_studentId_fkey")
-  @@index([subjectId], map: "penilaian_subjectId_fkey")
+  @@index([academicYearId], map: "penilaian_academicYearId_idx")
+  @@index([classroomId], map: "penilaian_classroomId_idx")
+  @@index([studentId], map: "penilaian_studentId_idx")
+  @@index([subjectId], map: "penilaian_subjectId_idx")
   @@map("penilaian")
 }
 
@@ -386,10 +391,10 @@ model ReportCard {
   semester       Semester     @relation(fields: [semesterId], references: [id])
   student        Student      @relation(fields: [studentId], references: [id])
 
-  @@index([academicYearId], map: "raport_academicYearId_fkey")
-  @@index([classroomId], map: "raport_classroomId_fkey")
-  @@index([semesterId], map: "raport_semesterId_fkey")
-  @@index([studentId], map: "raport_studentId_fkey")
+  @@index([academicYearId], map: "raport_academicYearId_idx")
+  @@index([classroomId], map: "raport_classroomId_idx")
+  @@index([semesterId], map: "raport_semesterId_idx")
+  @@index([studentId], map: "raport_studentId_idx")
   @@map("raport")
 }
 
@@ -400,7 +405,7 @@ model AdmissionApplication {
   phone             String?
   birthDate         DateTime?
   gradeAppliedId    String?
-  documents         String?         @db.LongText
+  documents         String?         @db.Text
   score             Float?
   status            AdmissionStatus @default(PENDING)
   verifiedById      String?
@@ -411,7 +416,7 @@ model AdmissionApplication {
   createdAt         DateTime        @default(now())
   gradeApplied      Grade?          @relation(fields: [gradeAppliedId], references: [id])
 
-  @@index([gradeAppliedId], map: "ppdb_pendaftaran_gradeAppliedId_fkey")
+  @@index([gradeAppliedId], map: "ppdb_pendaftaran_gradeAppliedId_idx")
   @@map("ppdb_pendaftaran")
 }
 
@@ -424,7 +429,7 @@ model FeeRule {
   description String?
   grade       Grade?  @relation(fields: [gradeId], references: [id])
 
-  @@index([gradeId], map: "aturan_biaya_gradeId_fkey")
+  @@index([gradeId], map: "aturan_biaya_gradeId_idx")
   @@map("aturan_biaya")
 }
 
@@ -445,8 +450,8 @@ model Invoice {
   student         Student          @relation(fields: [studentId], references: [id])
   paymentAttempts PaymentAttempt[]
 
-  @@index([academicYearId], map: "tagihan_academicYearId_fkey")
-  @@index([studentId], map: "tagihan_studentId_fkey")
+  @@index([academicYearId], map: "tagihan_academicYearId_idx")
+  @@index([studentId], map: "tagihan_studentId_idx")
   @@map("tagihan")
 }
 
@@ -457,7 +462,7 @@ model InvoiceItem {
   amount    Int
   invoice   Invoice @relation(fields: [invoiceId], references: [id])
 
-  @@index([invoiceId], map: "item_tagihan_invoiceId_fkey")
+  @@index([invoiceId], map: "item_tagihan_invoiceId_idx")
   @@map("item_tagihan")
 }
 
@@ -472,7 +477,7 @@ model Payment {
   invoice     Invoice       @relation(fields: [invoiceId], references: [id])
   refunds     Refund[]
 
-  @@index([invoiceId], map: "pembayaran_invoiceId_fkey")
+  @@index([invoiceId], map: "pembayaran_invoiceId_idx")
   @@map("pembayaran")
 }
 
@@ -484,7 +489,7 @@ model Discount {
   reason    String?
   invoice   Invoice @relation(fields: [invoiceId], references: [id])
 
-  @@index([invoiceId], map: "diskon_invoiceId_fkey")
+  @@index([invoiceId], map: "diskon_invoiceId_idx")
   @@map("diskon")
 }
 
@@ -493,11 +498,11 @@ model PaymentAttempt {
   invoiceId String
   gateway   String
   status    String
-  payload   String?  @db.LongText
+  payload   String?  @db.Text
   updatedAt DateTime @updatedAt
   invoice   Invoice  @relation(fields: [invoiceId], references: [id])
 
-  @@index([invoiceId], map: "upaya_pembayaran_invoiceId_fkey")
+  @@index([invoiceId], map: "upaya_pembayaran_invoiceId_idx")
   @@map("upaya_pembayaran")
 }
 
@@ -509,7 +514,7 @@ model Refund {
   processedBy String?
   payment     Payment @relation(fields: [paymentId], references: [id])
 
-  @@index([paymentId], map: "pengembalian_dana_paymentId_fkey")
+  @@index([paymentId], map: "pengembalian_dana_paymentId_idx")
   @@map("pengembalian_dana")
 }
 
@@ -561,8 +566,8 @@ model CashBankAccount {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
-  txns     OperationalTxn[]
-  budgets  FinanceBudget[]
+  txns    OperationalTxn[]
+  budgets FinanceBudget[]
 
   @@index([type, isActive])
   @@map("keu_rekening_kas_bank")
@@ -591,9 +596,9 @@ model OperationalTxn {
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
 
-  account         FinanceAccount  @relation(fields: [accountId], references: [id])
-  cashBankAccount CashBankAccount @relation(fields: [cashBankAccountId], references: [id])
-  transferPair    OperationalTxn? @relation("OperationalTxnPair", fields: [transferPairId], references: [id])
+  account         FinanceAccount   @relation(fields: [accountId], references: [id])
+  cashBankAccount CashBankAccount  @relation(fields: [cashBankAccountId], references: [id])
+  transferPair    OperationalTxn?  @relation("OperationalTxnPair", fields: [transferPairId], references: [id])
   pairedWith      OperationalTxn[] @relation("OperationalTxnPair")
 
   @@index([txnDate, kind])
@@ -618,7 +623,7 @@ model FinancePeriodLock {
 }
 
 model FinanceBudget {
-  id                String           @id @default(cuid())
+  id                String            @id @default(cuid())
   periodStart       DateTime
   periodEnd         DateTime
   kind              FinanceBudgetKind
@@ -627,8 +632,8 @@ model FinanceBudget {
   accountId         String
   cashBankAccountId String?
   createdBy         String?
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
 
   account         FinanceAccount   @relation(fields: [accountId], references: [id])
   cashBankAccount CashBankAccount? @relation(fields: [cashBankAccountId], references: [id])
@@ -649,7 +654,7 @@ model Scholarship {
   endDate   DateTime?
   student   Student   @relation(fields: [studentId], references: [id])
 
-  @@index([studentId], map: "beasiswa_studentId_fkey")
+  @@index([studentId], map: "beasiswa_studentId_idx")
   @@map("beasiswa")
 }
 
@@ -675,7 +680,7 @@ model SavingsTransaction {
   createdAt   DateTime       @default(now())
   account     SavingsAccount @relation(fields: [accountId], references: [id])
 
-  @@index([accountId], map: "tabungan_transaksi_accountId_fkey")
+  @@index([accountId], map: "tabungan_transaksi_accountId_idx")
   @@map("tabungan_transaksi")
 }
 
@@ -712,7 +717,7 @@ model LibBarcode {
   barcode String  @unique
   item    LibItem @relation(fields: [itemId], references: [id])
 
-  @@index([itemId], map: "perpus_barcode_itemId_fkey")
+  @@index([itemId], map: "perpus_barcode_itemId_idx")
   @@map("perpus_barcode")
 }
 
@@ -736,8 +741,8 @@ model LibLoan {
   item       LibItem   @relation(fields: [itemId], references: [id])
   member     LibMember @relation(fields: [memberId], references: [id])
 
-  @@index([itemId], map: "perpus_pinjaman_itemId_fkey")
-  @@index([memberId], map: "perpus_pinjaman_memberId_fkey")
+  @@index([itemId], map: "perpus_pinjaman_itemId_idx")
+  @@index([memberId], map: "perpus_pinjaman_memberId_idx")
   @@map("perpus_pinjaman")
 }
 
@@ -764,7 +769,7 @@ model Asset {
   loans            AssetLoan[]
   maintenances     AssetMaintenance[]
 
-  @@index([categoryId], map: "aset_categoryId_fkey")
+  @@index([categoryId], map: "aset_categoryId_idx")
   @@map("aset")
 }
 
@@ -778,8 +783,8 @@ model AssetLoan {
   asset          Asset     @relation(fields: [assetId], references: [id])
   borrower       User      @relation(fields: [borrowerUserId], references: [id])
 
-  @@index([assetId], map: "aset_peminjaman_assetId_fkey")
-  @@index([borrowerUserId], map: "aset_peminjaman_borrowerUserId_fkey")
+  @@index([assetId], map: "aset_peminjaman_assetId_idx")
+  @@index([borrowerUserId], map: "aset_peminjaman_borrowerUserId_idx")
   @@map("aset_peminjaman")
 }
 
@@ -792,7 +797,7 @@ model AssetMaintenance {
   notes   String?
   asset   Asset    @relation(fields: [assetId], references: [id])
 
-  @@index([assetId], map: "aset_perawatan_assetId_fkey")
+  @@index([assetId], map: "aset_perawatan_assetId_idx")
   @@map("aset_perawatan")
 }
 
@@ -806,7 +811,7 @@ model Extracurricular {
   events         ExtraEvent[]
   coachTeacher   Teacher?          @relation(fields: [coachTeacherId], references: [id])
 
-  @@index([coachTeacherId], map: "ekstrakurikuler_coachTeacherId_fkey")
+  @@index([coachTeacherId], map: "ekstrakurikuler_coachTeacherId_idx")
   @@map("ekstrakurikuler")
 }
 
@@ -818,8 +823,8 @@ model ExtraMember {
   extracurricular   Extracurricular @relation(fields: [extracurricularId], references: [id])
   student           Student         @relation(fields: [studentId], references: [id])
 
-  @@index([extracurricularId], map: "ekstra_anggota_extracurricularId_fkey")
-  @@index([studentId], map: "ekstra_anggota_studentId_fkey")
+  @@index([extracurricularId], map: "ekstra_anggota_extracurricularId_idx")
+  @@index([studentId], map: "ekstra_anggota_studentId_idx")
   @@map("ekstra_anggota")
 }
 
@@ -833,7 +838,7 @@ model ExtraAttendance {
   student           Student                 @relation(fields: [studentId], references: [id])
 
   @@unique([extracurricularId, date, studentId])
-  @@index([studentId], map: "ekstra_absensi_studentId_fkey")
+  @@index([studentId], map: "ekstra_absensi_studentId_idx")
   @@map("ekstra_absensi")
 }
 
@@ -846,7 +851,7 @@ model ExtraEvent {
   result            String?
   extracurricular   Extracurricular @relation(fields: [extracurricularId], references: [id])
 
-  @@index([extracurricularId], map: "ekstra_event_extracurricularId_fkey")
+  @@index([extracurricularId], map: "ekstra_event_extracurricularId_idx")
   @@map("ekstra_event")
 }
 
@@ -862,8 +867,8 @@ model CounselingTicket {
   createdBy       User                 @relation("TicketCreator", fields: [createdByUserId], references: [id])
   student         Student              @relation(fields: [studentId], references: [id])
 
-  @@index([createdByUserId], map: "bk_tiket_createdByUserId_fkey")
-  @@index([studentId], map: "bk_tiket_studentId_fkey")
+  @@index([createdByUserId], map: "bk_tiket_createdByUserId_idx")
+  @@index([studentId], map: "bk_tiket_studentId_idx")
   @@map("bk_tiket")
 }
 
@@ -877,8 +882,8 @@ model CounselingSession {
   counselor       User             @relation("TicketCounselor", fields: [counselorUserId], references: [id])
   ticket          CounselingTicket @relation(fields: [ticketId], references: [id])
 
-  @@index([counselorUserId], map: "bk_sesi_counselorUserId_fkey")
-  @@index([ticketId], map: "bk_sesi_ticketId_fkey")
+  @@index([counselorUserId], map: "bk_sesi_counselorUserId_idx")
+  @@index([ticketId], map: "bk_sesi_ticketId_idx")
   @@map("bk_sesi")
 }
 
@@ -890,7 +895,7 @@ model CounselingReferral {
   createdAt  DateTime         @default(now())
   ticket     CounselingTicket @relation(fields: [ticketId], references: [id])
 
-  @@index([ticketId], map: "bk_rujukan_ticketId_fkey")
+  @@index([ticketId], map: "bk_rujukan_ticketId_idx")
   @@map("bk_rujukan")
 }
 
@@ -903,8 +908,8 @@ model LmsLink {
   classroom   Classroom? @relation(fields: [classroomId], references: [id])
   subject     Subject?   @relation(fields: [subjectId], references: [id])
 
-  @@index([classroomId], map: "lms_link_classroomId_fkey")
-  @@index([subjectId], map: "lms_link_subjectId_fkey")
+  @@index([classroomId], map: "lms_link_classroomId_idx")
+  @@index([subjectId], map: "lms_link_subjectId_idx")
   @@map("lms_link")
 }
 
@@ -920,23 +925,24 @@ model Exam {
   attempts    ExamAttempt[]
   questions   ExamQuestion[]
 
-  @@index([classroomId], map: "ujian_classroomId_fkey")
-  @@index([subjectId], map: "ujian_subjectId_fkey")
+  @@index([classroomId], map: "ujian_classroomId_idx")
+  @@index([subjectId], map: "ujian_subjectId_idx")
   @@map("ujian")
 }
 
 model ExamAttempt {
-  id        String    @id @default(cuid())
-  examId    String
-  studentId String
-  score     Float?
-  startedAt DateTime  @default(now())
-  endedAt   DateTime?
-  exam      Exam      @relation(fields: [examId], references: [id])
-  student   Student   @relation(fields: [studentId], references: [id])
+  id          String    @id @default(cuid())
+  examId      String
+  studentId   String
+  score       Float?
+  answersJson String?   @db.Text
+  startedAt   DateTime  @default(now())
+  endedAt     DateTime?
+  exam        Exam      @relation(fields: [examId], references: [id])
+  student     Student   @relation(fields: [studentId], references: [id])
 
-  @@index([examId], map: "ujian_pengerjaan_examId_fkey")
-  @@index([studentId], map: "ujian_pengerjaan_studentId_fkey")
+  @@index([examId], map: "ujian_pengerjaan_examId_idx")
+  @@index([studentId], map: "ujian_pengerjaan_studentId_idx")
   @@map("ujian_pengerjaan")
 }
 
@@ -944,11 +950,11 @@ model ExamQuestion {
   id      String  @id @default(cuid())
   examId  String
   text    String
-  options String? @db.LongText
-  answer  String? @db.LongText
+  options String? @db.Text
+  answer  String? @db.Text
   exam    Exam    @relation(fields: [examId], references: [id])
 
-  @@index([examId], map: "ujian_soal_examId_fkey")
+  @@index([examId], map: "ujian_soal_examId_idx")
   @@map("ujian_soal")
 }
 
@@ -974,19 +980,19 @@ enum DapodikSyncBatchStatus {
 }
 
 model DapodikSyncBatch {
-  id            String                @id @default(cuid())
+  id            String                 @id @default(cuid())
   kind          String
   status        DapodikSyncBatchStatus @default(PENDING)
-  attempts      Int                   @default(0)
-  maxAttempts   Int                   @default(5)
+  attempts      Int                    @default(0)
+  maxAttempts   Int                    @default(5)
   nextAttemptAt DateTime?
   requestedBy   String?
   startedAt     DateTime?
   finishedAt    DateTime?
-  errorMessage  String?               @db.LongText
-  metaJson      String?               @db.LongText
-  createdAt     DateTime              @default(now())
-  updatedAt     DateTime              @updatedAt
+  errorMessage  String?                @db.Text
+  metaJson      String?                @db.Text
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
   stagingRows   DapodikStagingRow[]
 
   @@index([status, nextAttemptAt])
@@ -1001,20 +1007,20 @@ enum DapodikStagingStatus {
 }
 
 model DapodikStagingRow {
-  id              String              @id @default(cuid())
-  batchId         String
-  entityType      String
-  externalId      String
-  status          DapodikStagingStatus @default(NEW)
-  dataJson        String              @db.LongText
+  id               String               @id @default(cuid())
+  batchId          String
+  entityType       String
+  externalId       String
+  status           DapodikStagingStatus @default(NEW)
+  dataJson         String               @db.Text
   matchedLocalType String?
-  matchedLocalId  String?
-  conflictJson    String?             @db.LongText
-  notes           String?             @db.LongText
-  createdAt       DateTime            @default(now())
-  updatedAt       DateTime            @updatedAt
+  matchedLocalId   String?
+  conflictJson     String?              @db.Text
+  notes            String?              @db.Text
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
 
-  batch           DapodikSyncBatch    @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  batch DapodikSyncBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
 
   @@unique([batchId, entityType, externalId])
   @@index([entityType, status])
@@ -1028,11 +1034,11 @@ model EventLog {
   entity    String?
   entityId  String?
   userId    String?
-  data      String?  @db.LongText
+  data      String?  @db.Text
   createdAt DateTime @default(now())
   user      User?    @relation(fields: [userId], references: [id])
 
-  @@index([userId], map: "log_aktivitas_userId_fkey")
+  @@index([userId], map: "log_aktivitas_userId_idx")
   @@map("log_aktivitas")
 }
 
@@ -1042,18 +1048,94 @@ model AuditEvent {
   type       String
   entity     String?
   entityId   String?
-  meta       String?  @db.LongText
+  meta       String?  @db.Text
   occurredAt DateTime @default(now())
 
   @@index([type, occurredAt])
   @@map("audit_event")
 }
 
+enum AnalyticsEventSource {
+  API
+  JOB
+  SYSTEM
+  USER
+}
+
+model AnalyticsEvent {
+  id         String               @id @default(cuid())
+  name       String
+  domain     String?
+  entity     String?
+  entityId   String?
+  actorId    String?
+  source     AnalyticsEventSource @default(API)
+  payload    String?              @db.Text
+  occurredAt DateTime             @default(now())
+  createdAt  DateTime             @default(now())
+  actor      User?                @relation("AnalyticsEventActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([name, occurredAt], map: "analytics_event_name_occurredAt_idx")
+  @@index([domain, occurredAt], map: "analytics_event_domain_occurredAt_idx")
+  @@index([actorId, occurredAt], map: "analytics_event_actorId_occurredAt_idx")
+  @@map("analytics_event")
+}
+
+model AnalyticsSnapshot {
+  id         String   @id @default(cuid())
+  name       String
+  bucket     String
+  payload    String   @db.Text
+  capturedAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([name, bucket])
+  @@index([name, capturedAt], map: "analytics_snapshot_name_capturedAt_idx")
+  @@map("analytics_snapshot")
+}
+
+enum NotificationSeverity {
+  INFO
+  WARNING
+  DANGER
+}
+
+enum NotificationStatus {
+  UNREAD
+  READ
+  ARCHIVED
+}
+
+model NotificationInbox {
+  id              String               @id @default(cuid())
+  recipientUserId String
+  studentId       String?
+  type            String
+  title           String
+  body            String?              @db.Text
+  href            String?
+  severity        NotificationSeverity @default(INFO)
+  status          NotificationStatus   @default(UNREAD)
+  readAt          DateTime?
+  createdById     String?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  recipient       User                 @relation("NotificationRecipient", fields: [recipientUserId], references: [id], onDelete: Cascade)
+  createdBy       User?                @relation("NotificationCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  student         Student?             @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([recipientUserId, status, createdAt], map: "notification_inbox_recipient_status_createdAt_idx")
+  @@index([studentId, createdAt], map: "notification_inbox_student_createdAt_idx")
+  @@index([type, createdAt], map: "notification_inbox_type_createdAt_idx")
+  @@map("notification_inbox")
+}
+
 model WaTemplate {
   id        String     @id @default(cuid())
   key       String     @unique
   content   String
-  variables String?    @db.LongText
+  variables String?    @db.Text
   outbox    WaOutbox[]
 
   @@map("wa_template")
@@ -1063,7 +1145,7 @@ model WaOutbox {
   id            String      @id @default(cuid())
   templateId    String?
   to            String
-  payload       String?     @db.LongText
+  payload       String?     @db.Text
   status        WaStatus    @default(PENDING)
   providerMsgId String?
   sentAt        DateTime?
@@ -1072,7 +1154,7 @@ model WaOutbox {
   template      WaTemplate? @relation(fields: [templateId], references: [id])
 
   @@index([status, sentAt])
-  @@index([templateId], map: "wa_outbox_templateId_fkey")
+  @@index([templateId], map: "wa_outbox_templateId_idx")
   @@map("wa_outbox")
 }
 
@@ -1081,20 +1163,21 @@ model WaOutbox {
 // =====================
 
 model LeaveType {
-  id               String        @id @default(cuid())
-  name             String        @unique
+  id               String  @id @default(cuid())
+  name             String  @unique
   description      String?
   maxDaysPerYear   Int?
-  requiresApproval Boolean       @default(true)
-  active           Boolean       @default(true)
-  countsAsPresence Boolean       @default(false)
+  requiresApproval Boolean @default(true)
+  active           Boolean @default(true)
+  countsAsPresence Boolean @default(false)
 
-  requests         LeaveRequest[]
+  requests LeaveRequest[]
+
   @@map("cuti_tipe")
 }
 
 model LeaveRequest {
-  id          String      @id @default(cuid())
+  id          String         @id @default(cuid())
   employeeId  String
   typeId      String
   startDate   DateTime
@@ -1104,13 +1187,13 @@ model LeaveRequest {
   status      ApprovalStatus @default(PENDING)
   decidedById String?
   decidedAt   DateTime?
-  createdAt   DateTime    @default(now())
+  createdAt   DateTime       @default(now())
 
-  employee    Employee   @relation(fields: [employeeId], references: [id])
-  type        LeaveType  @relation(fields: [typeId], references: [id])
+  employee Employee  @relation(fields: [employeeId], references: [id])
+  type     LeaveType @relation(fields: [typeId], references: [id])
 
-  @@index([employeeId], map: "cuti_pengajuan_employeeId_fkey")
-  @@index([typeId], map: "cuti_pengajuan_typeId_fkey")
+  @@index([employeeId], map: "cuti_pengajuan_employeeId_idx")
+  @@index([typeId], map: "cuti_pengajuan_typeId_idx")
   @@map("cuti_pengajuan")
 }
 
@@ -1119,31 +1202,31 @@ model LeaveRequest {
 // =====================
 
 model EmailTemplate {
-  id        String     @id @default(cuid())
-  key       String     @unique
+  id        String        @id @default(cuid())
+  key       String        @unique
   subject   String
   content   String
-  variables String?    @db.LongText
+  variables String?       @db.Text
   outbox    EmailOutbox[]
 
   @@map("email_template")
 }
 
 model EmailOutbox {
-  id            String        @id @default(cuid())
+  id            String         @id @default(cuid())
   templateId    String?
   to            String
   subject       String?
-  payload       String?       @db.LongText
-  status        WaStatus      @default(PENDING)
+  payload       String?        @db.Text
+  status        WaStatus       @default(PENDING)
   providerMsgId String?
   sentAt        DateTime?
-  attempts      Int           @default(0)
+  attempts      Int            @default(0)
   nextAttemptAt DateTime?
   template      EmailTemplate? @relation(fields: [templateId], references: [id])
 
   @@index([status, sentAt])
-  @@index([templateId], map: "email_outbox_templateId_fkey")
+  @@index([templateId], map: "email_outbox_templateId_idx")
   @@map("email_outbox")
 }
 
@@ -1182,32 +1265,32 @@ enum CmsPageTemplate {
 }
 
 model CmsMenu {
-  id          String       @id @default(cuid())
-  name        String       @unique
+  id          String        @id @default(cuid())
+  name        String        @unique
   description String?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
   items       CmsMenuItem[]
 
   @@map("cms_menu")
 }
 
 model CmsPage {
-  id          String       @id @default(cuid())
+  id          String          @id @default(cuid())
   title       String
-  slug        String       @unique
-  content     String       @db.LongText
+  slug        String          @unique
+  content     String          @db.Text
   excerpt     String?
   template    CmsPageTemplate @default(DEFAULT)
   blocks      Json?
-  status      CmsStatus    @default(DRAFT)
+  status      CmsStatus       @default(DRAFT)
   publishedAt DateTime?
   createdBy   String?
   updatedBy   String?
   publishedBy String?
   deletedAt   DateTime?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
   menuItems   CmsMenuItem[]
 
   @@index([status, publishedAt], map: "cms_page_status_publishedAt_idx")
@@ -1215,77 +1298,77 @@ model CmsPage {
 }
 
 model CmsMenuItem {
-  id        String          @id @default(cuid())
-  menuId    String
-  parentId  String?
-  label     String
-  type      CmsMenuItemType @default(INTERNAL)
+  id         String            @id @default(cuid())
+  menuId     String
+  parentId   String?
+  label      String
+  type       CmsMenuItemType   @default(INTERNAL)
   visibility CmsMenuVisibility @default(PUBLIC)
-  roleNames String?
-  href      String?
-  pageId    String?
-  order     Int             @default(0)
-  isActive  Boolean         @default(true)
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
-  menu      CmsMenu         @relation(fields: [menuId], references: [id], onDelete: Cascade)
-  page      CmsPage?        @relation(fields: [pageId], references: [id], onDelete: SetNull)
-  parent    CmsMenuItem?    @relation("CmsMenuTree", fields: [parentId], references: [id], onDelete: SetNull)
-  children  CmsMenuItem[]   @relation("CmsMenuTree")
+  roleNames  String?
+  href       String?
+  pageId     String?
+  order      Int               @default(0)
+  isActive   Boolean           @default(true)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  menu       CmsMenu           @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  page       CmsPage?          @relation(fields: [pageId], references: [id], onDelete: SetNull)
+  parent     CmsMenuItem?      @relation("CmsMenuTree", fields: [parentId], references: [id], onDelete: SetNull)
+  children   CmsMenuItem[]     @relation("CmsMenuTree")
 
   @@index([menuId, parentId, order], map: "cms_menu_item_menu_parent_order_idx")
-  @@index([pageId], map: "cms_menu_item_pageId_fkey")
+  @@index([pageId], map: "cms_menu_item_pageId_idx")
   @@map("cms_menu_item")
 }
 
 model CmsPost {
-  id          String      @id @default(cuid())
-  type        CmsPostType @default(NEWS)
-  title       String
-  slug        String      @unique
-  excerpt     String?
-  content     String      @db.LongText
+  id           String            @id @default(cuid())
+  type         CmsPostType       @default(NEWS)
+  title        String
+  slug         String            @unique
+  excerpt      String?
+  content      String            @db.Text
   coverMediaId String?
-  authorId    String?
-  createdBy   String?
-  updatedBy   String?
-  publishedBy String?
-  status      CmsStatus   @default(DRAFT)
-  publishedAt DateTime?
-  deletedAt   DateTime?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  coverMedia  CmsMedia?   @relation("CmsPostCoverMedia", fields: [coverMediaId], references: [id], onDelete: SetNull)
-  categories  CmsPostCategory[]
-  tags        CmsPostTag[]
+  authorId     String?
+  createdBy    String?
+  updatedBy    String?
+  publishedBy  String?
+  status       CmsStatus         @default(DRAFT)
+  publishedAt  DateTime?
+  deletedAt    DateTime?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  coverMedia   CmsMedia?         @relation("CmsPostCoverMedia", fields: [coverMediaId], references: [id], onDelete: SetNull)
+  categories   CmsPostCategory[]
+  tags         CmsPostTag[]
 
   @@index([type, status, publishedAt], map: "cms_post_type_status_publishedAt_idx")
   @@index([status, publishedAt], map: "cms_post_status_publishedAt_idx")
-  @@index([coverMediaId], map: "cms_post_coverMediaId_fkey")
+  @@index([coverMediaId], map: "cms_post_coverMediaId_idx")
   @@map("cms_post")
 }
 
 model CmsMedia {
-  id        String    @id @default(cuid())
-  key       String    @unique
-  filename  String    @default("")
-  url       String?
-  mime      String
-  size      Int
-  width     Int?
-  height    Int?
-  blurhash  String?
-  thumbUrl  String?
-  alt       String?
-  title     String?
-  module    String?
-  createdBy String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  posts     CmsPost[] @relation("CmsPostCoverMedia")
-  galleryCoverOf CmsGallery[] @relation("CmsGalleryCoverMedia")
+  id             String           @id @default(cuid())
+  key            String           @unique
+  filename       String           @default("")
+  url            String?
+  mime           String
+  size           Int
+  width          Int?
+  height         Int?
+  blurhash       String?
+  thumbUrl       String?
+  alt            String?
+  title          String?
+  module         String?
+  createdBy      String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  posts          CmsPost[]        @relation("CmsPostCoverMedia")
+  galleryCoverOf CmsGallery[]     @relation("CmsGalleryCoverMedia")
   galleryItems   CmsGalleryItem[] @relation("CmsGalleryItemMedia")
-  eventCoverOf   CmsEvent[] @relation("CmsEventCoverMedia")
+  eventCoverOf   CmsEvent[]       @relation("CmsEventCoverMedia")
 
   @@index([module, createdAt], map: "cms_media_module_createdAt_idx")
   @@map("cms_media")
@@ -1320,7 +1403,7 @@ model CmsPostCategory {
   category   CmsCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   @@id([postId, categoryId])
-  @@index([categoryId], map: "cms_post_category_categoryId_fkey")
+  @@index([categoryId], map: "cms_post_category_categoryId_idx")
   @@map("cms_post_category")
 }
 
@@ -1331,69 +1414,69 @@ model CmsPostTag {
   tag    CmsTag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@id([postId, tagId])
-  @@index([tagId], map: "cms_post_tag_tagId_fkey")
+  @@index([tagId], map: "cms_post_tag_tagId_idx")
   @@map("cms_post_tag")
 }
 
 model CmsEvent {
-  id          String    @id @default(cuid())
-  title       String
-  slug        String    @unique
-  description String?   @db.LongText
-  location    String?
-  startAt     DateTime  @default(now())
-  endAt       DateTime?
+  id           String    @id @default(cuid())
+  title        String
+  slug         String    @unique
+  description  String?   @db.Text
+  location     String?
+  startAt      DateTime  @default(now())
+  endAt        DateTime?
   coverMediaId String?
-  status      CmsStatus @default(DRAFT)
-  publishedAt DateTime?
-  createdBy   String?
-  updatedBy   String?
-  publishedBy String?
-  deletedAt   DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  coverMedia  CmsMedia? @relation("CmsEventCoverMedia", fields: [coverMediaId], references: [id], onDelete: SetNull)
+  status       CmsStatus @default(DRAFT)
+  publishedAt  DateTime?
+  createdBy    String?
+  updatedBy    String?
+  publishedBy  String?
+  deletedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  coverMedia   CmsMedia? @relation("CmsEventCoverMedia", fields: [coverMediaId], references: [id], onDelete: SetNull)
 
   @@index([status, publishedAt, startAt], map: "cms_event_status_publishedAt_startAt_idx")
-  @@index([coverMediaId], map: "cms_event_coverMediaId_fkey")
+  @@index([coverMediaId], map: "cms_event_coverMediaId_idx")
   @@map("cms_event")
 }
 
 model CmsGallery {
-  id          String          @id @default(cuid())
-  title       String
-  slug        String          @unique
-  description String?         @db.LongText
+  id           String           @id @default(cuid())
+  title        String
+  slug         String           @unique
+  description  String?          @db.Text
   coverMediaId String?
-  status      CmsStatus       @default(DRAFT)
-  publishedAt DateTime?
-  createdBy   String?
-  updatedBy   String?
-  publishedBy String?
-  deletedAt   DateTime?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  coverMedia  CmsMedia?       @relation("CmsGalleryCoverMedia", fields: [coverMediaId], references: [id], onDelete: SetNull)
-  items       CmsGalleryItem[]
+  status       CmsStatus        @default(DRAFT)
+  publishedAt  DateTime?
+  createdBy    String?
+  updatedBy    String?
+  publishedBy  String?
+  deletedAt    DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  coverMedia   CmsMedia?        @relation("CmsGalleryCoverMedia", fields: [coverMediaId], references: [id], onDelete: SetNull)
+  items        CmsGalleryItem[]
 
   @@index([status, publishedAt], map: "cms_gallery_status_publishedAt_idx")
-  @@index([coverMediaId], map: "cms_gallery_coverMediaId_fkey")
+  @@index([coverMediaId], map: "cms_gallery_coverMediaId_idx")
   @@map("cms_gallery")
 }
 
 model CmsGalleryItem {
-  id        String      @id @default(cuid())
+  id        String     @id @default(cuid())
   galleryId String
   mediaId   String
   caption   String?
-  itemOrder Int         @default(0)
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  gallery   CmsGallery  @relation(fields: [galleryId], references: [id], onDelete: Cascade)
-  media     CmsMedia    @relation("CmsGalleryItemMedia", fields: [mediaId], references: [id], onDelete: Restrict)
+  itemOrder Int        @default(0)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  gallery   CmsGallery @relation(fields: [galleryId], references: [id], onDelete: Cascade)
+  media     CmsMedia   @relation("CmsGalleryItemMedia", fields: [mediaId], references: [id], onDelete: Restrict)
 
   @@index([galleryId, itemOrder], map: "cms_gallery_item_gallery_itemOrder_idx")
-  @@index([mediaId], map: "cms_gallery_item_mediaId_fkey")
+  @@index([mediaId], map: "cms_gallery_item_mediaId_idx")
   @@map("cms_gallery_item")
 }
 
@@ -1403,10 +1486,10 @@ model CmsContactMessage {
   email      String?
   phone      String?
   subject    String?
-  message    String   @db.LongText
+  message    String   @db.Text
   isRead     Boolean  @default(false)
   isResolved Boolean  @default(false)
-  metaJson   String?  @db.LongText
+  metaJson   String?  @db.Text
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -1417,7 +1500,7 @@ model CmsContactMessage {
 model CmsSetting {
   id          String   @id @default(cuid())
   key         String   @unique
-  value       String   @db.LongText
+  value       String   @db.Text
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

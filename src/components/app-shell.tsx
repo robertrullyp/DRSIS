@@ -17,6 +17,7 @@ const nav: NavItem[] = [
     children: [
       { label: "Jadwalku", href: "/portal/student/schedule" },
       { label: "Nilai", href: "/portal/student/grades" },
+      { label: "CBT", href: "/portal/student/cbt" },
       { label: "Raport", href: "/portal/student/report-cards" },
       { label: "Presensi", href: "/portal/student/attendance" },
       { label: "Tagihan", href: "/portal/student/billing" },
@@ -65,6 +66,7 @@ const nav: NavItem[] = [
       { label: "Devtools", href: "/admin/devtools", adminOnly: true },
       { label: "LMS/CBT Links", href: "/admin/lms/links", adminOnly: true },
       { label: "Integrasi Dapodik", href: "/admin/dapodik", adminOnly: true },
+      { label: "Notifikasi", href: "/admin/notifications", adminOnly: true },
       { label: "CMS Posts", href: "/admin/cms/posts", cmsAccess: true },
       { label: "CMS Events", href: "/admin/cms/events", cmsAccess: true },
       { label: "CMS Pages", href: "/admin/cms/pages", cmsAccess: true },

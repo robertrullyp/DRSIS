@@ -6,6 +6,7 @@ const prisma = new PrismaClient();
 async function main() {
   const permissions = [
     // Master Data
+    "identity.manage",
     "master.read",
     "master.write",
     // Attendance
@@ -33,9 +34,15 @@ async function main() {
     // Exams
     "exam.manage",
     // Notifications
+    "notification.manage",
     "notify.wa.send",
     // Analytics
     "analytics.read",
+    "analytics.write",
+    // Audit
+    "audit.read",
+    // Integrations
+    "dapodik.manage",
     // CMS
     "cms.read",
     "cms.write",

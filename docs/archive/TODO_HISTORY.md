@@ -1,0 +1,381 @@
+# DRSIS TODO History
+
+File ini adalah arsip checklist lama sebelum `TODO.md` dirapikan menjadi build checklist aktif. Jangan gunakan file ini sebagai roadmap utama; gunakan `TODO.md` dan dokumen `SCHOOL_ERP_*.md`.
+
+P0 - Fondasi
+- [x] Auth NextAuth (Credentials, JWT)
+- [x] RBAC Role/Permission + middleware guard (komprehensif)
+  - [x] Ubah default policy middleware API menjadi deny-by-default untuk route sensitif
+  - [x] Tambah coverage rule: `/api/hr`, `/api/attendance`, `/api/portal`, `/api/storage`, `/api/school`
+  - [x] Audit endpoint sensitif yang saat ini hanya cek auth tanpa role/permission
+- [x] Prisma schema + generate client
+- [x] Seeder roles + admin user
+- [x] API skeleton + Zod validation
+- [x] S3/MinIO storage util + presign endpoint
+- [x] Providers (Session, React Query)
+- [x] OpenAPI generator + endpoints (master/admin/library/assets/extras/ppdb/assessments/report)
+  - [x] Rapikan flow generator menjadi single-pass (hapus generate/write ganda)
+  - [x] Perbaiki runtime generator (`npm run openapi:gen` lulus)
+  - [x] Lengkapi coverage endpoint OpenAPI (auto-discovery route + fallback operation untuk endpoint yang belum punya schema manual)
+  - [x] Tingkatkan kualitas dokumentasi OpenAPI: ganti fallback response generik menjadi schema request/response manual per endpoint prioritas
+- [x] Base UI components (Button, Input, Select) + pemakaian awal di HR pages
+- [x] NextAuth App Route (/api/auth/[...nextauth])
+- [x] Dashboard guard (SSR getServerSession + redirect)
+- [x] Halaman publik di root (/) + pengecualian middleware untuk rute publik
+- [x] Header AppShell: Profil Saya + Logout
+- [x] Sistem tema UI (token CSS variables, ThemeProvider, toggle light/dark/system + contoh tema brand)
+- [x] Penerapan tema ke seluruh halaman (token-based) + gaya modern/futuristik (gradien, glass)
+  - [x] Migrasi hardcoded class warna (`text-gray`, `bg-gray`, `text-blue`) ke token tema
+- [x] Responsiveness UI (RWD) + kompatibilitas mobile/tablet/desktop
+  - [x] Audit seluruh halaman publik & dashboard pada breakpoint `sm/md/lg/xl`
+  - [x] Pastikan layout adaptif: header/sidebar, grid/card, form, table (scroll/stack), dan modal/dialog
+  - [x] Pastikan interaksi mobile nyaman (tap target, spacing, keyboard/input behavior)
+  - [x] Verifikasi lintas perangkat (mobile, tablet, desktop) termasuk portrait/landscape
+    - [x] Tambahkan smoke test Playwright RWD (`tests/rwd.spec.ts`) untuk landing publik + dashboard (mobile/tablet/desktop)
+- [x] Redesign portal dashboard (logged-in) dengan style sidebar menu yang modern & animatif
+  - [x] Struktur sidebar bertingkat (group + collapsible submenu) dengan state aktif yang jelas
+  - [x] Tambahkan micro-interactions (hover, active, expand/collapse, transition antar section)
+  - [x] Harmonisasi visual dashboard: header, content cards, spacing, iconography, dan hierarchy tipografi
+  - [x] Optimasi UX navigasi mobile (drawer sidebar + gesture/tap friendly)
+- [x] Branding profil sekolah (logo+nama) di AppShell & beranda publik
+- [x] API publik profil sekolah (`/api/public/school`)
+- [x] Halaman Sign-in & Auth Error dengan branding sekolah
+- [x] Web App Manifest dinamis (nama+ikon dari profil sekolah)
+- [x] Footer publik (alamat, kontak)
+
+P1 - Akademik & HR
+- [x] Master/Akademik Data CRUD (academic-years, semesters, grades, classrooms, subjects, curricula, teachers, students, enrollments, schedules)
+- [x] Profil Sekolah (CRUD)
+- [x] Rename menu "Master Data" -> "Akademik"
+- [x] Users & Roles Admin UI (assign roles, manage permissions)
+- [x] Absensi siswa (by class+date)
+- [x] Absensi pegawai (shift + checkin/checkout basic)
+- [x] Absensi pegawai (approval, timesheet)
+- [x] Absensi pegawai (rules lanjutan: toleransi check-in, jam inti, export CSV)
+- [x] Penilaian input + agregasi
+- [x] Raport PDF (React-PDF) + S3 upload
+- [x] Cuti/Izin pegawai (leave types, pengajuan, approval)
+- [x] Portal Siswa/Ortu (jadwal, nilai, raport, presensi, tagihan, tabungan, notifikasi)
+  - [x] Jadwalku (kelas aktif) - sinkronkan akses endpoint agar tidak bergantung route admin-only
+  - [x] Nilai (rata-rata per mapel) - gunakan endpoint portal khusus (`/api/portal/student/grades`) dengan scope data siswa sendiri
+  - [x] Raport (daftar + link PDF) - gunakan endpoint portal khusus (`/api/portal/student/report-cards`) dengan scope data siswa sendiri
+  - [x] Presensi (status harian) - pastikan scope data siswa sendiri + guard sesuai role
+  - [x] Tagihan
+  - [x] Tabungan
+  - [x] Notifikasi (ringkasan portal)
+  - [x] Kartu Pelajar (PDF CR-80 via portal)
+  - [x] Dukungan akun ortu/wali: relasi akun-ke-siswa + scope data anak
+- [x] Portal Pegawai (check-in/out, timesheet, cuti/izin)
+  - [x] Check-in/Out (WEB)
+  - [x] Timesheet Saya (rentang tanggal)
+  - [x] Geolocation capture (check-in/out; tampil di timesheet)
+  - [x] Cuti/Izin (tipe, pengajuan, approval)
+  - [x] Dinas/Pelatihan via tipe cuti (counts-as-presence)
+  - [x] Sinkronkan role Portal Pegawai (`staff` vs `employee`) di seed, menu, dan guard
+
+P2 - Admin/Operasional
+- [x] PPDB (form publik + upload, verifikasi, skor, auto-enroll)
+- [x] PPDB (pengumuman publik: status & announcement)
+- [x] Perpustakaan (katalog, anggota, pinjam/kembali, denda, barcode, settings)
+- [x] Aset (register, lokasi, pinjam, perawatan)
+- [x] Aset (depresiasi & laporan)
+- [x] Ekstrakurikuler (anggota, presensi, event)
+- [x] BK/Konseling (tiket, sesi, rujukan)
+- [x] CMS Konten Publik (Web: menu, artikel/berita, agenda, pengumuman, galeri, halaman profil, kontak)
+  - [x] Scope utama: kelola tampilan web publik via CMS (navigasi/menu, konten, media, halaman)
+  - [x] P2.0 Definition of Done
+    - [x] Public website: menu, berita/artikel, agenda, galeri, profil/pages, kontak
+    - [x] Admin: CRUD konten + upload media S3/MinIO + publish/unpublish + preview draft
+    - [x] Public endpoint hanya expose konten `PUBLISHED`
+    - [x] SEO minimal: sitemap + robots + OG metadata + JSON-LD (Article/Event)
+  - [x] P2.1 Fondasi CMS (Database + RBAC + Routing)
+    - [x] Prisma schema CMS
+      - [x] Model inti: `CmsMenu`, `CmsMenuItem`, `CmsPage`, `CmsPost`, `CmsCategory`, `CmsTag`, `CmsMedia`, `CmsGallery`, `CmsGalleryItem`, `CmsEvent`, `CmsContactMessage`, `CmsSetting`
+      - [x] Enum status: `DRAFT | REVIEW | PUBLISHED | ARCHIVED`
+      - [x] Post type enum: `NEWS | ARTICLE | ANNOUNCEMENT`
+      - [x] Menu item type enum: `INTERNAL | EXTERNAL | PAGE | CATEGORY | TAG` (atau padanan internal route/external URL)
+      - [x] Slug unique (per site/per type sesuai kebutuhan)
+      - [x] Soft delete opsional (`deletedAt`) untuk entity relevan
+    - [x] Seeder permission CMS
+      - [x] `cms.read`, `cms.write`, `cms.publish`, `cms.admin`
+      - [x] Role mapping default: Admin (all), Operator (read/write), Editor (read/write/publish request)
+    - [x] RBAC guard endpoint
+      - [x] `/api/admin/cms/*` protected by role/permission
+      - [x] `/api/public/cms/*` public read-only, published only
+    - [x] OpenAPI update
+      - [x] Tambah group `cms/admin` dan `cms/public`
+    - [x] Migration + seed
+      - [x] `prisma migrate dev` untuk model CMS
+      - [x] Seed permission CMS + seed menu default (`main`, `footer`)
+  - [x] P2.2 Media & Galeri (S3/MinIO-first)
+    - [x] CMS Media Library integration
+      - [x] Upload via presign (reuse util existing)
+      - [x] Simpan metadata: filename, mime, size, width/height (image), alt text wajib untuk publik
+      - [x] Opsional: blurhash/thumb
+      - [x] Foldering object key: `cms/posts`, `cms/galleries`, `cms/pages`, `cms/events`
+    - [x] Galeri module
+      - [x] CRUD Gallery (judul, deskripsi, coverImageId, status, publishedAt)
+      - [x] CRUD GalleryItem (imageId, caption, order)
+      - [x] Public endpoint list + detail + pagination
+  - [x] P2.3 Konten Berita/Artikel (Posts)
+    - [x] Editorial workflow: Draft -> Review -> Published (audit `publishedBy`, `publishedAt`)
+    - [x] Preview token/preview mode sebelum publish
+    - [x] Editor konten (pilih satu): Markdown/MDX atau TipTap/Slate
+    - [x] Support cover image + inline image dari Media Library
+    - [x] Taxonomy
+      - [x] Category & Tags (many-to-many)
+      - [x] Filter by category/tag/search
+    - [x] Public pages
+      - [x] Listing `/berita` (pagination, search, category)
+      - [x] Detail `/berita/[slug]`
+      - [x] JSON-LD Article + OG tags
+  - [x] P2.4 Agenda / Events
+    - [x] CRUD Event: `title`, `slug`, `description`, `location`, `startAt`, `endAt`, `coverImageId`
+    - [x] Workflow status + `publishedAt`
+    - [x] Public pages
+      - [x] Listing `/agenda` (upcoming + past tabs)
+      - [x] Detail `/agenda/[slug]`
+      - [x] JSON-LD Event
+  - [x] P2.5 Halaman Profil & Konten Statis (Pages)
+    - [x] CRUD Page
+      - [x] Template: `DEFAULT | PROFILE | CONTACT | LANDING` (opsional)
+      - [x] Blocks/sections builder (opsional)
+    - [x] Public route `/profil/[slug]` atau `/p/[slug]`
+    - [x] SSR/SSG caching + revalidate strategy
+  - [x] P2.6 Menu Publik (Navigation Builder)
+    - [x] `CmsMenu` tree builder: label, url, type, refSlug, order
+    - [x] Nested dropdown support (depth <= 2)
+    - [x] Visibility opsional: `PUBLIC | AUTH_ONLY | ROLE_ONLY`
+    - [x] Render menu di layout publik + footer links
+    - [x] Cache menu server-side + invalidation (`revalidateTag('cms-menu')`)
+  - [x] P2.7 Kontak (Form + Inbox + Anti-spam)
+    - [x] Public contact form `/kontak`: name, email/phone, subject, message
+    - [x] Rate-limit + honeypot (wajib)
+    - [x] Admin inbox: list, read, mark resolved, export CSV (opsional)
+      - [x] Export CSV (opsional)
+    - [x] Notifikasi internal: enqueue Email/WA outbox saat ada pesan masuk
+  - [x] P2.8 SEO, Sitemap, Robots, Metadata
+    - [x] Dynamic `sitemap.xml` untuk posts/events/pages/galleries yang `PUBLISHED`
+    - [x] Dynamic `robots.txt`
+    - [x] OG image fallback (opsional tahap awal)
+    - [x] Canonical URL + breadcrumbs (opsional)
+  - [x] P2.9 UI Admin CMS (List/Form/Table patterns)
+    - [x] Admin menu: Posts, Events, Pages, Galleries, Media, Menus, Contact Inbox, Settings
+      - [x] Implemented now: Posts, Events, Pages, Galleries, Menus, Media, Contact Inbox, Settings
+    - [x] Komponen list standar: DataTable + server pagination + search + filter status
+    - [x] Bulk actions: publish/unpublish/archive
+    - [x] Audit log minimal per entity (`createdBy`, `updatedBy`, `publishedBy`)
+  - [x] P2.10 Public UI
+    - [x] Upgrade home publik: berita terbaru, agenda terdekat, galeri highlight
+    - [x] Layout publik: header menu + footer (reuse profil sekolah)
+    - [x] Skeleton loading + empty states
+  - [x] Patch arsitektur (maintainable)
+    - [x] `src/server/cms/*` service layer (`post.service`, `menu.service`, `event.service`, `gallery.service`, `media.service`, `page.service`, `inbox.service`, `seo.service`, `settings.service`)
+      - [x] Implemented now: `post.service`, `menu.service`, `event.service`, `gallery.service`, `media.service`, `page.service`, `inbox.service`, `seo.service`, `settings.service`
+    - [x] `src/app/(dashboard)/admin/cms/*` untuk UI admin
+    - [x] `src/app/(public)/*` untuk UI publik CMS (`/berita`, `/agenda`, `/galeri`, `/p`, `/kontak`)
+    - [x] `src/app/api/admin/cms/*` dan `src/app/api/public/cms/*`
+    - [x] Zod schema per endpoint (konsisten dengan modul lain)
+  - [x] Kontrak API (codex-friendly)
+    - [x] Admin endpoints: CRUD + publish flow untuk posts/events/galleries/pages + media + menus + inbox + settings
+      - [x] Implemented now: posts/events/galleries/pages/media/menus/inbox/settings (CRUD + publish flow sesuai modul)
+    - [x] Public endpoints: menu, posts, events, galleries, pages, sitemap, robots, contact (published-only)
+      - [x] Implemented now: menu, posts, events, galleries, pages, sitemap, robots, contact (published-only)
+    - [x] Service rule wajib: public query filter `status=PUBLISHED` + `publishedAt<=now`
+  - [x] Rencana Sprint CMS (mingguan)
+    - [x] Sprint 1 (Minggu 1) - Fondasi + Menu + Pages
+      - [x] Workstream A - Data layer (Prisma + Seed)
+        - [x] Finalisasi enum/model CMS di `prisma/schema.prisma` (menu, page, status, relasi inti)
+        - [x] Buat migration `prisma migrate dev -n cms_foundation`
+        - [x] Regenerate client (`npm run db:generate`) dan validasi schema (`npm run db:push` local)
+        - [x] Tambah seed permission `cms.read|write|publish|admin` di `prisma/seed.ts`
+        - [x] Seed default menu publik (`main`, `footer`) + item awal
+      - [x] Workstream B - Service layer + DTO
+        - [x] Buat `src/server/cms/cms.permissions.ts`
+        - [x] Buat `src/server/cms/menu.service.ts` + `src/server/cms/page.service.ts`
+        - [x] Buat DTO Zod `src/server/cms/dto/menu.dto.ts` + `src/server/cms/dto/page.dto.ts`
+        - [x] Terapkan rule publish-only untuk query publik (`status=PUBLISHED`, `publishedAt<=now`)
+      - [x] Workstream C - API Admin (protected)
+        - [x] `GET /api/admin/cms/menus` dan `PUT /api/admin/cms/menus/:id` (replace tree depth<=2)
+        - [x] `GET/POST /api/admin/cms/pages`
+        - [x] `GET/PATCH/DELETE /api/admin/cms/pages/:id`
+        - [x] `POST /api/admin/cms/pages/:id/publish` dan `POST /api/admin/cms/pages/:id/unpublish`
+      - [x] Workstream D - API Public (published-only)
+        - [x] `GET /api/public/cms/menu?name=main`
+        - [x] `GET /api/public/cms/pages/:slug`
+      - [x] Workstream E - UI Admin
+        - [x] Halaman admin menu `src/app/(dashboard)/admin/cms/menus/page.tsx`
+        - [x] Halaman list/create/edit page:
+          - [x] `src/app/(dashboard)/admin/cms/pages/page.tsx`
+          - [x] `src/app/(dashboard)/admin/cms/pages/new/page.tsx`
+          - [x] `src/app/(dashboard)/admin/cms/pages/[id]/edit/page.tsx`
+        - [x] Integrasi entry menu CMS ke sidebar dashboard (admin)
+      - [x] Workstream F - UI Public
+        - [x] Route halaman statis publik (`/p/[slug]` atau `/profil/[slug]`) via App Router
+        - [x] Render menu publik dinamis pada layout/header/footer
+        - [x] Fallback/404 untuk slug tidak ditemukan atau belum publish
+      - [x] Acceptance criteria Sprint 1
+        - [x] Admin dapat CRUD + publish page dari UI
+        - [x] Menu publik tersaji dari CMS dan tampil di layout publik
+        - [x] Page yang published bisa diakses publik via slug
+        - [x] Endpoint admin terproteksi RBAC, endpoint publik read-only
+        - [x] Lulus `lint` + `tsc` + `build`
+    - [x] Sprint 2 (Minggu 2) - Posts (Berita/Artikel) + Media
+      - [x] Media library (presign + metadata + foldering)
+      - [x] Galeri module basic (admin CRUD + item manager + public listing/detail)
+      - [x] CRUD posts + workflow Draft/Review/Published + taxonomy category/tag
+        - [x] Basic CRUD posts + publish/unpublish + status workflow
+        - [x] Data model taxonomy category/tag (many-to-many) pada schema/service
+        - [x] Integrasi cover image + insert inline image dari media library pada form admin posts
+      - [x] Halaman publik `/berita` + `/berita/[slug]`
+    - [x] Sprint 3 (Minggu 3) - Events + Pengumuman
+      - [x] CRUD events + workflow publish
+      - [x] Halaman publik `/agenda` + `/agenda/[slug]`
+      - [x] Sinkronkan konten pengumuman agar masuk alur CMS
+    - [x] Sprint 4 (Minggu 4) - Gallery + Integrasi Home Publik
+      - [x] CRUD gallery + items + endpoint publik
+      - [x] Integrasi section highlight (berita, agenda, galeri) di home publik
+    - [x] Sprint 5 (Minggu 5) - Kontak + Inbox + Notifikasi Internal
+      - [x] Form kontak publik (rate-limit + honeypot)
+      - [x] Admin inbox (list/read/resolve)
+      - [x] Trigger outbox Email/WA saat pesan baru masuk
+    - [x] Sprint 6 (Minggu 6) - SEO + Hardening CMS
+      - [x] `sitemap.xml`, `robots.txt`, JSON-LD, OG metadata
+      - [x] Revalidate/cache strategy + observability dasar endpoint CMS
+      - [x] Smoke test CMS (admin/public) + perapihan dokumentasi OpenAPI
+        - [x] Smoke test CMS (admin/public) via Playwright (`tests/cms-smoke.spec.ts`)
+        - [x] Perapihan dokumentasi OpenAPI CMS
+    - [x] Quality gate tiap sprint: `lint` + `tsc` + `build` + smoke test endpoint utama
+      - [x] Tambahkan gate `npm run test:e2e` (Playwright runner) untuk PR/release branch
+
+P3 - Finansial
+- [x] Keuangan (biaya, tagihan massal, pembayaran, kuitansi)
+- [x] Tabungan siswa (akun, setoran/penarikan, approval, buku)
+- [x] Keuangan (diskon, beasiswa, refund, laporan)
+  - [x] Diskon invoice (CRUD dasar + rekalkulasi status tagihan)
+  - [x] Refund pembayaran (per payment + validasi batas refund + rekalkulasi status tagihan)
+  - [x] Beasiswa siswa (CRUD dasar)
+  - [x] Laporan keuangan ringkas (billed, discount, payment, refund, receivable, status invoice)
+  - [x] Sinkron portal billing & receipt terhadap total bersih (net of discount/refund)
+- [x] Keuangan Operasional Sekolah (pemasukan, pengeluaran, kas, bank, laporan)
+  - [x] Master akun keuangan (COA) + kategori akun
+  - [x] Kas & Bank
+    - [x] Master rekening kas/bank (operasional, BOS, yayasan, petty cash)
+    - [x] Set saldo awal per periode
+  - [x] Transaksi operasional
+    - [x] Kas masuk non-tagihan siswa (donasi/hibah/sewa/pendapatan lain)
+    - [x] Kas keluar (belanja barang/jasa, utilitas, pemeliharaan, kegiatan, honor)
+    - [x] Transfer antar rekening kas/bank + upload bukti transaksi
+    - [x] Integrasi posting pemasukan dari pembayaran tagihan siswa ke buku kas
+  - [x] Approval & kontrol internal
+    - [x] Workflow maker-checker-approver untuk transaksi operasional
+    - [x] Penomoran bukti otomatis + lock period + audit trail perubahan
+    - [x] Halaman manajemen lock period (`/finance/operational/period-locks`)
+  - [x] Buku kas & laporan keuangan
+    - [x] Buku Kas Umum (harian/bulanan)
+    - [x] Laporan arus kas (operasional/investasi/pendanaan)
+    - [x] Realisasi anggaran vs aktual per akun/unit
+    - [x] Rekonsiliasi kas/bank + export CSV/XLS/PDF
+      - [x] Rekonsiliasi kas/bank
+      - [x] Export CSV
+      - [x] Export XLS/PDF
+  - [x] Dashboard keuangan sekolah (saldo kas realtime, top expense, burn rate)
+    - [x] Ringkasan awal operasional: income, expense, net, total saldo kas/bank
+    - [x] Top expense, burn rate, dan tren periodik lanjutan
+
+P4 - Integrasi & Notifikasi
+- [x] LMS/CBT link, impor skor
+  - [x] Admin UI: `/admin/lms/links` (CRUD link)
+  - [x] API: `/api/admin/lms/links/*` + list skor + import skor (CSV/JSON) per link
+  - [x] AuditEvent: `lms.link.*` + `lms.score.import`
+  - [x] Smoke test: `tests/modules-smoke.spec.ts` buka halaman LMS links
+- [ ] Integrasi Dapodik (sinkronisasi referensi & pelaporan)
+  - [ ] Discovery & kepatuhan integrasi resmi
+    - [ ] Verifikasi jalur integrasi resmi yang diizinkan (API/SSO SDS/interop) + prasyarat registrasi aplikasi
+    - [ ] Catat kebijakan autentikasi terbaru (SSO Dapodik + 2FA/OTP) dan evaluasi kebutuhan SSO SDS untuk layanan terkait
+    - [ ] Tetapkan kebijakan akses data sensitif (NIK/NISN), retensi data, dan audit trail kepatuhan
+  - [ ] Desain domain & mapping data
+    - [ ] Mapping kunci identitas: `npsn`, `sekolah_id`, `ptk_id`, `peserta_didik_id`, `rombel_id`, `semester_id`
+    - [ ] Mapping entitas: sekolah, GTK, peserta didik, rombel, jadwal, referensi wilayah
+    - [x] Tambahkan tabel staging sinkronisasi + status rekonsiliasi (`NEW`, `MATCHED`, `CONFLICT`, `REJECTED`)
+  - [ ] Strategi sinkronisasi data
+    - [ ] Terapkan mode awal `pull` (read-mostly) untuk data referensi, evaluasi `push` hanya jika kebutuhan/regulasi jelas
+    - [ ] Incremental sync berbasis watermark (`updatedAt`) + full reconcile terjadwal
+    - [ ] Tetapkan conflict resolution per field (source of truth) + idempotency key per batch
+    - [ ] Siapkan konfigurasi cut-off window sinkronisasi mengikuti kalender pelaporan Dapodik
+  - [ ] Implementasi konektor teknis
+    - [x] Buat fondasi modul `src/server/integrations/dapodik/*` (config + DTO + queue runner)
+    - [x] Tambah queue batch `DapodikSyncBatch` (retry + exponential backoff + status FAILED sebagai DLQ sederhana)
+    - [x] Integrasi proses queue ke cron tick (`/api/admin/cron/tick`)
+    - [x] Tambahkan endpoint/admin action untuk trigger sync, cek status batch, dan retry batch gagal
+      - [x] API: `/api/admin/dapodik/batches`, `/api/admin/dapodik/batches/:id/retry`
+      - [x] UI: `/admin/dapodik` (enqueue + list + retry + manual process)
+    - [ ] Implement real connector (client/auth/mapper/orchestrator) sesuai jalur resmi
+  - [ ] Keamanan, observability, dan rollout
+    - [ ] Kelola credential/token via secret manager + rotasi berkala
+    - [ ] Enkripsi data sensitif at-rest/in-transit + masking log
+    - [ ] Dashboard monitoring sinkronisasi (success rate, latency, data drift, last successful sync)
+    - [x] Uji kontrak connector (mock provider) + e2e smoke sinkronisasi (`tests/dapodik-sync.spec.ts`)
+    - [ ] Pilot rollout bertahap (1 sekolah -> staging -> produksi) + runbook rollback
+- [x] Notifikasi WA/Email (templates, outbox, webhook, retry)
+  - [x] WA Outbox enqueue untuk workflow Cuti/Izin (ajukan/approve/reject)
+  - [x] Sender route (manual) + retry/cancel actions
+  - [x] Admin UI (WA Outbox + WA Templates)
+  - [x] Email SMTP outbox (provider, templates, outbox, UI)
+  - [x] Cron facade endpoint (/api/admin/cron/tick)
+  - [x] Webhook inbound (update status async)
+    - [x] Public API: `/api/public/wa/webhook` + `/api/public/email/webhook` (optional `WEBHOOK_SECRET` via `X-WEBHOOK-KEY`)
+    - [x] E2E smoke: `tests/notifications-webhook.spec.ts`
+  - [x] Panggil cron secara terjadwal (Actions/cron/systemd)
+    - [x] GitHub Actions schedule (`.github/workflows/cron-tick.yml`) dengan secrets `CRON_TICK_URL` + `CRON_SECRET`
+- [ ] Analitik & dashboard (events + KPI presensi/nilai/ppdb/perpustakaan/aset)
+  - [x] Fondasi dashboard analitik (Admin)
+    - [x] API: `/api/admin/analytics/summary` (counts KPI lintas modul)
+    - [x] UI: `/admin/analytics` (cards + tabel PPDB by status, auto refresh)
+    - [x] Smoke test: `tests/modules-smoke.spec.ts` buka halaman Analitik
+  - [x] KPI lanjutan (timeseries & funnel)
+    - [x] Presensi: tren harian/mingguan (staff/student) + breakdown status (PRESENT/LATE/ABSENT)
+    - [x] PPDB: funnel (PENDING -> VERIFIED -> ACCEPTED/REJECTED -> ENROLLED) + conversion rate
+    - [x] Perpustakaan: overdue rate + fine totals
+    - [x] Keuangan: outstanding by period + cashflow summary
+  - [ ] Event-driven analytics (opsional)
+    - [ ] Sinkronkan event taxonomy (audit events -> analytics events)
+    - [ ] Materialized view / snapshot harian untuk performa
+- [ ] CBT internal (bank soal, ujian, attempts, skor)
+
+P5 - Hardening
+- [x] Build readiness (lint + tsc + build lulus)
+  - [x] Perbaiki syntax error di `src/app/(dashboard)/hr/leaves/page.tsx` (line 39)
+  - [x] Tambahkan dependency `nodemailer` + verifikasi alur email provider
+- [x] Logging & metrics (prod-grade; audit events across modules)
+  - [x] AuditEvent untuk modul Finansial (operasional: transaksi, budget, period lock)
+  - [x] AuditEvent untuk CMS (posts/pages/events/galleries/media/menus/settings/inbox update)
+  - [x] UI viewer audit log (admin) (`/admin/audit` + `/api/admin/audit/events`)
+  - [x] AuditEvent untuk HR/Assets/Library/PPDB (aksi create/update/approve/delete)
+    - [x] HR: shifts, leave-types, leaves (create/approve/reject), staff attendance approve/update
+    - [x] Assets: categories, assets, loans (create/return), maintenance create
+    - [x] Library: items, loans (create/return incl. barcode), barcodes, members, settings update
+    - [x] PPDB: submit(public), create/update/delete(admin), verify, decide
+  - [x] Metrics dasar (request duration + error rate) + correlation id (opsional)
+- [x] Backup strategi
+  - [x] Dokumentasi backup DB + S3/MinIO + secrets (`docs/BACKUP.md`)
+- [x] E2E smoke tests (Playwright: public, sign-in, blokir dashboard, login)
+  - [x] Update assertion root page agar sesuai heading landing page aktual
+  - [x] Stabilkan test environment (`DATABASE_URL`, bootstrap DB, seed)
+    - [x] Gunakan DB E2E terisolasi (`docker-compose.e2e.yml`, default `127.0.0.1:3307`) agar tidak bentrok DB lokal
+  - [x] Standarisasi validasi: Playwright Test runner untuk quality gate otomatis, Playwright MCP untuk audit manual/exploratory
+- [x] Turbopack root + outputFileTracingRoot diselaraskan (hilangkan warning dev)
+  - [x] Revalidasi `next.config.ts` agar root workspace tidak mengarah ke parent repo
+- [x] Konsistensi repo pasca migrasi `sis/` -> root
+  - [x] README root path sudah dirapikan
+  - [x] Script DB `docker-compose.yml` root sudah dirapikan
+  - [x] Audit lanjutan referensi path lama pada docs/config/tests
+- [x] Tambah cakupan e2e (PPDB publik, Library, Aset, HR)
+  - [x] Smoke test Playwright (`tests/modules-smoke.spec.ts`)
+- [x] Uptime monitoring/ping + health checks (observability)
+  - [x] Readiness endpoint `/api/health/ready` (cek koneksi DB)
+  - [x] GitHub Actions uptime check (`.github/workflows/uptime-check.yml`) dengan secret `UPTIME_BASE_URL`
+  - [ ] Opsional: setup uptime monitor pihak ketiga (ping `/api/health` + `/api/health/ready`)
+
+P6 - Audit Total
+- [ ] Audit & Test Toltal (Seluruh Sistem) menggunakan Playwright MCP

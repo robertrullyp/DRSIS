@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { paginationSchema } from "@/lib/validation";
+import { requireApiPermission } from "@/server/api/auth";
 
 export async function GET(req: NextRequest) {
+  const auth = await requireApiPermission(req, ["identity.manage"]);
+  if (!auth.ok) return auth.response;
+
   const parse = paginationSchema.safeParse(Object.fromEntries(req.nextUrl.searchParams));
   if (!parse.success) return NextResponse.json({ error: parse.error.format() }, { status: 400 });
   const { page, pageSize, q } = parse.data;
@@ -27,4 +31,3 @@ export async function GET(req: NextRequest) {
   ]);
   return NextResponse.json({ items, total, page, pageSize });
 }
-

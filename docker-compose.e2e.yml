@@ -1,16 +1,15 @@
 services:
-  mariadb_e2e:
-    image: mariadb:11
-    container_name: sis-mariadb-e2e
+  postgres_e2e:
+    image: postgres:16
+    container_name: sis-postgres-e2e
     environment:
-      MARIADB_ROOT_PASSWORD: root
-      MARIADB_DATABASE: sis
-      MARIADB_USER: sis
-      MARIADB_PASSWORD: sis
+      POSTGRES_DB: sis
+      POSTGRES_USER: sis
+      POSTGRES_PASSWORD: sis
     ports:
-      - "3307:3306"
+      - "5433:5432"
     volumes:
-      - mariadb_e2e_data:/var/lib/mysql
+      - postgres_e2e_data:/var/lib/postgresql/data
 
 volumes:
-  mariadb_e2e_data:
+  postgres_e2e_data:

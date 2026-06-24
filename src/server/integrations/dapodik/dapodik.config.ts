@@ -22,3 +22,28 @@ export function getDapodikSyncMaxAttempts() {
   return Math.max(1, Math.trunc(raw));
 }
 
+export function getDapodikConnectorStatus() {
+  const mode = getDapodikSyncMode();
+  const enabled = isDapodikSyncEnabled();
+  const hasOfficialConfig = Boolean(
+    process.env.DAPODIK_BASE_URL &&
+      process.env.DAPODIK_CLIENT_ID &&
+      process.env.DAPODIK_CLIENT_SECRET,
+  );
+
+  return {
+    enabled,
+    mode,
+    maxAttempts: getDapodikSyncMaxAttempts(),
+    realConnectorReady: mode === "real" && hasOfficialConfig,
+    hasOfficialConfig,
+    message:
+      mode === "mock"
+        ? "Mock connector aktif; tidak ada external call."
+        : mode === "real" && hasOfficialConfig
+          ? "Konfigurasi official tersedia; implementasi client real tetap harus memakai akses resmi."
+          : mode === "real"
+            ? "Mode real dipilih, tetapi konfigurasi official belum lengkap."
+            : "Dapodik sync disabled.",
+  };
+}

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-DEFAULT_DATABASE_URL="${DATABASE_URL:-mysql://sis:sis@127.0.0.1:3306/sis}"
+DEFAULT_DATABASE_URL="${DATABASE_URL:-postgresql://sis:sis@127.0.0.1:5433/sis?schema=public}"
 E2E_DATABASE_URL="${E2E_DATABASE_URL:-$DEFAULT_DATABASE_URL}"
 if [[ "$E2E_DATABASE_URL" != *"connect_timeout="* ]]; then
   if [[ "$E2E_DATABASE_URL" == *"?"* ]]; then
@@ -12,6 +12,10 @@ if [[ "$E2E_DATABASE_URL" != *"connect_timeout="* ]]; then
 fi
 export E2E_DATABASE_URL
 export DATABASE_URL="$E2E_DATABASE_URL"
+
+if [[ "$E2E_DATABASE_URL" == *"127.0.0.1:5433"* || "$E2E_DATABASE_URL" == *"localhost:5433"* ]]; then
+  docker compose -f docker-compose.e2e.yml up -d postgres_e2e >/dev/null
+fi
 
 ready=0
 for attempt in $(seq 1 30); do

@@ -44,6 +44,15 @@ type ProcessResponse = {
   error?: string;
 };
 
+type DapodikStatusResponse = {
+  enabled: boolean;
+  mode: "disabled" | "mock" | "real";
+  maxAttempts: number;
+  realConnectorReady: boolean;
+  hasOfficialConfig: boolean;
+  message: string;
+};
+
 function formatTs(value: string | null | undefined) {
   if (!value) return "-";
   const d = new Date(value);
@@ -77,6 +86,15 @@ export default function AdminDapodikPage() {
         throw new Error(typeof payload?.error === "string" ? payload.error : "Failed to fetch batches");
       }
       return (await res.json()) as BatchListResponse;
+    },
+  });
+
+  const statusQuery = useQuery<DapodikStatusResponse>({
+    queryKey: ["admin-dapodik-status"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/dapodik/status");
+      if (!res.ok) throw new Error("Failed to fetch Dapodik status");
+      return (await res.json()) as DapodikStatusResponse;
     },
   });
 
@@ -170,6 +188,26 @@ export default function AdminDapodikPage() {
         <Link href="/admin/dapodik/staging" className="rounded-md border px-3 py-2 text-sm hover:bg-muted/70">
           Lihat Staging
         </Link>
+      </div>
+
+      <div className="grid gap-2 rounded-lg border bg-card p-3 text-sm md:grid-cols-4">
+        <div>
+          <div className="text-xs text-muted-foreground">Mode</div>
+          <div className="font-semibold">{statusQuery.data?.mode ?? "-"}</div>
+        </div>
+        <div>
+          <div className="text-xs text-muted-foreground">Enabled</div>
+          <div className="font-semibold">{statusQuery.data?.enabled ? "Ya" : "Tidak"}</div>
+        </div>
+        <div>
+          <div className="text-xs text-muted-foreground">Real Ready</div>
+          <div className="font-semibold">{statusQuery.data?.realConnectorReady ? "Ya" : "Tidak"}</div>
+        </div>
+        <div>
+          <div className="text-xs text-muted-foreground">Max Attempts</div>
+          <div className="font-semibold">{statusQuery.data?.maxAttempts ?? "-"}</div>
+        </div>
+        <p className="md:col-span-4 text-muted-foreground">{statusQuery.data?.message ?? "Memuat status..."}</p>
       </div>
 
       <div className="grid gap-2 rounded-xl border border-border p-3 md:grid-cols-5 md:items-end">

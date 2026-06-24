@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { paginationSchema } from "@/lib/validation";
 import type { Prisma } from "@/generated/prisma";
+import { requireApiPermission } from "@/server/api/auth";
 
 const auditEventQuerySchema = paginationSchema.extend({
   type: z.string().min(1).optional(),
@@ -29,6 +30,9 @@ function parseMeta(meta: string | null) {
 }
 
 export async function GET(req: NextRequest) {
+  const auth = await requireApiPermission(req, ["audit.read"]);
+  if (!auth.ok) return auth.response;
+
   const parsed = auditEventQuerySchema.safeParse(
     Object.fromEntries(req.nextUrl.searchParams),
   );
@@ -84,4 +88,3 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({ items, total, page, pageSize });
 }
-
